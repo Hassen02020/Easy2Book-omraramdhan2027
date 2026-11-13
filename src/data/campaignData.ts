@@ -34,10 +34,10 @@ export interface VoiceOption {
   tone: string;
 }
 
-export const TOTAL_REEL_DURATION_SEC = 42;
+export const TOTAL_REEL_DURATION_SEC = 48;
 
 export const DEFAULT_TUNISIAN_SCRIPT =
-  'تحب تعيش روحانية شهر رمضان الكل في مكة المكرمة، وإنت مرتاح البال ومن غير حتى تعب؟ مع Easy2Book، حضرنالك برنامج عمرة شهر رمضان كامل: طيران تونس جدة تونس، فيزا، وتأطير كامل مع مرشدين مرافقين ليكم خطوة بخطوة، وإقامة مريحة في فندق ميسان الملتزم. وزيد معاهم رحلة للمدينة المنورة... والكل بسوم استثنائي: خمسة آلاف وتسعمية دينار برك للشخص! الأماكن محدودة برشا! كلمنا توا على ثمانية وتسعين، مية وأربعين، خمس مية وأربعطاش، ولا احجز ديريكت على Easy2Book بوان تي إن. Easy2Book... سفرتك أسهل!';
+  'تحب تعيش روحانية شهر رمضان الكل في مكة المكرمة، وإنت مرتاح البال ومن غير حتى تعب؟ مع Easy2Book، حضرنالك برنامج عمرة شهر رمضان كامل: طيران تونس جدة تونس، فيزا، وتأطير كامل مع مرشدين مرافقين ليكم خطوة بخطوة، وإقامة مريحة في فندق ميسان الملتزم، وزيد معاهم رحلة للمدينة المنورة! الأسعار تبدأ من خمسة آلاف وتسعمية دينار للشخص في غرفة رباعية أو خماسية، ستة آلاف وأربعمية دينار في غرفة ثلاثية، وستة آلاف وتسعمية دينار في غرفة ثنائية... مع تخفيض ميتين دينار للعائلات انطلاقاً من شخصين! وللمجموعات أكثر من عشرة أشخاص كلمونا للحصول على الإمكانية. عدد الغرف محدود جداً والعرض صالح لـ خمسطاش ديسمبر ألفين وستة وعشرين! كلمنا توا على ثمانية وتسعين، مية وأربعين، خمس مية وأربعطاش، ولا احجز على easy2book.tn. Easy2Book... سفرتك أسهل!';
 
 export const VOICE_OPTIONS: VoiceOption[] = [
   { id: 'Charon', label: 'صوت رخيم دافئ (Charon)', tone: 'وقور وهادئ' },
@@ -68,10 +68,10 @@ export const REEL_SCENES: ReelScene[] = [
     arabicTitle: 'الرحلة والإقامة الفاخرة',
     subtitleSummary: 'انتقال بصري من الطائرة نحو جناح فندق ميسان الملتزم بمكة',
     startSec: 10,
-    endSec: 23,
+    endSec: 25,
     primaryImage: tunisFlightImg,
     secondaryImage: makkahSuiteImg,
-    matchCutOffsetSec: 5.5,
+    matchCutOffsetSec: 6.5,
     imageAlt: 'طائرة ركاب تحلق عبر سحب ذهبية عند الغروب في رحلة تونس جدة',
     secondaryImageAlt: 'جناح فندقي عصري في مكة المكرمة يطل على الحرم مع مستقبل رحلات ببدلة كحلية',
     overlayHeadline: 'شهر كامل في مكة 🕋',
@@ -87,14 +87,17 @@ export const REEL_SCENES: ReelScene[] = [
   {
     id: 'scene-3',
     indexLabel: '03',
-    arabicTitle: 'سكينة المدينة المنورة',
-    subtitleSummary: 'ساحة المسجد النبوي بالمظلات المضاءة وقت الغسق',
-    startSec: 23,
-    endSec: 32,
+    arabicTitle: 'المدينة المنورة والأسعار',
+    subtitleSummary: 'ساحة المسجد النبوي بالمظلات المضاءة وأسعار الغرف والتخفيض العائلي',
+    startSec: 25,
+    endSec: 36,
     primaryImage: madinahTwilightImg,
     imageAlt: 'ساحة المسجد النبوي في المدينة المنورة وقت الغسق مع المظلات المضاءة بالذهب',
-    overlayHeadline: 'رحلة للمدينة المنورة',
-    overlayLines: ['سوم استثنائي: 5,900 د.ت للشخص'],
+    overlayHeadline: 'أسعار تبدأ من 5,900 د.ت',
+    overlayLines: [
+      'رباعية/خماسية 5,900 · ثلاثية 6,400 · ثنائية 6,900 د.ت',
+      'تخفيض 200 د.ت للعائلات انطلاقاً من شخصين',
+    ],
     cameraMoveLabel: 'Gentle Camera Tilt Up',
     promptText:
       "Vertical 9:16, cinematic wide-to-medium shot of the Prophet's Mosque courtyard in Madinah at twilight, iconic giant white umbrellas illuminated by warm golden lanterns against a deep twilight navy blue sky, peaceful families walking calmly in traditional modest attire, gentle camera tilt up, rich atmospheric lighting, 8k filmic look, no text.",
@@ -104,12 +107,12 @@ export const REEL_SCENES: ReelScene[] = [
     indexLabel: '04',
     arabicTitle: 'خاتمة Easy2Book',
     subtitleSummary: 'خلفية ثلاثية الأبعاد بأمواج زجاجية ذهبية وكحلية للشعار والدعوة للحجز',
-    startSec: 32,
-    endSec: 42,
+    startSec: 36,
+    endSec: 48,
     primaryImage: studioBackdropImg,
     imageAlt: 'خلفية استوديو ثلاثية الأبعاد بيضاء ناعمة مع أمواج زجاجية كحلية وذهبية',
-    overlayHeadline: 'الأماكن محدودة ⏳',
-    overlayLines: ['📞 98 140 514', '🌐 www.easy2book.tn'],
+    overlayHeadline: 'عدد غرف محدود جداً ⏳',
+    overlayLines: ['عرض صالح لـ 15 ديسمبر 2026', '📞 98 140 514', '🌐 www.easy2book.tn'],
     cameraMoveLabel: '60fps Studio Glass Motion',
     promptText:
       'Vertical 9:16, clean minimalist 3D motion graphic background, soft luminous off-white studio environment with subtle floating golden light particles and sleek translucent navy blue and warm gold glass waves gently moving in the background, bright centered negative space designed for logo placement, commercial broadcast quality, 60fps smooth motion, no text.',
@@ -129,23 +132,23 @@ export const SUBTITLE_CUES: SubtitleCue[] = [
   },
   {
     startSec: 10,
-    endSec: 17,
+    endSec: 18,
     text: 'طيران تونس جدة تونس، فيزا، وتأطير كامل مع مرشدين مرافقين ليكم خطوة بخطوة،',
   },
   {
-    startSec: 17,
-    endSec: 23,
-    text: 'وإقامة مريحة في فندق ميسان الملتزم.',
+    startSec: 18,
+    endSec: 25,
+    text: 'وإقامة مريحة في فندق ميسان الملتزم، وزيد معاهم رحلة للمدينة المنورة!',
   },
   {
-    startSec: 23,
-    endSec: 32,
-    text: 'وزيد معاهم رحلة للمدينة المنورة... والكل بسوم استثنائي: خمسة آلاف وتسعمية دينار برك للشخص!',
+    startSec: 25,
+    endSec: 36,
+    text: 'ابتداءً من 5,900 د.ت (رباعية/خماسية)، 6,400 د.ت (ثلاثية)، 6,900 د.ت (ثنائية) — وتخفيض 200 د.ت للعائلات من شخصين!',
   },
   {
-    startSec: 32,
-    endSec: 42,
-    text: 'الأماكن محدودة برشا! كلمنا توا على 98 140 514، ولا احجز ديريكت على easy2book.tn — Easy2Book... سفرتك أسهل!',
+    startSec: 36,
+    endSec: 48,
+    text: 'عدد غرف محدود جداً والعرض صالح لـ 15 ديسمبر 2026! للمجموعات +10 أشخاص اتصلوا على 98 140 514 · easy2book.tn',
   },
 ];
 
@@ -157,17 +160,20 @@ export const SOCIAL_CAPTION_BLOCKS = [
   },
   {
     id: 'cap-2',
-    scene: 'المشهد 02',
+    scene: 'المشهد 02 و 03',
     lines: [
-      'شهر كامل في مكة 🕋',
-      '✈️ طيران تونس - جدة - تونس',
-      '🛂 فيزا + تأطير كامل',
-      '🏨 فندق ميسان الملتزم',
+      'فندق ميسان الملتزم + المدينة المنورة',
+      'رباعية/خماسية: 5,900 د.ت | ثلاثية: 6,400 د.ت | ثنائية: 6,900 د.ت',
+      'تخفيض 200 د.ت للعائلات انطلاقاً من شخصين',
     ],
   },
   {
     id: 'cap-3',
-    scene: 'المشهد 03 و 04',
-    lines: ['الأماكن محدودة ⏳', '📞 98 140 514', '🌐 www.easy2book.tn'],
+    scene: 'المشهد 04',
+    lines: [
+      'عدد غرف محدود جداً · عرض صالح لـ 15 ديسمبر 2026',
+      'مجموعات تفوق 10 أشخاص: الاتصال على 98 140 514',
+      '🌐 www.easy2book.tn',
+    ],
   },
 ];

@@ -299,7 +299,9 @@ export function ReelPlayer({
             <div className="mt-3 h-px w-16 bg-[#C8922A]/60" />
             {showCaptions && (
               <div className="mt-3 space-y-1 text-[#0B162C]">
-                <p className="text-sm font-bold">الأماكن محدودة ⏳</p>
+                <p className="text-xs font-bold text-[#9A6E1B]">
+                  عدد غرف محدود جداً · عرض صالح لـ 15 ديسمبر 2026
+                </p>
                 <p className="font-mono-tabular text-lg font-extrabold text-[#0B162C]" dir="ltr">
                   📞 98 140 514
                 </p>

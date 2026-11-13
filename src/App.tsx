@@ -6,8 +6,17 @@ import {
 import { ReelPlayer } from './components/ReelPlayer';
 import { BookingSection } from './components/BookingSection';
 import { WhatsAppIcon, WHATSAPP_URL } from './components/WhatsAppIcon';
+import {
+  FAMILY_DISCOUNT_DT,
+  GROUP_CALL_THRESHOLD,
+  OFFER_DEADLINE_LABEL,
+  ROOM_TIERS,
+} from './data/pricingData';
 
 export default function App() {
+  const [selectedRoomLabel, setSelectedRoomLabel] = useState<string>(
+    ROOM_TIERS[0].label
+  );
   const [currentTime, setCurrentTime] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -306,10 +315,17 @@ export default function App() {
                 </h1>
 
                 <p className="mt-5 max-w-2xl text-base leading-relaxed text-[#475569]">
-                  برنامج متكامل من <span className="font-latin font-semibold text-[#0B162C]">Easy2Book</span> يشمل طيران تونس – جدة – تونس،
-                  التأشيرة، التأطير الديني والإداري خطوة بخطوة، إقامة مريحة في
-                  فندق ميسان الملتزم، ورحلة روحانية للمدينة المنورة بسوم استثنائي
-                  5,900 د.ت للشخص.
+                  برنامج متكامل من{' '}
+                  <span className="font-latin font-semibold text-[#0B162C]">
+                    Easy2Book
+                  </span>{' '}
+                  يشمل طيران تونس – جدة – تونس، التأشيرة، التأطير الديني والإداري
+                  خطوة بخطوة، إقامة مريحة في فندق ميسان الملتزم، ورحلة روحانية
+                  للمدينة المنورة بأسعار تبدأ من{' '}
+                  <span className="tabular-nums font-bold text-[#0B162C]">
+                    5,900 د.ت
+                  </span>{' '}
+                  للشخص (عدد غرف محدود جداً · عرض صالح لـ {OFFER_DEADLINE_LABEL}).
                 </p>
 
                 {/* Clean Conversion Actions */}
@@ -371,15 +387,15 @@ export default function App() {
             {/* Full-Width 4-Column Package Highlights Strip Below Hero Split */}
             <div className="mt-14 grid grid-cols-2 divide-y sm:divide-y-0 sm:divide-x sm:divide-x-reverse divide-[#0B162C]/10 rounded-xl border border-[#0B162C]/10 bg-white lg:grid-cols-4">
               <div className="p-6">
-                <p className="text-xs font-semibold text-[#475569]">مدة البرنامج</p>
-                <p className="mt-1.5 tabular-nums text-2xl font-extrabold text-[#0B162C]">
-                  شهر رمضان كامل
+                <p className="text-xs font-semibold text-[#475569]">الأسعار للشخص</p>
+                <p className="mt-1.5 tabular-nums text-2xl font-extrabold text-[#C8922A]">
+                  ابتداءً من 5,900 د.ت
                 </p>
               </div>
               <div className="p-6">
-                <p className="text-xs font-semibold text-[#475569]">النقل الجوي</p>
-                <p className="mt-1.5 text-2xl font-extrabold text-[#0B162C]">
-                  تونس ⇄ جدة
+                <p className="text-xs font-semibold text-[#475569]">تخفيض العائلات</p>
+                <p className="mt-1.5 tabular-nums text-2xl font-extrabold text-[#0B162C]">
+                  {FAMILY_DISCOUNT_DT} د.ت (من شخصين)
                 </p>
               </div>
               <div className="p-6">
@@ -389,9 +405,9 @@ export default function App() {
                 </p>
               </div>
               <div className="p-6">
-                <p className="text-xs font-semibold text-[#475569]">السوم الاستثنائي</p>
-                <p className="mt-1.5 tabular-nums text-2xl font-extrabold text-[#C8922A]">
-                  5,900 د.ت
+                <p className="text-xs font-semibold text-[#475569]">صلاحية العرض</p>
+                <p className="mt-1.5 tabular-nums text-2xl font-extrabold text-[#0B162C]">
+                  {OFFER_DEADLINE_LABEL}
                 </p>
               </div>
             </div>
@@ -460,19 +476,122 @@ export default function App() {
                 </h3>
                 <p className="mt-3 text-sm leading-relaxed text-slate-300">
                   زيارة المسجد النبوي الشريف والروضة المباركة في أجواء رمضانية
-                  هادئة ومنظمة، وكل ذلك بسوم إجمالي قدره{' '}
+                  هادئة ومنظمة، وكل ذلك بأسعار تبدأ من{' '}
                   <span className="tabular-nums font-bold text-[#F5D68A]">
                     5,900 دينار تونسي
                   </span>{' '}
-                  فقط للشخص.
+                  للشخص في الغرفة الرباعية أو الخماسية.
                 </p>
+              </div>
+            </div>
+
+            {/* Room Pricing Tiers & Special Conditions */}
+            <div className="mt-14 border-t border-[#0B162C]/10 pt-12">
+              <div className="flex flex-wrap items-end justify-between gap-4">
+                <div>
+                  <p className="text-sm font-semibold text-[#C8922A]">
+                    التسعيرة حسب نوع الغرفة · عدد غرف محدود جداً
+                  </p>
+                  <h3 className="mt-1 text-2xl font-bold tracking-tight text-[#0B162C]">
+                    اختر الغرفة المناسبة لك ولعائلتك
+                  </h3>
+                </div>
+                <p className="text-sm font-semibold text-[#475569]">
+                  عرض صالح إلى {OFFER_DEADLINE_LABEL}
+                </p>
+              </div>
+
+              <div className="mt-6 grid gap-6 md:grid-cols-3">
+                {ROOM_TIERS.map((tier) => {
+                  const isSelected = selectedRoomLabel === tier.label;
+                  return (
+                    <button
+                      key={tier.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedRoomLabel(tier.label);
+                        document
+                          .getElementById('booking')
+                          ?.scrollIntoView({ behavior: 'smooth' });
+                      }}
+                      className={`flex flex-col justify-between rounded-xl border p-6 text-right transition-colors ${
+                        isSelected
+                          ? 'border-[#C8922A] bg-[#FDF8EC]'
+                          : 'border-[#0B162C]/10 bg-[#FAF9F6] hover:border-[#C8922A]/60'
+                      }`}
+                    >
+                      <div>
+                        <p className="text-xs font-semibold text-[#475569]">
+                          {tier.occupancyLabel}
+                        </p>
+                        <h4 className="mt-1.5 text-xl font-bold text-[#0B162C]">
+                          {tier.label}
+                        </h4>
+                        <p className="mt-2 text-sm leading-relaxed text-[#475569]">
+                          {tier.notes}
+                        </p>
+                      </div>
+                      <div className="mt-6 flex items-baseline justify-between border-t border-[#0B162C]/10 pt-4">
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="tabular-nums text-3xl font-extrabold text-[#0B162C]">
+                            {tier.pricePerPersonDt.toLocaleString('en-US')}
+                          </span>
+                          <span className="text-sm font-bold text-[#C8922A]">
+                            د.ت / للشخص
+                          </span>
+                        </div>
+                        <span className="text-xs font-semibold text-[#0B162C]">
+                          اختيار الغرفة
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="mt-6 grid gap-4 rounded-xl border border-[#0B162C]/10 bg-[#FAF9F6] p-5 md:grid-cols-3">
+                <div>
+                  <p className="text-xs font-semibold text-[#C8922A]">
+                    تخفيض العائلات
+                  </p>
+                  <p className="mt-1 text-sm font-bold text-[#0B162C]">
+                    تخفيض {FAMILY_DISCOUNT_DT} د.ت للعائلات انطلاقاً من شخصين
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-[#C8922A]">
+                    المجموعات الكبيرة
+                  </p>
+                  <p className="mt-1 text-sm font-bold text-[#0B162C]">
+                    مجموعات تفوق {GROUP_CALL_THRESHOLD} أشخاص: الاتصال على{' '}
+                    <a
+                      href="tel:98140514"
+                      className="font-mono-tabular underline decoration-[#C8922A]"
+                      dir="ltr"
+                    >
+                      98 140 514
+                    </a>{' '}
+                    للحصول على الإمكانية
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-[#C8922A]">
+                    تنبيه التوفر
+                  </p>
+                  <p className="mt-1 text-sm font-bold text-[#0B162C]">
+                    عدد غرف محدود جداً · عرض صالح لـ {OFFER_DEADLINE_LABEL}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
         </section>
 
         {/* Direct Reservation & Lead Capture */}
-        <BookingSection />
+        <BookingSection
+          selectedRoomLabel={selectedRoomLabel}
+          onRoomLabelChange={setSelectedRoomLabel}
+        />
       </main>
 
       {/* Quiet Footer */}

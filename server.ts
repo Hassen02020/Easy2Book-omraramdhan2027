@@ -33,6 +33,9 @@ interface BookingRecord {
   email: string;
   pilgrimsCount: number;
   roomType: string;
+  isFamily: boolean;
+  isGroupInquiry: boolean;
+  estimatedTotalDt: number | null;
   departureNote: string;
   createdAt: string;
 }
@@ -40,8 +43,14 @@ interface BookingRecord {
 const voiceoverCache = new Map<string, CachedAudio>();
 const bookingsStore: BookingRecord[] = [];
 
+const ROOM_PRICE_MAP: Record<string, number> = {
+  "غرفة رباعية أو خماسية": 5900,
+  "غرفة ثلاثية": 6400,
+  "غرفة ثنائية": 6900,
+};
+
 const DEFAULT_SCRIPT =
-  "تحب تعيش روحانية شهر رمضان الكل في مكة المكرمة، وإنت مرتاح البال ومن غير حتى تعب؟ مع Easy2Book، حضرنالك برنامج عمرة شهر رمضان كامل: طيران تونس جدة تونس، فيزا، وتأطير كامل مع مرشدين مرافقين ليكم خطوة بخطوة، وإقامة مريحة في فندق ميسان الملتزم. وزيد معاهم رحلة للمدينة المنورة... والكل بسوم استثنائي: خمسة آلاف وتسعمية دينار برك للشخص! الأماكن محدودة برشا! كلمنا توا على ثمانية وتسعين، مية وأربعين، خمس مية وأربعطاش، ولا احجز ديريكت على Easy2Book بوان تي إن. Easy2Book... سفرتك أسهل!";
+  "تحب تعيش روحانية شهر رمضان الكل في مكة المكرمة، وإنت مرتاح البال ومن غير حتى تعب؟ مع Easy2Book، حضرنالك برنامج عمرة شهر رمضان كامل: طيران تونس جدة تونس، فيزا، وتأطير كامل مع مرشدين مرافقين ليكم خطوة بخطوة، وإقامة مريحة في فندق ميسان الملتزم، وزيد معاهم رحلة للمدينة المنورة! الأسعار تبدأ من خمسة آلاف وتسعمية دينار للشخص في غرفة رباعية أو خماسية، ستة آلاف وأربعمية دينار في غرفة ثلاثية، وستة آلاف وتسعمية دينار في غرفة ثنائية... مع تخفيض ميتين دينار للعائلات انطلاقاً من شخصين! وللمجموعات أكثر من عشرة أشخاص كلمونا للحصول على الإمكانية. عدد الغرف محدود جداً والعرض صالح لـ خمسطاش ديسمبر ألفين وستة وعشرين! كلمنا توا على ثمانية وتسعين، مية وأربعين، خمس مية وأربعطاش، ولا احجز على easy2book.tn. Easy2Book... سفرتك أسهل!";
 
 const ALLOWED_VOICES = new Set(["Charon", "Kore", "Fenrir", "Puck", "Zephyr"]);
 
@@ -165,9 +174,12 @@ async function startServer() {
       typeof req.body?.email === "string" ? req.body.email.trim() : "";
     const pilgrimsCount = Number(req.body?.pilgrimsCount) || 1;
     const roomType =
-      typeof req.body?.roomType === "string" && req.body.roomType.trim()
+      typeof req.body?.roomType === "string" &&
+      Object.prototype.hasOwnProperty.call(ROOM_PRICE_MAP, req.body.roomType.trim())
         ? req.body.roomType.trim()
-        : "غرفة ثنائية";
+        : "غرفة رباعية أو خماسية";
+    const isGroupInquiry = Boolean(req.body?.isGroupInquiry) || pilgrimsCount > 10;
+    const isFamily = Boolean(req.body?.isFamily) && pilgrimsCount >= 2 && !isGroupInquiry;
     const departureNote =
       typeof req.body?.departureNote === "string"
         ? req.body.departureNote.trim().slice(0, 400)
@@ -193,11 +205,16 @@ async function startServer() {
       });
     }
 
-    if (pilgrimsCount < 1 || pilgrimsCount > 12) {
+    if (pilgrimsCount < 1 || pilgrimsCount > 100) {
       return res.status(400).json({
-        error: "عدد المعتمرين يجب أن يكون بين 1 و 12.",
+        error: "عدد المعتمرين يجب أن يكون بين 1 و 100.",
       });
     }
+
+    const unitPrice = ROOM_PRICE_MAP[roomType] ?? 5900;
+    const estimatedTotalDt = isGroupInquiry
+      ? null
+      : pilgrimsCount * unitPrice - (isFamily ? 200 : 0);
 
     const record: BookingRecord = {
       id: `E2B-${Math.floor(100000 + Math.random() * 900000)}`,
@@ -206,6 +223,9 @@ async function startServer() {
       email,
       pilgrimsCount,
       roomType,
+      isFamily,
+      isGroupInquiry,
+      estimatedTotalDt,
       departureNote,
       createdAt: new Date().toISOString(),
     };

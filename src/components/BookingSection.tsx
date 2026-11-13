@@ -1,7 +1,20 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { Phone, Globe, CheckCircle2 } from 'lucide-react';
 import { CountdownTimer } from './CountdownTimer';
 import { WhatsAppIcon, WHATSAPP_URL } from './WhatsAppIcon';
+import {
+  FAMILY_DISCOUNT_DT,
+  FAMILY_MIN_PERSONS,
+  GROUP_CALL_THRESHOLD,
+  OFFER_DEADLINE_LABEL,
+  ROOM_TIERS,
+  getRoomTierByLabel,
+} from '../data/pricingData';
+
+interface BookingSectionProps {
+  selectedRoomLabel?: string;
+  onRoomLabelChange?: (label: string) => void;
+}
 
 interface ConfirmedBooking {
   id: string;
@@ -10,11 +23,12 @@ interface ConfirmedBooking {
   email: string;
   pilgrimsCount: number;
   roomType: string;
+  isFamily: boolean;
+  isGroupInquiry: boolean;
+  estimatedTotalDt: number | null;
   departureNote?: string;
   createdAt: string;
 }
-
-const PRICE_PER_PERSON_DT = 5900;
 
 function buildBookingWhatsAppUrl(params: {
   id?: string;
@@ -23,18 +37,33 @@ function buildBookingWhatsAppUrl(params: {
   email: string;
   pilgrimsCount: number;
   roomType: string;
+  isFamily: boolean;
+  isGroupInquiry: boolean;
+  estimatedTotalDt: number | null;
   departureNote?: string;
 }): string {
-  const total = params.pilgrimsCount * PRICE_PER_PERSON_DT;
+  const tier = getRoomTierByLabel(params.roomType);
+  const pilgrimsText = params.isGroupInquiry
+    ? 'أكثر من 10 أشخاص (مجموعة — طلب الحصول على الإمكانية)'
+    : `${params.pilgrimsCount}`;
+
   const lines = [
     'السلام عليكم Easy2Book، أرغب في تأكيد طلب حجز عمرة شهر رمضان كامل:',
     params.id ? `• مرجع الطلب: ${params.id}` : null,
     `• اسم العميل: ${params.fullName.trim() || 'غير محدد'}`,
     `• رقم الهاتف: ${params.phone.trim() || 'غير محدد'}`,
     `• البريد الإلكتروني: ${params.email.trim() || 'غير محدد'}`,
-    `• عدد المعتمرين: ${params.pilgrimsCount}`,
-    `• نوع الغرفة (فندق ميسان الملتزم): ${params.roomType}`,
-    `• التكلفة التقديرية: ${total.toLocaleString('en-US')} د.ت`,
+    `• نوع الغرفة (فندق ميسان الملتزم): ${tier.label} (${tier.pricePerPersonDt.toLocaleString('en-US')} د.ت / شخص)`,
+    `• عدد المعتمرين: ${pilgrimsText}`,
+    params.isFamily && !params.isGroupInquiry
+      ? `• تخفيض العائلات (انطلاقاً من شخصين): -${FAMILY_DISCOUNT_DT} د.ت`
+      : null,
+    params.isGroupInquiry
+      ? '• التعريفة: حسب الإمكانية (مجموعة تفوق 10 أشخاص)'
+      : params.estimatedTotalDt !== null
+        ? `• التكلفة التقديرية الإجمالية: ${params.estimatedTotalDt.toLocaleString('en-US')} د.ت`
+        : null,
+    `• صلاحية العرض: عرض صالح لـ ${OFFER_DEADLINE_LABEL}`,
     params.departureNote?.trim()
       ? `• ملاحظات إضافية: ${params.departureNote.trim()}`
       : null,
@@ -43,26 +72,64 @@ function buildBookingWhatsAppUrl(params: {
   return `https://wa.me/21698140514?text=${encodeURIComponent(lines.join('\n'))}`;
 }
 
-export function BookingSection() {
+export function BookingSection({
+  selectedRoomLabel,
+  onRoomLabelChange,
+}: BookingSectionProps) {
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [pilgrimsCount, setPilgrimsCount] = useState(2);
-  const [roomType, setRoomType] = useState('غرفة ثنائية');
+  const [roomType, setRoomType] = useState(
+    selectedRoomLabel || ROOM_TIERS[0].label
+  );
+  const [isFamily, setIsFamily] = useState(false);
   const [departureNote, setDepartureNote] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [confirmed, setConfirmed] = useState<ConfirmedBooking | null>(null);
 
-  const estimatedTotal = pilgrimsCount * PRICE_PER_PERSON_DT;
+  useEffect(() => {
+    if (selectedRoomLabel && selectedRoomLabel !== roomType) {
+      setRoomType(selectedRoomLabel);
+      setConfirmed(null);
+    }
+  }, [selectedRoomLabel, roomType]);
+
+  const activeTier = getRoomTierByLabel(roomType);
+  const isGroupInquiry = pilgrimsCount > GROUP_CALL_THRESHOLD;
+  const familyEligible =
+    pilgrimsCount >= FAMILY_MIN_PERSONS && !isGroupInquiry;
+  const appliedFamilyDiscount = familyEligible && isFamily ? FAMILY_DISCOUNT_DT : 0;
+  const baseTotal = isGroupInquiry
+    ? null
+    : pilgrimsCount * activeTier.pricePerPersonDt;
+  const estimatedTotal =
+    baseTotal !== null ? Math.max(0, baseTotal - appliedFamilyDiscount) : null;
+
   const liveWhatsAppUrl = buildBookingWhatsAppUrl({
     fullName,
     phone,
     email,
     pilgrimsCount,
     roomType,
+    isFamily: appliedFamilyDiscount > 0,
+    isGroupInquiry,
+    estimatedTotalDt: estimatedTotal,
     departureNote,
   });
+
+  const handleRoomChange = (label: string) => {
+    setRoomType(label);
+    onRoomLabelChange?.(label);
+  };
+
+  const handlePilgrimsChange = (count: number) => {
+    setPilgrimsCount(count);
+    if (count < FAMILY_MIN_PERSONS || count > GROUP_CALL_THRESHOLD) {
+      setIsFamily(false);
+    }
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -97,6 +164,8 @@ export function BookingSection() {
           email: trimmedEmail,
           pilgrimsCount,
           roomType,
+          isFamily: appliedFamilyDiscount > 0,
+          isGroupInquiry,
           departureNote: departureNote.trim(),
         }),
       });
@@ -121,11 +190,11 @@ export function BookingSection() {
     <section id="booking" className="py-20 bg-[#FAF9F6]">
       <div className="mx-auto max-w-[1200px] px-6">
         <div className="grid gap-10 lg:grid-cols-12 items-stretch">
-          {/* Right Column: Direct Contact & Urgency Info */}
+          {/* Right Column: Pricing Tiers, Urgency Countdown & Direct Contact */}
           <div className="flex flex-col justify-between rounded-2xl bg-[#0B162C] p-8 text-white lg:col-span-5">
             <div>
               <p className="text-sm font-semibold text-[#F5D68A]">
-                الأماكن محدودة لشهر رمضان المبارك
+                عدد غرف محدود جداً · عرض صالح لـ {OFFER_DEADLINE_LABEL}
               </p>
               <h2 className="mt-3 text-3xl font-bold leading-snug text-white">
                 احجز مكانك الآن في عمرة شهر رمضان كامل
@@ -137,15 +206,26 @@ export function BookingSection() {
 
               <CountdownTimer />
 
-              <div className="mt-6 border-t border-white/15 pt-6">
-                <p className="text-xs text-slate-300">السوم الاستثنائي للشخص</p>
-                <div className="mt-1 flex items-baseline gap-2">
-                  <span className="tabular-nums text-4xl font-extrabold text-[#F5D68A]">
-                    5,900
-                  </span>
-                  <span className="text-base font-semibold text-white">
-                    دينار تونسي
-                  </span>
+              {/* Compact Pricing Breakdown */}
+              <div className="mt-6 border-t border-white/15 pt-5 space-y-2.5">
+                {ROOM_TIERS.map((tier) => (
+                  <div
+                    key={tier.id}
+                    className="flex items-center justify-between text-sm"
+                  >
+                    <span className="text-slate-200">{tier.label}</span>
+                    <span className="font-mono-tabular font-bold text-[#F5D68A]">
+                      {tier.pricePerPersonDt.toLocaleString('en-US')} د.ت / شخص
+                    </span>
+                  </div>
+                ))}
+                <div className="pt-2 border-t border-white/10 space-y-1.5 text-xs text-slate-300">
+                  <p className="font-semibold text-emerald-300">
+                    • تخفيض {FAMILY_DISCOUNT_DT} د.ت للعائلات انطلاقاً من شخصين
+                  </p>
+                  <p>
+                    • مجموعات تفوق {GROUP_CALL_THRESHOLD} أشخاص: الاتصال على 98 140 514 للحصول على الإمكانية
+                  </p>
                 </div>
               </div>
             </div>
@@ -216,10 +296,10 @@ export function BookingSection() {
                   <span className="font-latin font-semibold text-[#0B162C]" dir="ltr">
                     {confirmed.email}
                   </span>{' '}
-                  لتأكيد الجوازات والدفعة الأولى.
+                  لتأكيد الجوازات والغرف قبل {OFFER_DEADLINE_LABEL}.
                 </p>
 
-                <div className="mt-6 grid gap-4 rounded-xl border border-[#0B162C]/10 bg-[#FAF9F6] p-5 sm:grid-cols-3">
+                <div className="mt-6 grid gap-4 rounded-xl border border-[#0B162C]/10 bg-[#FAF9F6] p-5 sm:grid-cols-2 lg:grid-cols-4">
                   <div>
                     <p className="text-xs text-[#475569]">مرجع الطلب</p>
                     <p className="mt-1 font-mono-tabular text-sm font-bold text-[#0B162C]">
@@ -229,7 +309,9 @@ export function BookingSection() {
                   <div>
                     <p className="text-xs text-[#475569]">عدد المعتمرين</p>
                     <p className="mt-1 tabular-nums text-sm font-bold text-[#0B162C]">
-                      {confirmed.pilgrimsCount} أشخاص
+                      {confirmed.isGroupInquiry
+                        ? 'أكثر من 10 أشخاص'
+                        : `${confirmed.pilgrimsCount} أشخاص`}
                     </p>
                   </div>
                   <div>
@@ -238,7 +320,21 @@ export function BookingSection() {
                       {confirmed.roomType}
                     </p>
                   </div>
+                  <div>
+                    <p className="text-xs text-[#475569]">التكلفة التقديرية</p>
+                    <p className="mt-1 tabular-nums text-sm font-bold text-[#0B162C]">
+                      {confirmed.isGroupInquiry
+                        ? 'حسب الإمكانية (اتصال)'
+                        : `${(confirmed.estimatedTotalDt ?? 0).toLocaleString('en-US')} د.ت`}
+                    </p>
+                  </div>
                 </div>
+
+                {confirmed.isFamily && !confirmed.isGroupInquiry && (
+                  <p className="mt-3 text-xs font-semibold text-emerald-700">
+                    تم احتساب تخفيض العائلات (-{FAMILY_DISCOUNT_DT} د.ت) ضمن التكلفة التقديرية.
+                  </p>
+                )}
 
                 <div className="mt-6 flex flex-wrap items-center gap-3">
                   <a
@@ -249,6 +345,9 @@ export function BookingSection() {
                       email: confirmed.email,
                       pilgrimsCount: confirmed.pilgrimsCount,
                       roomType: confirmed.roomType,
+                      isFamily: confirmed.isFamily,
+                      isGroupInquiry: confirmed.isGroupInquiry,
+                      estimatedTotalDt: confirmed.estimatedTotalDt,
                       departureNote: confirmed.departureNote,
                     })}
                     target="_blank"
@@ -276,8 +375,8 @@ export function BookingSection() {
                       نموذج الاتصال والاهتمام بالحجز
                     </h3>
                     <p className="mt-1 text-sm text-[#475569]">
-                      أدخل اسمك ورقم هاتفك وبريدك الإلكتروني وسيقوم فريقنا بالاتصال
-                      بك لتأكيد الحجز.
+                      اختر نوع الغرفة وعدد المعتمرين وأدخل بياناتك لإتمام الحجز
+                      قبل {OFFER_DEADLINE_LABEL}.
                     </p>
                   </div>
                   <div className="hidden h-16 w-20 items-center justify-center overflow-hidden shrink-0 sm:flex">
@@ -351,6 +450,27 @@ export function BookingSection() {
                 <div className="grid gap-5 sm:grid-cols-2">
                   <div>
                     <label
+                      htmlFor="room-type"
+                      className="block text-sm font-semibold text-[#0B162C]"
+                    >
+                      نوع الغرفة (فندق ميسان الملتزم)
+                    </label>
+                    <select
+                      id="room-type"
+                      value={roomType}
+                      onChange={(e) => handleRoomChange(e.target.value)}
+                      className="mt-1.5 w-full rounded-lg border border-[#0B162C]/15 bg-[#FAF9F6] px-4 py-2.5 text-sm font-semibold text-[#0B162C] focus:border-[#C8922A] focus:outline-none"
+                    >
+                      {ROOM_TIERS.map((tier) => (
+                        <option key={tier.id} value={tier.label}>
+                          {tier.label} — {tier.pricePerPersonDt.toLocaleString('en-US')} د.ت/شخص
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label
                       htmlFor="pilgrims-count"
                       className="block text-sm font-semibold text-[#0B162C]"
                     >
@@ -359,36 +479,74 @@ export function BookingSection() {
                     <select
                       id="pilgrims-count"
                       value={pilgrimsCount}
-                      onChange={(e) => setPilgrimsCount(Number(e.target.value))}
+                      onChange={(e) => handlePilgrimsChange(Number(e.target.value))}
                       className="mt-1.5 w-full rounded-lg border border-[#0B162C]/15 bg-[#FAF9F6] px-4 py-2.5 text-sm font-semibold text-[#0B162C] focus:border-[#C8922A] focus:outline-none"
                     >
-                      {[1, 2, 3, 4, 5, 6].map((n) => (
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
                         <option key={n} value={n}>
                           {n} {n === 1 ? 'معتمر' : n === 2 ? 'معتمران' : 'معتمرين'}
                         </option>
                       ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="room-type"
-                      className="block text-sm font-semibold text-[#0B162C]"
-                    >
-                      نوع الإقامة في فندق ميسان الملتزم
-                    </label>
-                    <select
-                      id="room-type"
-                      value={roomType}
-                      onChange={(e) => setRoomType(e.target.value)}
-                      className="mt-1.5 w-full rounded-lg border border-[#0B162C]/15 bg-[#FAF9F6] px-4 py-2.5 text-sm font-semibold text-[#0B162C] focus:border-[#C8922A] focus:outline-none"
-                    >
-                      <option value="غرفة ثنائية">غرفة ثنائية</option>
-                      <option value="غرفة ثلاثية">غرفة ثلاثية</option>
-                      <option value="غرفة رباعية عائلية">غرفة رباعية عائلية</option>
+                      <option value={11}>
+                        أكثر من 10 أشخاص (مجموعة — حسب الإمكانية)
+                      </option>
                     </select>
                   </div>
                 </div>
+
+                {/* Family Discount Option OR >10 Group Notice */}
+                {isGroupInquiry ? (
+                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#C8922A]/40 bg-[#FDF8EC] p-4">
+                    <div className="text-sm">
+                      <p className="font-bold text-[#0B162C]">
+                        مجموعات تفوق 10 أشخاص
+                      </p>
+                      <p className="mt-0.5 text-xs text-[#475569]">
+                        يرجى الاتصال مباشرة للحصول على الإمكانية وتأكيد توفر الغرف.
+                      </p>
+                    </div>
+                    <a
+                      href="tel:98140514"
+                      className="inline-flex items-center gap-2 rounded-lg bg-[#0B162C] px-4 py-2 text-xs font-bold text-white hover:bg-[#17284A] whitespace-nowrap shrink-0"
+                    >
+                      <Phone className="h-3.5 w-3.5 text-[#F5D68A]" aria-hidden="true" />
+                      <span dir="ltr">98 140 514</span>
+                    </a>
+                  </div>
+                ) : (
+                  <label
+                    className={`flex items-center justify-between gap-3 rounded-xl border px-4 py-3 transition-colors ${
+                      familyEligible
+                        ? isFamily
+                          ? 'border-emerald-300 bg-emerald-50/70 cursor-pointer'
+                          : 'border-[#0B162C]/15 bg-[#FAF9F6] hover:border-[#C8922A]/50 cursor-pointer'
+                        : 'border-[#0B162C]/10 bg-slate-50 opacity-70 cursor-not-allowed'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        checked={familyEligible && isFamily}
+                        disabled={!familyEligible}
+                        onChange={(e) => setIsFamily(e.target.checked)}
+                        className="h-4 w-4 accent-[#16A34A]"
+                      />
+                      <div>
+                        <p className="text-sm font-semibold text-[#0B162C]">
+                          حجز عائلي (تخفيض {FAMILY_DISCOUNT_DT} د.ت انطلاقاً من شخصين)
+                        </p>
+                        <p className="text-xs text-[#475569]">
+                          {familyEligible
+                            ? 'متاح لعدد المعتمرين المختار — يتم خصم 200 د.ت فوراً'
+                            : 'اختر شخصين فأكثر لتفعيل تخفيض العائلات'}
+                        </p>
+                      </div>
+                    </div>
+                    <span className="font-mono-tabular text-xs font-bold text-emerald-700 whitespace-nowrap shrink-0">
+                      -{FAMILY_DISCOUNT_DT} د.ت
+                    </span>
+                  </label>
+                )}
 
                 <div>
                   <label
@@ -418,9 +576,17 @@ export function BookingSection() {
 
                 <div className="flex flex-wrap items-center justify-between gap-4 border-t border-[#0B162C]/10 pt-5">
                   <div>
-                    <p className="text-xs text-[#475569]">التكلفة التقديرية الإجمالية</p>
+                    <p className="text-xs text-[#475569]">
+                      {isGroupInquiry
+                        ? 'التسعيرة للمجموعات (+10 أشخاص)'
+                        : appliedFamilyDiscount > 0
+                          ? `الإجمالي بعد تخفيض العائلات (-${appliedFamilyDiscount} د.ت)`
+                          : 'التكلفة التقديرية الإجمالية'}
+                    </p>
                     <p className="tabular-nums text-xl font-extrabold text-[#0B162C]">
-                      {estimatedTotal.toLocaleString('en-US')} د.ت
+                      {isGroupInquiry
+                        ? 'حسب الإمكانية · اتصل 98 140 514'
+                        : `${(estimatedTotal ?? 0).toLocaleString('en-US')} د.ت`}
                     </p>
                   </div>
 
