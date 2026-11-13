@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Phone, Globe, CheckCircle2 } from 'lucide-react';
 import { CountdownTimer } from './CountdownTimer';
+import { WhatsAppIcon, WHATSAPP_URL } from './WhatsAppIcon';
 
 interface ConfirmedBooking {
   id: string;
@@ -9,10 +10,38 @@ interface ConfirmedBooking {
   email: string;
   pilgrimsCount: number;
   roomType: string;
+  departureNote?: string;
   createdAt: string;
 }
 
 const PRICE_PER_PERSON_DT = 5900;
+
+function buildBookingWhatsAppUrl(params: {
+  id?: string;
+  fullName: string;
+  phone: string;
+  email: string;
+  pilgrimsCount: number;
+  roomType: string;
+  departureNote?: string;
+}): string {
+  const total = params.pilgrimsCount * PRICE_PER_PERSON_DT;
+  const lines = [
+    'السلام عليكم Easy2Book، أرغب في تأكيد طلب حجز عمرة شهر رمضان كامل:',
+    params.id ? `• مرجع الطلب: ${params.id}` : null,
+    `• اسم العميل: ${params.fullName.trim() || 'غير محدد'}`,
+    `• رقم الهاتف: ${params.phone.trim() || 'غير محدد'}`,
+    `• البريد الإلكتروني: ${params.email.trim() || 'غير محدد'}`,
+    `• عدد المعتمرين: ${params.pilgrimsCount}`,
+    `• نوع الغرفة (فندق ميسان الملتزم): ${params.roomType}`,
+    `• التكلفة التقديرية: ${total.toLocaleString('en-US')} د.ت`,
+    params.departureNote?.trim()
+      ? `• ملاحظات إضافية: ${params.departureNote.trim()}`
+      : null,
+  ].filter(Boolean);
+
+  return `https://wa.me/21698140514?text=${encodeURIComponent(lines.join('\n'))}`;
+}
 
 export function BookingSection() {
   const [fullName, setFullName] = useState('');
@@ -26,6 +55,14 @@ export function BookingSection() {
   const [confirmed, setConfirmed] = useState<ConfirmedBooking | null>(null);
 
   const estimatedTotal = pilgrimsCount * PRICE_PER_PERSON_DT;
+  const liveWhatsAppUrl = buildBookingWhatsAppUrl({
+    fullName,
+    phone,
+    email,
+    pilgrimsCount,
+    roomType,
+    departureNote,
+  });
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -113,7 +150,22 @@ export function BookingSection() {
               </div>
             </div>
 
-            <div className="mt-8 space-y-4 border-t border-white/15 pt-6">
+            <div className="mt-8 space-y-3 border-t border-white/15 pt-6">
+              <a
+                href={WHATSAPP_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center justify-between rounded-xl border border-[#22C55E]/35 bg-[#22C55E]/15 px-4 py-3.5 transition-colors hover:bg-[#22C55E]/25"
+              >
+                <div className="flex items-center gap-3">
+                  <WhatsAppIcon className="h-4 w-4 text-[#4ADE80]" />
+                  <span className="text-sm font-semibold">راسلنا على واتساب</span>
+                </div>
+                <span className="font-mono-tabular text-base font-bold text-[#4ADE80]" dir="ltr">
+                  98 140 514
+                </span>
+              </a>
+
               <a
                 href="tel:98140514"
                 className="flex items-center justify-between rounded-xl border border-white/15 bg-white/5 px-4 py-3.5 transition-colors hover:bg-white/10"
@@ -188,11 +240,29 @@ export function BookingSection() {
                   </div>
                 </div>
 
-                <div className="mt-6">
+                <div className="mt-6 flex flex-wrap items-center gap-3">
+                  <a
+                    href={buildBookingWhatsAppUrl({
+                      id: confirmed.id,
+                      fullName: confirmed.fullName,
+                      phone: confirmed.phone,
+                      email: confirmed.email,
+                      pilgrimsCount: confirmed.pilgrimsCount,
+                      roomType: confirmed.roomType,
+                      departureNote: confirmed.departureNote,
+                    })}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 rounded-lg bg-[#16A34A] px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#15803D] whitespace-nowrap shrink-0"
+                  >
+                    <WhatsAppIcon className="h-4 w-4" />
+                    <span>إرسال التفاصيل إلى واتساب Business · 98 140 514</span>
+                  </a>
+
                   <button
                     type="button"
                     onClick={() => setConfirmed(null)}
-                    className="rounded-lg border border-[#0B162C]/15 px-4 py-2 text-sm font-semibold text-[#0B162C] hover:bg-[#FAF9F6]"
+                    className="rounded-lg border border-[#0B162C]/15 px-4 py-2.5 text-sm font-semibold text-[#0B162C] hover:bg-[#FAF9F6] whitespace-nowrap shrink-0"
                   >
                     تسجيل طلب اهتمام آخر
                   </button>
@@ -210,12 +280,14 @@ export function BookingSection() {
                       بك لتأكيد الحجز.
                     </p>
                   </div>
-                  <img
-                    src="/assets/aistudio/logo_transparent_e9918557.png"
-                    alt="Easy2Book"
-                    referrerPolicy="no-referrer"
-                    className="hidden h-12 w-auto shrink-0 object-contain sm:block"
-                  />
+                  <div className="hidden h-16 w-20 items-center justify-center overflow-hidden shrink-0 sm:flex">
+                    <img
+                      src="/assets/aistudio/logo_transparent_e9918557.png"
+                      alt="Easy2Book"
+                      referrerPolicy="no-referrer"
+                      className="h-full w-full object-contain scale-[1.35]"
+                    />
+                  </div>
                 </div>
 
                 <div className="grid gap-5 sm:grid-cols-2">
@@ -352,13 +424,25 @@ export function BookingSection() {
                     </p>
                   </div>
 
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="rounded-lg bg-[#0B162C] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#17284A] disabled:opacity-60 whitespace-nowrap shrink-0"
-                  >
-                    {isSubmitting ? 'جاري تسجيل الطلب...' : 'إرسال طلب الاهتمام بالحجز'}
-                  </button>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <a
+                      href={liveWhatsAppUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-2 rounded-lg bg-[#16A34A] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[#15803D] whitespace-nowrap shrink-0"
+                    >
+                      <WhatsAppIcon className="h-4 w-4" />
+                      <span>إرسال عبر واتساب · 98 140 514</span>
+                    </a>
+
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="rounded-lg bg-[#0B162C] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#17284A] disabled:opacity-60 whitespace-nowrap shrink-0"
+                    >
+                      {isSubmitting ? 'جاري تسجيل الطلب...' : 'إرسال طلب الاهتمام بالحجز'}
+                    </button>
+                  </div>
                 </div>
               </form>
             )}

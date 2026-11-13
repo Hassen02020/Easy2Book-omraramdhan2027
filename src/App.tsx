@@ -1,20 +1,17 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { Play, Pause, Eye, EyeOff, RotateCcw, Loader2 } from 'lucide-react';
 import {
   DEFAULT_TUNISIAN_SCRIPT,
-  REEL_SCENES,
   TOTAL_REEL_DURATION_SEC,
 } from './data/campaignData';
 import { ReelPlayer } from './components/ReelPlayer';
 import { BookingSection } from './components/BookingSection';
+import { WhatsAppIcon, WHATSAPP_URL } from './components/WhatsAppIcon';
 
 export default function App() {
   const [currentTime, setCurrentTime] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [showCaptions, setShowCaptions] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
 
-  const [isGeneratingVoice, setIsGeneratingVoice] = useState(false);
   const [voiceError, setVoiceError] = useState<string | null>(null);
   const [audioDataUrl, setAudioDataUrl] = useState<string | null>(null);
   const [audioDurationSec, setAudioDurationSec] = useState<number>(TOTAL_REEL_DURATION_SEC);
@@ -25,14 +22,6 @@ export default function App() {
   const lastTickRef = useRef<number | null>(null);
 
   const totalDuration = audioDurationSec;
-  const scaledTime =
-    totalDuration > 0
-      ? (currentTime / totalDuration) * TOTAL_REEL_DURATION_SEC
-      : 0;
-
-  const activeScene =
-    REEL_SCENES.find((s) => scaledTime >= s.startSec && scaledTime < s.endSec) ||
-    REEL_SCENES[0];
 
   const stopAudioElement = useCallback(() => {
     if (audioRef.current) {
@@ -84,7 +73,6 @@ export default function App() {
       return audioRef.current;
     }
 
-    setIsGeneratingVoice(true);
     setVoiceError(null);
     try {
       const res = await fetch('/api/voiceover', {
@@ -112,8 +100,6 @@ export default function App() {
         'تعذر الاتصال بخدمة الصوت. يمكنك متابعة الفيديو مع الترجمة المتزامنة.'
       );
       return null;
-    } finally {
-      setIsGeneratingVoice(false);
     }
   }, [attachAudioElement, audioDataUrl]);
 
@@ -163,22 +149,6 @@ export default function App() {
         audioRef.current.duration - 0.05,
         clamped
       );
-    }
-  };
-
-  const handleJumpToSceneStart = (sceneStartSec: number) => {
-    const mapped = (sceneStartSec / TOTAL_REEL_DURATION_SEC) * totalDuration;
-    handleJumpToTime(mapped);
-  };
-
-  const handleRestartReel = () => {
-    handleJumpToTime(0);
-    if (!isPlaying) {
-      void handleTogglePlay();
-    } else if (audioRef.current) {
-      audioRef.current.currentTime = 0;
-      void audioRef.current.play();
-      setAudioActive(true);
     }
   };
 
@@ -244,18 +214,18 @@ export default function App() {
     <div dir="rtl" className="min-h-screen bg-[#FAF9F6] text-[#0B162C]">
       {/* Strict 3-Zone Top Bar Contract */}
       <header className="sticky top-0 z-40 border-b border-[#0B162C]/10 bg-[#FAF9F6]/95 backdrop-blur-md">
-        <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-8 px-6 py-4">
+        <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-8 px-6 py-2.5">
           {/* Zone 1: Official brand logo */}
           <a
             href="#reel"
-            className="flex items-center shrink-0"
+            className="flex h-14 w-16 items-center justify-center overflow-hidden shrink-0"
             aria-label="Easy2Book"
           >
             <img
               src="/assets/aistudio/logo_transparent_e9918557.png"
               alt="Easy2Book Centrale de Réservation"
               referrerPolicy="no-referrer"
-              className="h-11 w-auto object-contain"
+              className="h-full w-full object-contain scale-[1.4]"
             />
           </a>
 
@@ -289,6 +259,16 @@ export default function App() {
               className="font-latin hover:text-[#0B162C] transition-colors whitespace-nowrap shrink-0"
             >
               easy2book.tn
+            </a>
+            <a
+              href={WHATSAPP_URL}
+              target="_blank"
+              rel="noreferrer"
+              aria-label="تواصل عبر واتساب 98 140 514"
+              className="inline-flex items-center gap-1.5 text-[#15803D] hover:text-[#166534] transition-colors whitespace-nowrap shrink-0"
+            >
+              <WhatsAppIcon className="h-4 w-4" />
+              <span>واتساب</span>
             </a>
           </nav>
 
@@ -326,57 +306,40 @@ export default function App() {
                 </h1>
 
                 <p className="mt-5 max-w-2xl text-base leading-relaxed text-[#475569]">
-                  برنامج متكامل من إيزي تو بوك يشمل طيران تونس – جدة – تونس،
+                  برنامج متكامل من <span className="font-latin font-semibold text-[#0B162C]">Easy2Book</span> يشمل طيران تونس – جدة – تونس،
                   التأشيرة، التأطير الديني والإداري خطوة بخطوة، إقامة مريحة في
                   فندق ميسان الملتزم، ورحلة روحانية للمدينة المنورة بسوم استثنائي
                   5,900 د.ت للشخص.
                 </p>
 
-                {/* Primary Playback Action Row */}
-                <div className="mt-7 flex flex-wrap items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={handleTogglePlay}
-                    disabled={isGeneratingVoice}
-                    className="inline-flex items-center gap-2.5 rounded-lg bg-[#C8922A] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[#AD7B1D] disabled:opacity-65 whitespace-nowrap shrink-0"
+                {/* Clean Conversion Actions */}
+                <div className="mt-8 flex flex-wrap items-center gap-4">
+                  <a
+                    href="#booking"
+                    className="inline-flex items-center rounded-lg bg-[#C8922A] px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-[#AD7B1D] whitespace-nowrap shrink-0"
                   >
-                    {isGeneratingVoice ? (
-                      <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                    ) : isPlaying ? (
-                      <Pause className="h-4 w-4" aria-hidden="true" />
-                    ) : (
-                      <Play className="h-4 w-4" aria-hidden="true" />
-                    )}
-                    <span>
-                      {isGeneratingVoice
-                        ? 'جاري تحضير الصوت التونسي...'
-                        : isPlaying
-                          ? 'إيقاف الفيديو مؤقتاً'
-                          : 'تشغيل الفيديو بالصوت التونسي'}
+                    احجز مكانك الآن
+                  </a>
+
+                  <a
+                    href="tel:98140514"
+                    className="inline-flex items-center gap-2 rounded-lg border border-[#0B162C]/15 bg-white px-5 py-3 text-sm font-semibold text-[#0B162C] transition-colors hover:bg-[#F2EFE9] whitespace-nowrap shrink-0"
+                  >
+                    <span>اتصل بنا:</span>
+                    <span className="font-mono-tabular font-bold" dir="ltr">
+                      98 140 514
                     </span>
-                  </button>
+                  </a>
 
-                  <button
-                    type="button"
-                    onClick={handleRestartReel}
-                    className="inline-flex items-center gap-2 rounded-lg border border-[#0B162C]/15 bg-white px-4 py-3 text-sm font-semibold text-[#0B162C] transition-colors hover:bg-[#F2EFE9] whitespace-nowrap shrink-0"
+                  <a
+                    href={WHATSAPP_URL}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 rounded-lg border border-[#16A34A]/30 bg-[#16A34A]/10 px-5 py-3 text-sm font-bold text-[#15803D] transition-colors hover:bg-[#16A34A]/15 whitespace-nowrap shrink-0"
                   >
-                    <RotateCcw className="h-4 w-4" aria-hidden="true" />
-                    <span>إعادة من البداية</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setShowCaptions((prev) => !prev)}
-                    className="inline-flex items-center gap-2 rounded-lg border border-[#0B162C]/15 bg-white px-4 py-3 text-sm font-semibold text-[#0B162C] transition-colors hover:bg-[#F2EFE9] whitespace-nowrap shrink-0"
-                  >
-                    {showCaptions ? (
-                      <EyeOff className="h-4 w-4" aria-hidden="true" />
-                    ) : (
-                      <Eye className="h-4 w-4" aria-hidden="true" />
-                    )}
-                    <span>{showCaptions ? 'إخفاء نصوص الفيديو' : 'إظهار نصوص الفيديو'}</span>
-                  </button>
+                    <WhatsAppIcon className="h-4 w-4" />
+                    <span>واتساب</span>
+                  </a>
                 </div>
 
                 {voiceError && (
@@ -387,62 +350,6 @@ export default function App() {
                     {voiceError}
                   </p>
                 )}
-
-                {/* Scene Switcher & Timeline Scrubber */}
-                <div className="mt-8 rounded-xl border border-[#0B162C]/10 bg-white p-5">
-                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#475569]">
-                    <span className="font-semibold text-[#0B162C]">
-                      المشهد الحالي: {activeScene.indexLabel} · {activeScene.arabicTitle}
-                    </span>
-                    <span className="font-mono-tabular">
-                      00:{String(Math.floor(currentTime)).padStart(2, '0')} / 00:
-                      {String(Math.ceil(totalDuration)).padStart(2, '0')}
-                    </span>
-                  </div>
-
-                  {/* Interactive Scene Segment Tabs */}
-                  <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                    {REEL_SCENES.map((scene) => {
-                      const active = scene.id === activeScene.id;
-                      return (
-                        <button
-                          key={scene.id}
-                          type="button"
-                          onClick={() => handleJumpToSceneStart(scene.startSec)}
-                          className={`rounded-lg border px-3 py-2 text-right transition-colors whitespace-nowrap truncate ${
-                            active
-                              ? 'border-[#C8922A] bg-[#FAF9F6] text-[#0B162C]'
-                              : 'border-[#0B162C]/10 bg-white text-[#475569] hover:border-[#0B162C]/25 hover:text-[#0B162C]'
-                          }`}
-                        >
-                          <span className="block font-mono-tabular text-[11px] text-[#C8922A]">
-                            {scene.indexLabel}
-                          </span>
-                          <span className="block truncate text-xs font-bold">
-                            {scene.arabicTitle}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {/* Smooth Range Scrubber */}
-                  <div className="mt-4" dir="ltr">
-                    <label htmlFor="reel-scrubber" className="sr-only">
-                      مؤشر زمن الفيديو
-                    </label>
-                    <input
-                      id="reel-scrubber"
-                      type="range"
-                      min={0}
-                      max={totalDuration}
-                      step={0.1}
-                      value={Math.min(totalDuration, currentTime)}
-                      onChange={(e) => handleJumpToTime(Number(e.target.value))}
-                      className="h-1.5 w-full cursor-pointer accent-[#C8922A]"
-                    />
-                  </div>
-                </div>
               </div>
 
               {/* Dominant Visual Anchor: 9:16 Commercial Frame */}
@@ -451,7 +358,7 @@ export default function App() {
                   currentTime={currentTime}
                   totalDuration={totalDuration}
                   isPlaying={isPlaying}
-                  showCaptions={showCaptions}
+                  showCaptions={true}
                   isMuted={isMuted}
                   audioActive={audioActive}
                   onTogglePlay={handleTogglePlay}
@@ -572,12 +479,14 @@ export default function App() {
       <footer className="border-t border-[#0B162C]/10 bg-white py-8">
         <div className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-4 px-6 text-sm text-[#475569]">
           <div className="flex items-center gap-3">
-            <img
-              src="/assets/aistudio/logo_transparent_e9918557.png"
-              alt="Easy2Book"
-              referrerPolicy="no-referrer"
-              className="h-9 w-auto object-contain"
-            />
+            <div className="flex h-12 w-14 items-center justify-center overflow-hidden shrink-0">
+              <img
+                src="/assets/aistudio/logo_transparent_e9918557.png"
+                alt="Easy2Book"
+                referrerPolicy="no-referrer"
+                className="h-full w-full object-contain scale-[1.4]"
+              />
+            </div>
             <span aria-hidden="true">·</span>
             <span>سفرتك أسهل</span>
           </div>
@@ -603,6 +512,16 @@ export default function App() {
           </div>
         </div>
       </footer>
+      {/* Floating WhatsApp Direct Button */}
+      <a
+        href={WHATSAPP_URL}
+        target="_blank"
+        rel="noreferrer"
+        aria-label="تواصل معنا عبر واتساب 98 140 514"
+        className="fixed bottom-5 left-5 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-[#16A34A] text-white shadow-lg transition-transform hover:scale-105 hover:bg-[#15803D] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#16A34A]"
+      >
+        <WhatsAppIcon className="h-6 w-6" />
+      </a>
     </div>
   );
 }
