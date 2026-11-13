@@ -4,6 +4,7 @@ import {
   TOTAL_REEL_DURATION_SEC,
 } from './data/campaignData';
 import { ReelPlayer } from './components/ReelPlayer';
+import { TestimonialsSection } from './components/TestimonialsSection';
 import { BookingSection } from './components/BookingSection';
 import { WhatsAppIcon, WHATSAPP_URL } from './components/WhatsAppIcon';
 import {
@@ -256,18 +257,16 @@ export default function App() {
               برنامج العمرة
             </a>
             <a
+              href="#testimonials"
+              className="hover:text-[#0B162C] transition-colors whitespace-nowrap shrink-0"
+            >
+              شهادات العملاء
+            </a>
+            <a
               href="#booking"
               className="hover:text-[#0B162C] transition-colors whitespace-nowrap shrink-0"
             >
               الحجز المباشر
-            </a>
-            <a
-              href="https://www.easy2book.tn"
-              target="_blank"
-              rel="noreferrer"
-              className="font-latin hover:text-[#0B162C] transition-colors whitespace-nowrap shrink-0"
-            >
-              easy2book.tn
             </a>
             <a
               href={WHATSAPP_URL}
@@ -586,6 +585,9 @@ export default function App() {
             </div>
           </div>
         </section>
+
+        {/* Social Proof: Verified Client Testimonials */}
+        <TestimonialsSection />
 
         {/* Direct Reservation & Lead Capture */}
         <BookingSection
