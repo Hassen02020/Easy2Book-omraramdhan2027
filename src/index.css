@@ -1,0 +1,106 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --canvas-bg: #FAF9F6;
+    --surface-stone: #F2EFE9;
+    --ink-navy: #0B162C;
+    --ink-muted: #475569;
+    --accent-gold: #C8922A;
+    --accent-gold-hover: #AD7B1D;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    background-color: var(--canvas-bg);
+    color: var(--ink-navy);
+    font-family: 'Cairo', 'Plus Jakarta Sans', system-ui, sans-serif;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--canvas-bg);
+    color: var(--ink-navy);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+.font-latin {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
+.font-mono-tabular {
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Smooth GPU-composited reel motion keyframes */
+@keyframes reelDroneGlide {
+  0% {
+    transform: scale(1.02) translate3d(0, 1.5%, 0);
+  }
+  100% {
+    transform: scale(1.13) translate3d(0, -1.5%, 0);
+  }
+}
+
+@keyframes reelAirplaneClimb {
+  0% {
+    transform: scale(1.04) translate3d(-1.5%, 2%, 0);
+  }
+  100% {
+    transform: scale(1.16) translate3d(1.5%, -2.5%, 0);
+  }
+}
+
+@keyframes reelSuitePush {
+  0% {
+    transform: scale(1.12) translate3d(1.5%, 0, 0);
+  }
+  100% {
+    transform: scale(1.03) translate3d(-1%, 0, 0);
+  }
+}
+
+@keyframes reelMadinahTilt {
+  0% {
+    transform: scale(1.1) translate3d(0, 3%, 0);
+  }
+  100% {
+    transform: scale(1.03) translate3d(0, -2.5%, 0);
+  }
+}
+
+@keyframes reelStudioDrift {
+  0% {
+    transform: scale(1.02) translate3d(0, 0, 0);
+  }
+  50% {
+    transform: scale(1.06) translate3d(0, -1%, 0);
+  }
+  100% {
+    transform: scale(1.02) translate3d(0, 0, 0);
+  }
+}
+
+@keyframes floatGoldParticle {
+  0%, 100% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translate3d(0, -14px, 0);
+    opacity: 0.85;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reel-motion-active {
+    animation: none !important;
+  }
+}
