@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express from "express";
+import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { GoogleGenAI } from "@google/genai";
@@ -9,6 +10,8 @@ const __dirname = path.dirname(__filename);
 
 const PORT = Number(process.env.PORT) || 3000;
 const isProduction = process.env.NODE_ENV === "production";
+const DATA_DIR = path.join(__dirname, "data");
+const CREATOR_STORE_FILE = path.join(DATA_DIR, "creator-studio.json");
 
 const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,
@@ -26,42 +29,86 @@ interface CachedAudio {
   createdAt: number;
 }
 
-interface BookingRecord {
-  id: string;
-  fullName: string;
-  phone: string;
-  email: string;
-  pilgrimsCount: number;
-  roomType: string;
-  isFamily: boolean;
-  isGroupInquiry: boolean;
-  estimatedTotalDt: number | null;
-  departureNote: string;
-  createdAt: string;
-}
-
 const voiceoverCache = new Map<string, CachedAudio>();
-const bookingsStore: BookingRecord[] = [];
-
-const ROOM_PRICE_MAP: Record<string, number> = {
-  "غرفة رباعية أو خماسية": 5900,
-  "غرفة ثلاثية": 6400,
-  "غرفة ثنائية": 6900,
-};
 
 const DEFAULT_SCRIPT =
   "تحب تعيش روحانية شهر رمضان الكل في مكة المكرمة، وإنت مرتاح البال ومن غير حتى تعب؟ مع Easy2Book، حضرنالك برنامج عمرة شهر رمضان كامل: طيران تونس جدة تونس، فيزا، وتأطير كامل مع مرشدين مرافقين ليكم خطوة بخطوة، وإقامة مريحة في فندق ميسان الملتزم، وزيد معاهم رحلة للمدينة المنورة! الأسعار تبدأ من خمسة آلاف وتسعمية دينار للشخص في غرفة رباعية أو خماسية، ستة آلاف وأربعمية دينار في غرفة ثلاثية، وستة آلاف وتسعمية دينار في غرفة ثنائية... مع تخفيض ميتين دينار للعائلات انطلاقاً من شخصين! وللمجموعات أكثر من عشرة أشخاص كلمونا للحصول على الإمكانية. عدد الغرف محدود جداً والعرض صالح لـ خمسطاش ديسمبر ألفين وستة وعشرين! كلمنا توا على ثمانية وتسعين، مية وأربعين، خمس مية وأربعطاش، ولا احجز على easy2book.tn. Easy2Book... سفرتك أسهل!";
 
 const ALLOWED_VOICES = new Set(["Charon", "Kore", "Fenrir", "Puck", "Zephyr"]);
 
+function readCreatorStore(): unknown | null {
+  try {
+    if (fs.existsSync(CREATOR_STORE_FILE)) {
+      const raw = fs.readFileSync(CREATOR_STORE_FILE, "utf8");
+      return JSON.parse(raw);
+    }
+  } catch (err) {
+    console.error("Failed to read creator store:", err);
+  }
+  return null;
+}
+
+function writeCreatorStore(state: unknown): void {
+  if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+  }
+  fs.writeFileSync(CREATOR_STORE_FILE, JSON.stringify(state, null, 2), "utf8");
+}
+
 async function startServer() {
   const app = express();
-  app.use(express.json({ limit: "1mb" }));
+  app.use(express.json({ limit: "5mb" }));
 
   app.get("/api/health", (_req, res) => {
     res.json({ ok: true, hasGeminiKey: Boolean(process.env.GEMINI_API_KEY) });
   });
 
+  // ==========================================================
+  // LANDING PAGE CREATOR PERSISTENCE (NO CRM / NO LEADS)
+  // ==========================================================
+  app.get("/api/creator/state", (_req, res) => {
+    const state = readCreatorStore();
+    return res.json({ state });
+  });
+
+  app.put("/api/creator/state", (req, res) => {
+    const state = req.body;
+    if (
+      !state ||
+      typeof state !== "object" ||
+      !Array.isArray((state as { pages?: unknown }).pages) ||
+      !Array.isArray((state as { templates?: unknown }).templates)
+    ) {
+      return res.status(400).json({
+        error: "Format d'état Landing Page Studio invalide.",
+      });
+    }
+    try {
+      writeCreatorStore(state);
+      return res.json({ saved: true });
+    } catch (err) {
+      console.error("Failed to save creator store:", err);
+      return res.status(500).json({
+        error: "Impossible d'enregistrer l'état du Studio.",
+      });
+    }
+  });
+
+  app.delete("/api/creator/state", (_req, res) => {
+    try {
+      if (fs.existsSync(CREATOR_STORE_FILE)) {
+        fs.unlinkSync(CREATOR_STORE_FILE);
+      }
+      return res.json({ reset: true });
+    } catch (err) {
+      console.error("Failed to reset creator store:", err);
+      return res.status(500).json({ error: "Erreur lors de la réinitialisation." });
+    }
+  });
+
+  // ==========================================================
+  // GEMINI TTS VOICEOVER FOR 9:16 VIDEO HERO BLOCK PREVIEW
+  // ==========================================================
   app.post("/api/voiceover", async (req, res) => {
     try {
       if (!process.env.GEMINI_API_KEY) {
@@ -161,81 +208,6 @@ async function startServer() {
     }
   });
 
-  app.get("/api/bookings", (_req, res) => {
-    res.json({ bookings: bookingsStore });
-  });
-
-  app.post("/api/bookings", (req, res) => {
-    const fullName =
-      typeof req.body?.fullName === "string" ? req.body.fullName.trim() : "";
-    const phone =
-      typeof req.body?.phone === "string" ? req.body.phone.trim() : "";
-    const email =
-      typeof req.body?.email === "string" ? req.body.email.trim() : "";
-    const pilgrimsCount = Number(req.body?.pilgrimsCount) || 1;
-    const roomType =
-      typeof req.body?.roomType === "string" &&
-      Object.prototype.hasOwnProperty.call(ROOM_PRICE_MAP, req.body.roomType.trim())
-        ? req.body.roomType.trim()
-        : "غرفة رباعية أو خماسية";
-    const isGroupInquiry = Boolean(req.body?.isGroupInquiry) || pilgrimsCount > 10;
-    const isFamily = Boolean(req.body?.isFamily) && pilgrimsCount >= 2 && !isGroupInquiry;
-    const departureNote =
-      typeof req.body?.departureNote === "string"
-        ? req.body.departureNote.trim().slice(0, 400)
-        : "";
-
-    if (fullName.length < 3) {
-      return res.status(400).json({
-        error: "يرجى إدخال الاسم الكامل (3 أحرف على الأقل).",
-      });
-    }
-
-    const digitsOnly = phone.replace(/\D/g, "");
-    if (digitsOnly.length < 8) {
-      return res.status(400).json({
-        error: "يرجى إدخال رقم هاتف صحيح لا يقل عن 8 أرقام.",
-      });
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({
-        error: "يرجى إدخال بريد إلكتروني صحيح.",
-      });
-    }
-
-    if (pilgrimsCount < 1 || pilgrimsCount > 100) {
-      return res.status(400).json({
-        error: "عدد المعتمرين يجب أن يكون بين 1 و 100.",
-      });
-    }
-
-    const unitPrice = ROOM_PRICE_MAP[roomType] ?? 5900;
-    const estimatedTotalDt = isGroupInquiry
-      ? null
-      : pilgrimsCount * unitPrice - (isFamily ? 200 : 0);
-
-    const record: BookingRecord = {
-      id: `E2B-${Math.floor(100000 + Math.random() * 900000)}`,
-      fullName,
-      phone,
-      email,
-      pilgrimsCount,
-      roomType,
-      isFamily,
-      isGroupInquiry,
-      estimatedTotalDt,
-      departureNote,
-      createdAt: new Date().toISOString(),
-    };
-
-    bookingsStore.unshift(record);
-    if (bookingsStore.length > 50) bookingsStore.pop();
-
-    return res.status(201).json({ booking: record });
-  });
-
   if (!isProduction) {
     const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
@@ -252,7 +224,9 @@ async function startServer() {
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Easy2Book server running on http://0.0.0.0:${PORT}`);
+    console.log(
+      `Easy2Book Landing Page Studio server running on http://0.0.0.0:${PORT}`
+    );
   });
 }
 

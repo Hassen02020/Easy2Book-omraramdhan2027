@@ -2,32 +2,36 @@
 
 @layer base {
   :root {
-    --canvas-bg: #FAF9F6;
-    --surface-stone: #F2EFE9;
-    --ink-navy: #0B162C;
-    --ink-muted: #475569;
-    --accent-gold: #C8922A;
-    --accent-gold-hover: #AD7B1D;
+    --studio-bg: #F5F7FA;
+    --studio-card: #FFFFFF;
+    --studio-navy: #102D45;
+    --studio-navy-secondary: #1C4967;
+    --studio-gold: #E7B34C;
+    --studio-ink-muted: #475569;
   }
 
   html {
     scroll-behavior: smooth;
-    background-color: var(--canvas-bg);
-    color: var(--ink-navy);
-    font-family: 'Cairo', 'Plus Jakarta Sans', system-ui, sans-serif;
+    background-color: var(--studio-bg);
+    color: var(--studio-navy);
+    font-family: 'Inter', 'Cairo', system-ui, sans-serif;
   }
 
   body {
     margin: 0;
-    background-color: var(--canvas-bg);
-    color: var(--ink-navy);
+    background-color: var(--studio-bg);
+    color: var(--studio-navy);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 }
 
+.font-arabic {
+  font-family: 'Cairo', 'Inter', system-ui, sans-serif;
+}
+
 .font-latin {
-  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
 }
 
 .font-mono-tabular {
