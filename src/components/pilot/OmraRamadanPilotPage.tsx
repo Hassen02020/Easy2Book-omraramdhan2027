@@ -30,6 +30,7 @@ import {
 import {
   formatFileSize,
   generateVideoDownloadLink,
+  triggerVideoBlobDownload,
   type VideoExportResult,
 } from '../../lib/reelVideoExporter';
 import {
@@ -294,8 +295,8 @@ export function OmraRamadanPilotPage({
     setVideoExportPct(8);
     setVideoExportStatus('جاري تحضير الفيديو 9:16...');
 
-    if (videoExportResult?.source === 'browser_webm') {
-      URL.revokeObjectURL(videoExportResult.downloadUrl);
+    if (videoExportResult?.blobUrl?.startsWith('blob:')) {
+      URL.revokeObjectURL(videoExportResult.blobUrl);
     }
 
     try {
@@ -628,7 +629,7 @@ export function OmraRamadanPilotPage({
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex items-center gap-2 text-xs font-bold text-emerald-900">
                       <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-                      <span>رابط تحميل الفيديو جاهز ({videoExportResult.format.toUpperCase()} · 9:16 HD)</span>
+                      <span>الفيديو جاهز للتحميل ({videoExportResult.format.toUpperCase()} · 9:16 HD)</span>
                     </div>
                     <span className="font-mono-tabular text-[11px] font-semibold text-emerald-800" dir="ltr">
                       {formatFileSize(videoExportResult.sizeBytes)} · {videoExportResult.durationSec}s
@@ -637,13 +638,22 @@ export function OmraRamadanPilotPage({
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2">
-                    <a
-                      href={videoExportResult.downloadUrl}
-                      download={videoExportResult.fileName}
+                    <button
+                      type="button"
+                      onClick={() => triggerVideoBlobDownload(videoExportResult)}
                       className="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-xs font-bold text-white hover:bg-emerald-800"
                     >
                       <Download className="h-3.5 w-3.5" />
                       تحميل الفيديو الآن ({videoExportResult.format.toUpperCase()})
+                    </button>
+
+                    <a
+                      href={videoExportResult.blobUrl}
+                      download={videoExportResult.fileName}
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-300 bg-white px-3.5 py-2.5 text-xs font-bold text-emerald-900 hover:bg-emerald-50"
+                    >
+                      <Download className="h-3.5 w-3.5" />
+                      حفظ الملف مباشرة
                     </a>
 
                     <button
@@ -659,7 +669,7 @@ export function OmraRamadanPilotPage({
                       ) : (
                         <>
                           <Copy className="h-3.5 w-3.5" />
-                          نسخ رابط التحميل
+                          نسخ رابط الخادم
                         </>
                       )}
                     </button>
@@ -674,6 +684,18 @@ export function OmraRamadanPilotPage({
                       className="w-full bg-transparent font-mono text-[11px] text-[#0B162C] outline-none"
                       aria-label="رابط تحميل الفيديو"
                     />
+                  </div>
+
+                  <div className="rounded-xl border border-emerald-200 bg-[#0B162C] p-2">
+                    <video
+                      src={videoExportResult.blobUrl}
+                      controls
+                      playsInline
+                      className="mx-auto max-h-64 w-auto rounded-lg"
+                    />
+                    <p className="mt-1.5 text-center text-[11px] text-emerald-100">
+                      يمكنك أيضاً الضغط على النقاط الثلاث (⋮) في مشغل الفيديو لاختيار «تنزيل» مباشرة.
+                    </p>
                   </div>
                 </div>
               )}

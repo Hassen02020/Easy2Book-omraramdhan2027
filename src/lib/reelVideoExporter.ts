@@ -5,6 +5,7 @@ import {
 } from '../data/campaignData';
 
 export interface VideoExportResult {
+  blobUrl: string;
   downloadUrl: string;
   downloadPath: string;
   fileName: string;
@@ -317,6 +318,7 @@ async function renderBrowserWebmFallback(params: {
   onProgress?.(100, 'Lien prêt');
 
   return {
+    blobUrl,
     downloadUrl: blobUrl,
     downloadPath: blobUrl,
     fileName: `Easy2Book-Omra-Ramadan-2027-${voiceName}.webm`,
@@ -386,14 +388,25 @@ export async function generateVideoDownloadLink(params: {
       format: 'mp4';
     };
 
-    onProgress?.(100, 'Lien MP4 prêt au téléchargement');
+    onProgress?.(85, 'Téléchargement du flux MP4 en mémoire...');
+    const fileRes = await fetch(data.downloadPath, {
+      credentials: 'include',
+    });
+    if (!fileRes.ok) {
+      throw new Error(`Téléchargement HTTP ${fileRes.status}`);
+    }
+    const mp4Blob = await fileRes.blob();
+    const blobUrl = URL.createObjectURL(mp4Blob);
+
+    onProgress?.(100, 'Vidéo MP4 prête au téléchargement');
     const absoluteUrl = `${window.location.origin}${data.downloadPath}`;
 
     return {
+      blobUrl,
       downloadUrl: absoluteUrl,
       downloadPath: data.downloadPath,
       fileName: data.fileName,
-      sizeBytes: data.sizeBytes,
+      sizeBytes: mp4Blob.size || data.sizeBytes,
       durationSec: data.durationSec,
       hasAudio: data.hasAudio,
       format: 'mp4',
@@ -403,6 +416,19 @@ export async function generateVideoDownloadLink(params: {
     console.warn('Server MP4 export failed, switching to browser WebM fallback:', err);
     return renderBrowserWebmFallback(params);
   }
+}
+
+export function triggerVideoBlobDownload(result: VideoExportResult): void {
+  const link = document.createElement('a');
+  link.href = result.blobUrl || result.downloadUrl;
+  link.download = result.fileName;
+  link.rel = 'noopener noreferrer';
+  link.style.display = 'none';
+  document.body.appendChild(link);
+  link.click();
+  window.setTimeout(() => {
+    document.body.removeChild(link);
+  }, 150);
 }
 
 export function formatFileSize(bytes: number): string {

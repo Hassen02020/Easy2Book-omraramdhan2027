@@ -155,17 +155,29 @@ async function synthesizeVoiceoverWav(params: {
 
 function cleanupOldGeneratedVideos(): void {
   try {
-    if (!fs.existsSync(VIDEOS_DIR)) return;
-    const files = fs
-      .readdirSync(VIDEOS_DIR)
-      .filter((f) => f.endsWith(".mp4"))
-      .map((f) => {
-        const full = path.join(VIDEOS_DIR, f);
-        return { name: f, full, mtimeMs: fs.statSync(full).mtimeMs };
-      })
-      .sort((a, b) => b.mtimeMs - a.mtimeMs);
-    for (const stale of files.slice(12)) {
-      fs.unlinkSync(stale.full);
+    if (fs.existsSync(VIDEOS_DIR)) {
+      const files = fs
+        .readdirSync(VIDEOS_DIR)
+        .filter((f) => f.endsWith(".mp4"))
+        .map((f) => {
+          const full = path.join(VIDEOS_DIR, f);
+          return { name: f, full, mtimeMs: fs.statSync(full).mtimeMs };
+        })
+        .sort((a, b) => b.mtimeMs - a.mtimeMs);
+      for (const stale of files.slice(24)) {
+        fs.unlinkSync(stale.full);
+      }
+    }
+    if (fs.existsSync(DATA_DIR)) {
+      const now = Date.now();
+      for (const entry of fs.readdirSync(DATA_DIR)) {
+        if (!entry.startsWith("tmp-video-")) continue;
+        const full = path.join(DATA_DIR, entry);
+        const stat = fs.statSync(full);
+        if (now - stat.mtimeMs > 10 * 60 * 1000) {
+          fs.rmSync(full, { recursive: true, force: true });
+        }
+      }
     }
   } catch {
     // Best-effort cleanup
@@ -504,6 +516,16 @@ async function startServer() {
       return res.status(404).json({
         error: "Vidéo expirée ou introuvable. Veuillez régénérer le lien.",
       });
+    }
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Cache-Control", "no-store");
+    res.setHeader("Content-Type", "video/mp4");
+    if (req.query.inline === "1") {
+      res.setHeader(
+        "Content-Disposition",
+        'inline; filename="Easy2Book-Omra-Ramadan-2027-9x16.mp4"'
+      );
+      return res.sendFile(targetPath);
     }
     return res.download(targetPath, "Easy2Book-Omra-Ramadan-2027-9x16.mp4");
   });

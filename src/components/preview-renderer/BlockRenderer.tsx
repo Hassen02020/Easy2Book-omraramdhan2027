@@ -41,6 +41,7 @@ import { getHeroImageSrc } from '../../lib/mediaRegistry';
 import {
   formatFileSize,
   generateVideoDownloadLink,
+  triggerVideoBlobDownload,
   type VideoExportResult,
 } from '../../lib/reelVideoExporter';
 import type {
@@ -226,8 +227,8 @@ export function BlockRenderer({
       isAr ? 'جاري إنشاء رابط الفيديو...' : 'Génération du lien vidéo...'
     );
 
-    if (videoExportResult?.source === 'browser_webm') {
-      URL.revokeObjectURL(videoExportResult.downloadUrl);
+    if (videoExportResult?.blobUrl?.startsWith('blob:')) {
+      URL.revokeObjectURL(videoExportResult.blobUrl);
     }
 
     try {
@@ -549,8 +550,8 @@ export function BlockRenderer({
                   <span className="inline-flex items-center gap-1.5">
                     <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                     {isAr
-                      ? 'رابط تحميل الفيديو جاهز'
-                      : 'Lien de téléchargement vidéo prêt'}
+                      ? 'الفيديو جاهز للتحميل'
+                      : 'Vidéo prête au téléchargement'}
                   </span>
                   <span className="font-mono-tabular text-[11px]" dir="ltr">
                     {videoExportResult.format.toUpperCase()} ·{' '}
@@ -559,15 +560,23 @@ export function BlockRenderer({
                   </span>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <a
-                    href={videoExportResult.downloadUrl}
-                    download={videoExportResult.fileName}
+                  <button
+                    type="button"
+                    onClick={() => triggerVideoBlobDownload(videoExportResult)}
                     className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-700 px-3.5 py-2 text-xs font-bold text-white hover:bg-emerald-800"
                   >
                     <Download className="h-3.5 w-3.5" />
                     {isAr
                       ? `تحميل الفيديو (${videoExportResult.format.toUpperCase()})`
                       : `Télécharger (${videoExportResult.format.toUpperCase()})`}
+                  </button>
+                  <a
+                    href={videoExportResult.blobUrl}
+                    download={videoExportResult.fileName}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-300 bg-white px-3 py-2 text-xs font-bold text-emerald-900 hover:bg-emerald-100/50"
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                    {isAr ? 'حفظ مباشر' : 'Enregistrer'}
                   </a>
                   <button
                     type="button"
@@ -596,6 +605,14 @@ export function BlockRenderer({
                   className="w-full rounded-lg border border-emerald-200 bg-white px-2.5 py-1.5 font-mono text-[11px] text-[#102D45] outline-none"
                   aria-label="Lien de téléchargement vidéo"
                 />
+                <div className="rounded-lg bg-[#0B162C] p-2">
+                  <video
+                    src={videoExportResult.blobUrl}
+                    controls
+                    playsInline
+                    className="mx-auto max-h-56 w-auto rounded"
+                  />
+                </div>
               </div>
             )}
           </div>
