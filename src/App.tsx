@@ -15,7 +15,11 @@ import {
 import { CreatorSettingsView } from './components/settings/CreatorSettingsView';
 import { StatusBadge } from './components/shared-components/StatusBadge';
 import { TemplatesGallery } from './components/templates/TemplatesGallery';
-import { createInitialCreatorState } from './data/demoData';
+import {
+  createInitialCreatorState,
+  DEMO_MEDIA_ASSETS,
+  DEMO_TEMPLATES,
+} from './data/demoData';
 import {
   addBlockToPage,
   clonePageData,
@@ -39,9 +43,28 @@ import type {
 
 const LOCAL_CACHE_KEY = 'e2b_landing_studio_state_v1';
 
-function ensurePilotPageMetadata(raw: CreatorState): CreatorState {
+function upgradeStudioState(raw: CreatorState): CreatorState {
+  const demoTemplateMap = new Map(DEMO_TEMPLATES.map((t) => [t.id, t]));
+  const existingUserTemplates = (raw.templates || []).filter(
+    (t) => !demoTemplateMap.has(t.id)
+  );
+  const mergedTemplates: PageTemplate[] = [
+    ...DEMO_TEMPLATES.map((tpl) => JSON.parse(JSON.stringify(tpl)) as PageTemplate),
+    ...existingUserTemplates,
+  ];
+
+  const existingMedia = Array.isArray(raw.media) ? raw.media : [];
+  const demoMediaMap = new Map(DEMO_MEDIA_ASSETS.map((m) => [m.id, m]));
+  const customMedia = existingMedia.filter((m) => !demoMediaMap.has(m.id));
+  const mergedMedia: MediaAsset[] = [
+    ...DEMO_MEDIA_ASSETS.map((m) => ({ ...m })),
+    ...customMedia,
+  ];
+
   return {
     ...raw,
+    templates: mergedTemplates,
+    media: mergedMedia,
     pages: raw.pages.map((pg) =>
       pg.id === 'page-omra-ramadan-2027'
         ? {
@@ -66,7 +89,7 @@ export default function App() {
       if (cached) {
         const parsed = JSON.parse(cached) as CreatorState;
         if (parsed && Array.isArray(parsed.pages) && Array.isArray(parsed.templates)) {
-          return ensurePilotPageMetadata(parsed);
+          return upgradeStudioState(parsed);
         }
       }
     } catch {
@@ -114,7 +137,7 @@ export default function App() {
           Array.isArray(data.state.pages) &&
           Array.isArray(data.state.templates)
         ) {
-          setState(ensurePilotPageMetadata(data.state));
+          setState(upgradeStudioState(data.state));
         }
       })
       .catch(() => {
@@ -252,6 +275,7 @@ export default function App() {
     title: string;
     slug: string;
     language: CreatorLanguage;
+    folderGroup?: string;
     externalOfferId: string;
     offerLabel: string;
   }) => {

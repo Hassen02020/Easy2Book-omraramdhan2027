@@ -18,6 +18,7 @@ export function createPageFromTemplate(params: {
   title: string;
   slug: string;
   language?: CreatorLanguage;
+  folderGroup?: string;
   externalOfferId?: string;
   offerLabel?: string;
 }): Page {
@@ -32,7 +33,9 @@ export function createPageFromTemplate(params: {
     title: params.title,
     universe: params.template.universe,
     folderGroup:
-      params.template.universe === 'omra' ? 'Ramadan 2027' : undefined,
+      params.folderGroup?.trim() ||
+      params.template.recommendedGroup ||
+      (params.template.universe === 'omra' ? 'Ramadan 2027' : undefined),
     templateId: params.template.id,
     language: lang,
     isDemoData: true,

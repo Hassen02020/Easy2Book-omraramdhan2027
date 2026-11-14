@@ -241,6 +241,9 @@ export interface PageTemplate {
   universe: BusinessUniverse;
   description: string;
   styleTag: string;
+  trendSegment?: string;
+  targetAudience?: string;
+  recommendedGroup?: string;
   supportedLanguages: CreatorLanguage[];
   defaultLanguage: CreatorLanguage;
   previewImageKey: string;

@@ -656,12 +656,18 @@ export function PageEditorWorkspace({
                     >
                       <option value="">Aucune image</option>
                       <option value="makkah_haram">La Mecque — Masjid Al-Haram</option>
+                      <option value="omra_vip_haram">Omra VIP 5★ — Vue Haram</option>
                       <option value="tunis_flight">Vol Tunis – Djeddah</option>
                       <option value="maysan_suite">Hôtel Maysan Al Multazim</option>
                       <option value="madinah_twilight">Médine — Masjid Nabawi</option>
-                      <option value="voyage_istanbul">Voyages — Istanbul</option>
-                      <option value="tunisia_resort">Hôtels Tunisie — Resort 5*</option>
-                      <option value="visa_desk">Service Visa</option>
+                      <option value="voyage_istanbul">Voyages — Istanbul & Bosphore</option>
+                      <option value="dubai_skyline">Voyages — Dubaï Marina Luxe</option>
+                      <option value="cairo_nile">Voyages — Le Caire & Nil</option>
+                      <option value="tunisia_resort">Hôtels Tunisie — Hammamet 5★</option>
+                      <option value="djerba_thalasso">Hôtels Tunisie — Djerba Thalasso</option>
+                      <option value="sahara_tozeur">Tunisie — Oasis Sahara Tozeur</option>
+                      <option value="visa_desk">Service Visa — Accompagnement</option>
+                      <option value="visa_europe">Visa Europe — Paris</option>
                       {media
                         .filter((m) => !m.isDemoAsset)
                         .map((m) => (

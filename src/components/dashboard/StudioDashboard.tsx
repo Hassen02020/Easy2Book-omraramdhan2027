@@ -396,7 +396,10 @@ export function StudioDashboard({
               </button>
             </div>
             <div className="mt-3 space-y-2.5">
-              {templates.slice(0, 4).map((tpl) => (
+              {(['omra', 'voyages', 'hotels_tunisie', 'visa'] as const)
+                .map((u) => templates.find((tpl) => tpl.universe === u))
+                .filter((tpl): tpl is PageTemplate => Boolean(tpl))
+                .map((tpl) => (
                 <div
                   key={tpl.id}
                   className="flex items-center justify-between gap-3 rounded-xl border border-[#102D45]/8 p-2.5"
