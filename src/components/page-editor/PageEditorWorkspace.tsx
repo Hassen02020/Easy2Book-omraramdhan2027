@@ -1,29 +1,42 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   ArrowDown,
   ArrowLeft,
   ArrowUp,
+  Check,
   Copy,
   Eye,
   EyeOff,
   Laptop,
   Plus,
+  Redo2,
+  Rocket,
   RotateCcw,
   Save,
   Smartphone,
   Tablet,
   Trash2,
-  Rocket,
+  Undo2,
+  Upload,
 } from 'lucide-react';
 import type { CrmIntegrationConfig } from '../../integration-contracts/crmAdapter';
+import {
+  createDefaultBrandIdentity,
+  createDefaultFooterConfig,
+  createDefaultHeaderConfig,
+  STYLE_PALETTE_PRESETS,
+  UNIVERSAL_COMMERCE_MODULES,
+} from '../../lib/commerceModulesCatalog';
 import {
   addBlockToPage,
   duplicateBlockInPage,
   moveBlockInPage,
   removeBlockFromPage,
   resetBlockInPage,
+  toggleCommerceModuleOnPage,
   updateBlockInPage,
 } from '../../lib/creatorStore';
+import { HERO_MEDIA_MAP, type HeroImageKey } from '../../lib/mediaRegistry';
 import { BLOCK_CATALOG } from '../block-library/blockCatalog';
 import { FormBuilderPanel } from '../form-builder/FormBuilderPanel';
 import {
@@ -36,10 +49,15 @@ import { VersionHistoryPanel } from '../version-history/VersionHistoryPanel';
 import type {
   BlockCategory,
   BlockType,
+  BrandIdentity,
+  BrandVisualStyle,
   CreatorLanguage,
+  HeaderVariant,
   MediaAsset,
   Page,
   PageBlock,
+  PageFooterConfig,
+  PageHeaderConfig,
   PageStatus,
   PageVersionSnapshot,
 } from '../../types/creator';
@@ -61,8 +79,24 @@ interface PageEditorWorkspaceProps {
   onBack: () => void;
 }
 
-type LeftTab = 'structure' | 'add_block';
-type RightTab = 'block' | 'form' | 'seo' | 'publish';
+type LeftTab = 'structure' | 'add_block' | 'modules';
+type RightTab =
+  | 'identity'
+  | 'header'
+  | 'block'
+  | 'footer'
+  | 'form'
+  | 'seo'
+  | 'publish';
+
+const FONT_OPTIONS = [
+  'Plus Jakarta Sans',
+  'Outfit',
+  'Playfair Display',
+  'DM Sans',
+  'Inter',
+  'Cairo',
+];
 
 export function PageEditorWorkspace({
   page,
@@ -95,8 +129,99 @@ export function PageEditorWorkspace({
   );
   const [draggedBlockId, setDraggedBlockId] = useState<string | null>(null);
 
+  // Undo / Redo history stack scoped per active page
+  const [undoStack, setUndoStack] = useState<Page[]>([]);
+  const [redoStack, setRedoStack] = useState<Page[]>([]);
+
+  useEffect(() => {
+    setUndoStack([]);
+    setRedoStack([]);
+  }, [page.id]);
+
+  const commitPageChange = useCallback(
+    (nextPage: Page) => {
+      setUndoStack((prev) => [...prev.slice(-29), page]);
+      setRedoStack([]);
+      onUpdatePage(nextPage);
+    },
+    [onUpdatePage, page]
+  );
+
+  const handleUndo = useCallback(() => {
+    if (undoStack.length === 0) return;
+    const previous = undoStack[undoStack.length - 1];
+    setUndoStack((prev) => prev.slice(0, -1));
+    setRedoStack((prev) => [...prev, page]);
+    onUpdatePage(previous);
+  }, [onUpdatePage, page, undoStack]);
+
+  const handleRedo = useCallback(() => {
+    if (redoStack.length === 0) return;
+    const next = redoStack[redoStack.length - 1];
+    setRedoStack((prev) => prev.slice(0, -1));
+    setUndoStack((prev) => [...prev, page]);
+    onUpdatePage(next);
+  }, [onUpdatePage, page, redoStack]);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement | null)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) {
+          handleRedo();
+        } else {
+          handleUndo();
+        }
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [handleRedo, handleUndo]);
+
   const selectedBlock: PageBlock | null =
     page.blocks.find((b) => b.id === selectedBlockId) ?? page.blocks[0] ?? null;
+
+  const brandIdentity: BrandIdentity =
+    page.brandIdentity ?? createDefaultBrandIdentity({ brandName: 'Easy2Book' });
+  const headerConfig: PageHeaderConfig =
+    page.header ??
+    createDefaultHeaderConfig({ language: page.language, variant: 'premium' });
+  const footerConfig: PageFooterConfig =
+    page.footer ??
+    createDefaultFooterConfig({
+      brandName: brandIdentity.brandName,
+      language: page.language,
+    });
+
+  const updateBrandIdentity = (updater: (b: BrandIdentity) => BrandIdentity) => {
+    commitPageChange({
+      ...page,
+      brandIdentity: updater(brandIdentity),
+      updatedAt: new Date().toISOString(),
+    });
+  };
+
+  const updateHeaderConfig = (
+    updater: (h: PageHeaderConfig) => PageHeaderConfig
+  ) => {
+    commitPageChange({
+      ...page,
+      header: updater(headerConfig),
+      updatedAt: new Date().toISOString(),
+    });
+  };
+
+  const updateFooterConfig = (
+    updater: (f: PageFooterConfig) => PageFooterConfig
+  ) => {
+    commitPageChange({
+      ...page,
+      footer: updater(footerConfig),
+      updatedAt: new Date().toISOString(),
+    });
+  };
 
   const draftSnapshot: PageVersionSnapshot = {
     blocks: page.blocks,
@@ -106,6 +231,12 @@ export function PageEditorWorkspace({
     offerRef: page.offerRef,
     language: page.language,
     title: page.title,
+    folderGroup: page.folderGroup,
+    creationMode: page.creationMode,
+    brandIdentity: page.brandIdentity,
+    header: page.header,
+    footer: page.footer,
+    commerceModules: page.commerceModules,
   };
 
   const activeSnapshot =
@@ -115,7 +246,7 @@ export function PageEditorWorkspace({
 
   const updateSelectedBlock = (updater: (b: PageBlock) => PageBlock) => {
     if (!selectedBlock) return;
-    onUpdatePage(updateBlockInPage(page, selectedBlock.id, updater));
+    commitPageChange(updateBlockInPage(page, selectedBlock.id, updater));
   };
 
   const handleDropOnBlock = (targetBlockId: string) => {
@@ -126,7 +257,7 @@ export function PageEditorWorkspace({
     const nextBlocks = [...page.blocks];
     const [moved] = nextBlocks.splice(fromIdx, 1);
     nextBlocks.splice(toIdx, 0, moved);
-    onUpdatePage({
+    commitPageChange({
       ...page,
       blocks: nextBlocks,
       updatedAt: new Date().toISOString(),
@@ -140,7 +271,7 @@ export function PageEditorWorkspace({
       updated.blocks.find(
         (b) => !page.blocks.some((old) => old.id === b.id)
       ) ?? null;
-    onUpdatePage(updated);
+    commitPageChange(updated);
     if (added) {
       setSelectedBlockId(added.id);
       setRightTab('block');
@@ -148,9 +279,29 @@ export function PageEditorWorkspace({
     setLeftTab('structure');
   };
 
+  const handleEditorLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        const result = reader.result;
+        updateBrandIdentity((b) => ({
+          ...b,
+          logoSrc: result,
+          isProvisionalLogo: false,
+        }));
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   const filteredCatalog = BLOCK_CATALOG.filter(
     (b) => blockCategoryFilter === 'all' || b.category === blockCategoryFilter
   );
+
+  const countByCategory = (cat: BlockCategory) =>
+    BLOCK_CATALOG.filter((b) => b.category === cat).length;
 
   return (
     <div className="flex flex-col h-[calc(100vh-5.5rem)] min-h-[640px] rounded-2xl border border-[#102D45]/12 bg-white overflow-hidden shadow-xs">
@@ -259,17 +410,39 @@ export function PageEditorWorkspace({
           )}
         </div>
 
-        {/* Save / Preview / Publish Actions */}
-        <div className="flex items-center gap-2">
+        {/* Save / Undo / Redo / Preview / Publish Actions */}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center rounded-lg border border-[#102D45]/15 bg-[#F5F7FA] p-0.5">
+            <button
+              type="button"
+              disabled={undoStack.length === 0}
+              onClick={handleUndo}
+              title="Annuler (Ctrl+Z)"
+              className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-semibold text-[#102D45] hover:bg-white disabled:opacity-35 whitespace-nowrap"
+            >
+              <Undo2 className="h-3.5 w-3.5" />
+              <span className="hidden xl:inline">Annuler</span>
+            </button>
+            <button
+              type="button"
+              disabled={redoStack.length === 0}
+              onClick={handleRedo}
+              title="Rétablir (Ctrl+Shift+Z)"
+              className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-semibold text-[#102D45] hover:bg-white disabled:opacity-35 whitespace-nowrap"
+            >
+              <Redo2 className="h-3.5 w-3.5" />
+              <span className="hidden xl:inline">Rétablir</span>
+            </button>
+          </div>
           {autoSaveSavedAt && (
-            <span className="hidden xl:inline text-[10px] font-medium text-emerald-700">
+            <span className="hidden 2xl:inline text-[10px] font-medium text-emerald-700">
               Auto-sauvegardé {autoSaveSavedAt}
             </span>
           )}
           <button
             type="button"
             onClick={onSaveDraftVersion}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-[#102D45]/15 bg-white px-3 py-1.5 text-xs font-semibold text-[#102D45] hover:bg-[#F5F7FA]"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-[#102D45]/15 bg-white px-3 py-1.5 text-xs font-semibold text-[#102D45] hover:bg-[#F5F7FA] whitespace-nowrap shrink-0"
           >
             <Save className="h-3.5 w-3.5 text-[#1C4967]" />
             Sauvegarder
@@ -277,7 +450,7 @@ export function PageEditorWorkspace({
           <button
             type="button"
             onClick={() => onOpenFullPreview(page.id)}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-[#102D45]/15 bg-white px-3 py-1.5 text-xs font-semibold text-[#1C4967] hover:bg-[#F5F7FA]"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-[#102D45]/15 bg-white px-3 py-1.5 text-xs font-semibold text-[#1C4967] hover:bg-[#F5F7FA] whitespace-nowrap shrink-0"
           >
             <Eye className="h-3.5 w-3.5" />
             Prévisualiser
@@ -285,7 +458,7 @@ export function PageEditorWorkspace({
           <button
             type="button"
             onClick={onPublishPage}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-[#102D45] px-3.5 py-1.5 text-xs font-bold text-white hover:bg-[#1C4967]"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-[#102D45] px-3.5 py-1.5 text-xs font-bold text-white hover:bg-[#1C4967] whitespace-nowrap shrink-0"
           >
             <Rocket className="h-3.5 w-3.5 text-[#E7B34C]" />
             Publier
@@ -295,13 +468,13 @@ export function PageEditorWorkspace({
 
       {/* 3-Zone Workspace */}
       <div className="grid flex-1 min-h-0 lg:grid-cols-[290px_1fr_340px]">
-        {/* ZONE 1 (LEFT): Page Structure & Add Blocks */}
+        {/* ZONE 1 (LEFT): Page Structure, Add Blocks & Commerce Modules */}
         <div className="flex flex-col border-e border-[#102D45]/10 bg-white min-h-0">
-          <div className="grid grid-cols-2 border-b border-[#102D45]/10 p-1.5 bg-[#F5F7FA]">
+          <div className="grid grid-cols-3 border-b border-[#102D45]/10 p-1.5 bg-[#F5F7FA] gap-1">
             <button
               type="button"
               onClick={() => setLeftTab('structure')}
-              className={`rounded-lg py-1.5 text-xs font-bold ${
+              className={`rounded-lg py-1.5 text-[11px] font-bold ${
                 leftTab === 'structure'
                   ? 'bg-white text-[#102D45] shadow-2xs'
                   : 'text-slate-500'
@@ -312,133 +485,184 @@ export function PageEditorWorkspace({
             <button
               type="button"
               onClick={() => setLeftTab('add_block')}
-              className={`rounded-lg py-1.5 text-xs font-bold ${
+              className={`rounded-lg py-1.5 text-[11px] font-bold ${
                 leftTab === 'add_block'
                   ? 'bg-white text-[#102D45] shadow-2xs'
                   : 'text-slate-500'
               }`}
             >
-              + Blocs (44)
+              + Blocs ({BLOCK_CATALOG.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setLeftTab('modules')}
+              className={`rounded-lg py-1.5 text-[11px] font-bold ${
+                leftTab === 'modules'
+                  ? 'bg-white text-[#102D45] shadow-2xs'
+                  : 'text-slate-500'
+              }`}
+            >
+              Modules ({page.commerceModules?.length ?? 0})
             </button>
           </div>
 
           <div className="flex-1 overflow-y-auto p-3 space-y-2">
             {leftTab === 'structure' ? (
-              page.blocks.map((blk, index) => {
-                const isSelected = selectedBlock?.id === blk.id;
-                return (
-                  <div
-                    key={blk.id}
-                    draggable
-                    onDragStart={() => setDraggedBlockId(blk.id)}
-                    onDragOver={(e) => e.preventDefault()}
-                    onDrop={() => handleDropOnBlock(blk.id)}
-                    onClick={() => {
-                      setSelectedBlockId(blk.id);
-                      setRightTab('block');
-                    }}
-                    className={`cursor-pointer rounded-xl border p-2.5 transition-all ${
-                      isSelected
-                        ? 'border-[#E7B34C] bg-[#E7B34C]/10'
-                        : 'border-[#102D45]/10 bg-[#F5F7FA] hover:border-[#1C4967]/40'
+              <>
+                {/* First-class Site Zones Quick Access */}
+                <div className="grid grid-cols-3 gap-1.5 pb-2 border-b border-[#102D45]/10">
+                  <button
+                    type="button"
+                    onClick={() => setRightTab('identity')}
+                    className={`rounded-lg border px-2 py-1.5 text-[10px] font-bold transition-colors ${
+                      rightTab === 'identity'
+                        ? 'border-[#E7B34C] bg-[#102D45] text-white'
+                        : 'border-[#102D45]/12 bg-[#F5F7FA] text-[#102D45]'
                     }`}
                   >
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="min-w-0">
-                        <p className="text-xs font-bold text-[#102D45] truncate">
-                          {index + 1}. {blk.name}
-                        </p>
-                        <p className="font-mono text-[10px] text-slate-500 truncate">
-                          {blk.type}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onUpdatePage(
-                            updateBlockInPage(page, blk.id, (b) => ({
-                              ...b,
-                              visible: !b.visible,
-                            }))
-                          );
-                        }}
-                        className="rounded p-1 text-slate-500 hover:bg-white hover:text-[#102D45]"
-                        title={blk.visible ? 'Masquer' : 'Afficher'}
-                      >
-                        {blk.visible ? (
-                          <Eye className="h-3.5 w-3.5" />
-                        ) : (
-                          <EyeOff className="h-3.5 w-3.5 text-rose-500" />
-                        )}
-                      </button>
-                    </div>
+                    Identité
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRightTab('header')}
+                    className={`rounded-lg border px-2 py-1.5 text-[10px] font-bold transition-colors ${
+                      rightTab === 'header'
+                        ? 'border-[#E7B34C] bg-[#102D45] text-white'
+                        : 'border-[#102D45]/12 bg-[#F5F7FA] text-[#102D45]'
+                    }`}
+                  >
+                    Header {headerConfig.enabled ? '✓' : 'off'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRightTab('footer')}
+                    className={`rounded-lg border px-2 py-1.5 text-[10px] font-bold transition-colors ${
+                      rightTab === 'footer'
+                        ? 'border-[#E7B34C] bg-[#102D45] text-white'
+                        : 'border-[#102D45]/12 bg-[#F5F7FA] text-[#102D45]'
+                    }`}
+                  >
+                    Footer {footerConfig.enabled ? '✓' : 'off'}
+                  </button>
+                </div>
 
-                    <div className="mt-2 flex items-center justify-between border-t border-[#102D45]/8 pt-1.5">
-                      <div className="flex items-center gap-1">
-                        <button
-                          type="button"
-                          disabled={index === 0}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onUpdatePage(moveBlockInPage(page, blk.id, 'up'));
-                          }}
-                          className="rounded p-1 text-slate-600 hover:bg-white disabled:opacity-30"
-                          title="Monter"
-                        >
-                          <ArrowUp className="h-3 w-3" />
-                        </button>
-                        <button
-                          type="button"
-                          disabled={index === page.blocks.length - 1}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onUpdatePage(moveBlockInPage(page, blk.id, 'down'));
-                          }}
-                          className="rounded p-1 text-slate-600 hover:bg-white disabled:opacity-30"
-                          title="Descendre"
-                        >
-                          <ArrowDown className="h-3 w-3" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onUpdatePage(duplicateBlockInPage(page, blk.id));
-                          }}
-                          className="rounded p-1 text-slate-600 hover:bg-white"
-                          title="Dupliquer"
-                        >
-                          <Copy className="h-3 w-3" />
-                        </button>
+                {page.blocks.map((blk, index) => {
+                  const isSelected = selectedBlock?.id === blk.id && rightTab === 'block';
+                  return (
+                    <div
+                      key={blk.id}
+                      draggable
+                      onDragStart={() => setDraggedBlockId(blk.id)}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={() => handleDropOnBlock(blk.id)}
+                      onClick={() => {
+                        setSelectedBlockId(blk.id);
+                        setRightTab('block');
+                      }}
+                      className={`cursor-pointer rounded-xl border p-2.5 transition-all ${
+                        isSelected
+                          ? 'border-[#E7B34C] bg-[#E7B34C]/10'
+                          : 'border-[#102D45]/10 bg-[#F5F7FA] hover:border-[#1C4967]/40'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-[#102D45] truncate">
+                            {index + 1}. {blk.name}
+                          </p>
+                          <p className="font-mono text-[10px] text-slate-500 truncate">
+                            {blk.type}
+                            {blk.anchorId ? ` · #${blk.anchorId}` : ''}
+                          </p>
+                        </div>
                         <button
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            onUpdatePage(resetBlockInPage(page, blk.id));
+                            commitPageChange(
+                              updateBlockInPage(page, blk.id, (b) => ({
+                                ...b,
+                                visible: !b.visible,
+                              }))
+                            );
                           }}
-                          className="rounded p-1 text-slate-600 hover:bg-white"
-                          title="Réinitialiser ce bloc"
+                          className="rounded p-1 text-slate-500 hover:bg-white hover:text-[#102D45]"
+                          title={blk.visible ? 'Masquer' : 'Afficher'}
                         >
-                          <RotateCcw className="h-3 w-3" />
+                          {blk.visible ? (
+                            <Eye className="h-3.5 w-3.5" />
+                          ) : (
+                            <EyeOff className="h-3.5 w-3.5 text-rose-500" />
+                          )}
                         </button>
                       </div>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onUpdatePage(removeBlockFromPage(page, blk.id));
-                        }}
-                        className="rounded p-1 text-rose-600 hover:bg-rose-50"
-                        title="Supprimer"
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </button>
+
+                      <div className="mt-2 flex items-center justify-between border-t border-[#102D45]/8 pt-1.5">
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            disabled={index === 0}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              commitPageChange(moveBlockInPage(page, blk.id, 'up'));
+                            }}
+                            className="rounded p-1 text-slate-600 hover:bg-white disabled:opacity-30"
+                            title="Monter"
+                          >
+                            <ArrowUp className="h-3 w-3" />
+                          </button>
+                          <button
+                            type="button"
+                            disabled={index === page.blocks.length - 1}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              commitPageChange(moveBlockInPage(page, blk.id, 'down'));
+                            }}
+                            className="rounded p-1 text-slate-600 hover:bg-white disabled:opacity-30"
+                            title="Descendre"
+                          >
+                            <ArrowDown className="h-3 w-3" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              commitPageChange(duplicateBlockInPage(page, blk.id));
+                            }}
+                            className="rounded p-1 text-slate-600 hover:bg-white"
+                            title="Dupliquer"
+                          >
+                            <Copy className="h-3 w-3" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              commitPageChange(resetBlockInPage(page, blk.id));
+                            }}
+                            className="rounded p-1 text-slate-600 hover:bg-white"
+                            title="Réinitialiser ce bloc"
+                          >
+                            <RotateCcw className="h-3 w-3" />
+                          </button>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            commitPageChange(removeBlockFromPage(page, blk.id));
+                          }}
+                          className="rounded p-1 text-rose-600 hover:bg-rose-50"
+                          title="Supprimer"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                );
-              })
-            ) : (
+                  );
+                })}
+              </>
+            ) : leftTab === 'add_block' ? (
               <div className="space-y-3">
                 <select
                   value={blockCategoryFilter}
@@ -449,12 +673,13 @@ export function PageEditorWorkspace({
                   }
                   className="w-full rounded-lg border border-[#102D45]/15 bg-[#F5F7FA] px-2.5 py-1.5 text-xs font-semibold text-[#102D45]"
                 >
-                  <option value="all">Toutes catégories (44)</option>
-                  <option value="common">Communs (15)</option>
-                  <option value="omra">Omra (8)</option>
-                  <option value="voyages">Voyages (7)</option>
-                  <option value="hotels_tunisie">Hôtels Tunisie (7)</option>
-                  <option value="visa">Services Visa (7)</option>
+                  <option value="all">Toutes catégories ({BLOCK_CATALOG.length})</option>
+                  <option value="common">Communs & Structure ({countByCategory('common')})</option>
+                  <option value="commerce">Modules Commerce ({countByCategory('commerce')})</option>
+                  <option value="omra">Omra ({countByCategory('omra')})</option>
+                  <option value="voyages">Voyages ({countByCategory('voyages')})</option>
+                  <option value="hotels_tunisie">Hôtels Tunisie ({countByCategory('hotels_tunisie')})</option>
+                  <option value="visa">Services Visa ({countByCategory('visa')})</option>
                 </select>
 
                 <div className="space-y-1.5">
@@ -477,6 +702,51 @@ export function PageEditorWorkspace({
                     </button>
                   ))}
                 </div>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-[11px] text-slate-600 leading-relaxed">
+                  Activez ou désactivez des modules voyage évolutifs sur cette page sans reconstruire l’architecture.
+                </p>
+                {UNIVERSAL_COMMERCE_MODULES.map((mod) => {
+                  const active = (page.commerceModules ?? []).includes(mod.id);
+                  return (
+                    <button
+                      key={mod.id}
+                      type="button"
+                      onClick={() =>
+                        commitPageChange(toggleCommerceModuleOnPage(page, mod.id))
+                      }
+                      className={`flex w-full items-start justify-between gap-2 rounded-xl border p-2.5 text-start transition-colors ${
+                        active
+                          ? 'border-[#E7B34C] bg-[#102D45] text-white'
+                          : 'border-[#102D45]/10 bg-[#F5F7FA] text-[#102D45] hover:bg-white'
+                      }`}
+                    >
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold truncate">
+                          {mod.labels[page.language]}
+                        </p>
+                        <p
+                          className={`mt-0.5 text-[10px] leading-snug ${
+                            active ? 'text-slate-300' : 'text-slate-500'
+                          }`}
+                        >
+                          {mod.capabilities[page.language]}
+                        </p>
+                      </div>
+                      <span
+                        className={`mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border ${
+                          active
+                            ? 'border-[#E7B34C] bg-[#E7B34C] text-[#102D45]'
+                            : 'border-[#102D45]/20 bg-white text-transparent'
+                        }`}
+                      >
+                        <Check className="h-3 w-3" />
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -531,6 +801,13 @@ export function PageEditorWorkspace({
             viewport={viewport}
             crmConfig={crmConfig}
             selectedBlockId={selectedBlock?.id}
+            selectedZone={
+              rightTab === 'identity' ||
+              rightTab === 'header' ||
+              rightTab === 'footer'
+                ? rightTab
+                : null
+            }
             interactiveEdit={
               previewMode === 'draft' && pilotRenderMode === 'blocks'
             }
@@ -542,15 +819,19 @@ export function PageEditorWorkspace({
               setSelectedBlockId(id);
               setRightTab('block');
             }}
+            onSelectPageZone={(zone) => setRightTab(zone)}
           />
         </div>
 
-        {/* ZONE 3 (RIGHT): Properties Inspector / Form Builder / SEO / Publication */}
+        {/* ZONE 3 (RIGHT): Identity / Header / Block / Footer / Form / SEO / Publish */}
         <div className="flex flex-col border-s border-[#102D45]/10 bg-white min-h-0">
-          <div className="grid grid-cols-4 border-b border-[#102D45]/10 bg-[#F5F7FA] p-1">
+          <div className="flex flex-wrap gap-1 border-b border-[#102D45]/10 bg-[#F5F7FA] p-1.5">
             {(
               [
+                { id: 'identity', label: 'Identité' },
+                { id: 'header', label: 'Header' },
                 { id: 'block', label: 'Bloc' },
+                { id: 'footer', label: 'Footer' },
                 { id: 'form', label: 'Form' },
                 { id: 'seo', label: 'SEO' },
                 { id: 'publish', label: 'Publier' },
@@ -560,7 +841,7 @@ export function PageEditorWorkspace({
                 key={tab.id}
                 type="button"
                 onClick={() => setRightTab(tab.id)}
-                className={`rounded-lg py-1.5 text-[11px] font-bold ${
+                className={`rounded-lg px-2.5 py-1.5 text-[11px] font-bold whitespace-nowrap shrink-0 ${
                   rightTab === tab.id
                     ? 'bg-white text-[#102D45] shadow-2xs'
                     : 'text-slate-500 hover:text-[#102D45]'
@@ -572,6 +853,755 @@ export function PageEditorWorkspace({
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 space-y-5">
+            {/* TAB: IDENTITÉ & LOGO */}
+            {rightTab === 'identity' && (
+              <div className="space-y-4">
+                <div className="border-b border-[#102D45]/10 pb-2">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#C8922A]">
+                    Charte & Identité Visuelle
+                  </p>
+                  <h3 className="text-xs font-bold text-[#102D45]">
+                    Marque, Logo, Couleurs & Typographies
+                  </h3>
+                </div>
+
+                <div className="space-y-2.5">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                      Nom de la marque
+                    </label>
+                    <input
+                      type="text"
+                      value={brandIdentity.brandName}
+                      onChange={(e) =>
+                        updateBrandIdentity((b) => ({
+                          ...b,
+                          brandName: e.target.value,
+                        }))
+                      }
+                      className="w-full rounded-lg border border-[#102D45]/15 bg-[#F5F7FA] px-2.5 py-1.5 text-xs font-bold"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                      Tagline / Signature courte
+                    </label>
+                    <input
+                      type="text"
+                      value={brandIdentity.tagline || ''}
+                      onChange={(e) =>
+                        updateBrandIdentity((b) => ({
+                          ...b,
+                          tagline: e.target.value,
+                        }))
+                      }
+                      className="w-full rounded-lg border border-[#102D45]/15 bg-[#F5F7FA] px-2.5 py-1.5 text-xs"
+                    />
+                  </div>
+                </div>
+
+                {/* Real Logo Import vs Provisional Wordmark */}
+                <div className="rounded-xl border border-[#102D45]/10 bg-[#F5F7FA] p-3 space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[11px] font-bold text-[#102D45]">
+                      Logo de l’entreprise
+                    </span>
+                    <span className="text-[10px] font-semibold text-slate-500">
+                      {brandIdentity.isProvisionalLogo
+                        ? 'Provisoire (modifiable)'
+                        : 'Logo réel actif'}
+                    </span>
+                  </div>
+                  {brandIdentity.logoSrc && (
+                    <div className="flex items-center justify-between rounded-lg bg-white p-2 border border-[#102D45]/10">
+                      <img
+                        src={brandIdentity.logoSrc}
+                        alt={brandIdentity.brandName}
+                        className="h-8 w-auto object-contain"
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          updateBrandIdentity((b) => ({
+                            ...b,
+                            logoSrc: null,
+                            isProvisionalLogo: true,
+                          }))
+                        }
+                        className="text-[10px] font-semibold text-rose-600 hover:underline"
+                      >
+                        Retirer
+                      </button>
+                    </div>
+                  )}
+                  <div className="flex flex-wrap gap-1.5">
+                    <label className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-[#102D45]/15 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-[#102D45] hover:border-[#E7B34C]">
+                      <Upload className="h-3 w-3" />
+                      <span>Importer fichier</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleEditorLogoUpload}
+                        className="hidden"
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        updateBrandIdentity((b) => ({
+                          ...b,
+                          logoSrc: '/assets/aistudio/logo_transparent_e9918557.png',
+                          isProvisionalLogo: false,
+                        }))
+                      }
+                      className="rounded-lg border border-[#102D45]/15 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-[#1C4967] hover:border-[#E7B34C]"
+                    >
+                      Logo Easy2Book
+                    </button>
+                  </div>
+                </div>
+
+                {/* Visual Style Presets */}
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                    Style général
+                  </label>
+                  <select
+                    value={brandIdentity.visualStyle}
+                    onChange={(e) => {
+                      const nextStyle = e.target.value as BrandVisualStyle;
+                      const preset = STYLE_PALETTE_PRESETS[nextStyle];
+                      updateBrandIdentity((b) => ({
+                        ...b,
+                        ...preset,
+                      }));
+                    }}
+                    className="w-full rounded-lg border border-[#102D45]/15 bg-[#F5F7FA] px-2.5 py-1.5 text-xs font-bold text-[#102D45]"
+                  >
+                    <option value="premium">Premium</option>
+                    <option value="moderne">Moderne</option>
+                    <option value="luxe">Luxe</option>
+                    <option value="minimaliste">Minimaliste</option>
+                    <option value="familial">Familial</option>
+                    <option value="commercial">Commercial</option>
+                  </select>
+                </div>
+
+                {/* Color Tokens */}
+                <div className="grid grid-cols-3 gap-2">
+                  {(
+                    [
+                      ['primaryColor', 'Principale'],
+                      ['secondaryColor', 'Secondaire'],
+                      ['accentColor', 'Accent'],
+                      ['ctaColor', 'Bouton CTA'],
+                      ['ctaTextColor', 'Texte CTA'],
+                      ['surfaceColor', 'Fond page'],
+                    ] as const
+                  ).map(([key, lbl]) => (
+                    <div key={key}>
+                      <label className="block text-[10px] text-slate-500 mb-0.5">
+                        {lbl}
+                      </label>
+                      <input
+                        type="color"
+                        value={brandIdentity[key]}
+                        onChange={(e) =>
+                          updateBrandIdentity((b) => ({
+                            ...b,
+                            [key]: e.target.value,
+                          }))
+                        }
+                        className="h-8 w-full rounded border border-[#102D45]/15 cursor-pointer"
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Typography & Shapes */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-[10px] font-semibold text-slate-600 mb-0.5">
+                      Police Titres
+                    </label>
+                    <select
+                      value={brandIdentity.headingFont}
+                      onChange={(e) =>
+                        updateBrandIdentity((b) => ({
+                          ...b,
+                          headingFont: e.target.value,
+                        }))
+                      }
+                      className="w-full rounded-lg border border-[#102D45]/15 bg-[#F5F7FA] px-2 py-1.5 text-xs"
+                    >
+                      {FONT_OPTIONS.map((f) => (
+                        <option key={f} value={f}>
+                          {f}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-semibold text-slate-600 mb-0.5">
+                      Police Texte
+                    </label>
+                    <select
+                      value={brandIdentity.bodyFont}
+                      onChange={(e) =>
+                        updateBrandIdentity((b) => ({
+                          ...b,
+                          bodyFont: e.target.value,
+                        }))
+                      }
+                      className="w-full rounded-lg border border-[#102D45]/15 bg-[#F5F7FA] px-2 py-1.5 text-xs"
+                    >
+                      {FONT_OPTIONS.map((f) => (
+                        <option key={f} value={f}>
+                          {f}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2">
+                  <select
+                    value={brandIdentity.cardShape}
+                    onChange={(e) =>
+                      updateBrandIdentity((b) => ({
+                        ...b,
+                        cardShape: e.target.value as BrandIdentity['cardShape'],
+                      }))
+                    }
+                    className="rounded-lg border border-[#102D45]/15 bg-[#F5F7FA] px-2 py-1.5 text-[11px]"
+                  >
+                    <option value="sharp">Cartes droites</option>
+                    <option value="soft">Cartes douces</option>
+                    <option value="rounded">Cartes arrondies</option>
+                  </select>
+                  <select
+                    value={brandIdentity.imageStyle}
+                    onChange={(e) =>
+                      updateBrandIdentity((b) => ({
+                        ...b,
+                        imageStyle: e.target.value as BrandIdentity['imageStyle'],
+                      }))
+                    }
+                    className="rounded-lg border border-[#102D45]/15 bg-[#F5F7FA] px-2 py-1.5 text-[11px]"
+                  >
+                    <option value="rounded">Images douces</option>
+                    <option value="editorial">Images éditoriales</option>
+                    <option value="full_bleed">Plein cadre</option>
+                  </select>
+                  <select
+                    value={brandIdentity.spacingScale}
+                    onChange={(e) =>
+                      updateBrandIdentity((b) => ({
+                        ...b,
+                        spacingScale: e.target.value as BrandIdentity['spacingScale'],
+                      }))
+                    }
+                    className="rounded-lg border border-[#102D45]/15 bg-[#F5F7FA] px-2 py-1.5 text-[11px]"
+                  >
+                    <option value="compact">Compact</option>
+                    <option value="balanced">Équilibré</option>
+                    <option value="spacious">Aéré</option>
+                  </select>
+                </div>
+              </div>
+            )}
+
+            {/* TAB: HEADER CONFIGURABLE */}
+            {rightTab === 'header' && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border-b border-[#102D45]/10 pb-2">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-[#C8922A]">
+                      Navigation Principale
+                    </p>
+                    <h3 className="text-xs font-bold text-[#102D45]">
+                      Header Professionnel (5 variantes)
+                    </h3>
+                  </div>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-[#102D45]">
+                    <input
+                      type="checkbox"
+                      checked={headerConfig.enabled}
+                      onChange={(e) =>
+                        updateHeaderConfig((h) => ({
+                          ...h,
+                          enabled: e.target.checked,
+                        }))
+                      }
+                      className="accent-[#102D45]"
+                    />
+                    Actif
+                  </label>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                    Style de navigation
+                  </label>
+                  <select
+                    value={headerConfig.variant}
+                    onChange={(e) =>
+                      updateHeaderConfig((h) => ({
+                        ...h,
+                        variant: e.target.value as HeaderVariant,
+                      }))
+                    }
+                    className="w-full rounded-lg border border-[#102D45]/15 bg-[#F5F7FA] px-2.5 py-1.5 text-xs font-bold text-[#102D45]"
+                  >
+                    <option value="corporate">1. Header Corporate</option>
+                    <option value="premium">2. Header Premium</option>
+                    <option value="touristique">3. Header Touristique</option>
+                    <option value="minimaliste">4. Header Minimaliste</option>
+                    <option value="hotelier">5. Header Hôtelier</option>
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 text-[11px] rounded-xl border border-[#102D45]/10 bg-[#F5F7FA] p-2.5">
+                  <label className="flex items-center gap-1.5 font-semibold">
+                    <input
+                      type="checkbox"
+                      checked={headerConfig.sticky}
+                      onChange={(e) =>
+                        updateHeaderConfig((h) => ({
+                          ...h,
+                          sticky: e.target.checked,
+                        }))
+                      }
+                      className="accent-[#102D45]"
+                    />
+                    Fixe (sticky)
+                  </label>
+                  <label className="flex items-center gap-1.5 font-semibold">
+                    <input
+                      type="checkbox"
+                      checked={headerConfig.showLogo}
+                      onChange={(e) =>
+                        updateHeaderConfig((h) => ({
+                          ...h,
+                          showLogo: e.target.checked,
+                        }))
+                      }
+                      className="accent-[#102D45]"
+                    />
+                    Logo
+                  </label>
+                  <label className="flex items-center gap-1.5 font-semibold">
+                    <input
+                      type="checkbox"
+                      checked={headerConfig.showBrandName}
+                      onChange={(e) =>
+                        updateHeaderConfig((h) => ({
+                          ...h,
+                          showBrandName: e.target.checked,
+                        }))
+                      }
+                      className="accent-[#102D45]"
+                    />
+                    Nom
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-[10px] font-semibold text-slate-600 mb-0.5">
+                      Bouton CTA principal
+                    </label>
+                    <input
+                      type="text"
+                      value={headerConfig.ctaLabel}
+                      onChange={(e) =>
+                        updateHeaderConfig((h) => ({
+                          ...h,
+                          ctaLabel: e.target.value,
+                        }))
+                      }
+                      className="w-full rounded-lg border border-[#102D45]/15 bg-[#F5F7FA] px-2 py-1.5 text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-semibold text-slate-600 mb-0.5">
+                      Ancre cible CTA
+                    </label>
+                    <input
+                      type="text"
+                      value={headerConfig.ctaTarget}
+                      onChange={(e) =>
+                        updateHeaderConfig((h) => ({
+                          ...h,
+                          ctaTarget: e.target.value,
+                        }))
+                      }
+                      className="w-full rounded-lg border border-[#102D45]/15 bg-[#F5F7FA] px-2 py-1.5 font-mono text-xs"
+                    />
+                  </div>
+                </div>
+
+                {/* Header WhatsApp */}
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-3 space-y-2">
+                  <label className="flex items-center justify-between text-[11px] font-bold text-emerald-950">
+                    <span>Bouton WhatsApp (si configuré)</span>
+                    <input
+                      type="checkbox"
+                      checked={headerConfig.showWhatsapp}
+                      onChange={(e) =>
+                        updateHeaderConfig((h) => ({
+                          ...h,
+                          showWhatsapp: e.target.checked,
+                        }))
+                      }
+                      className="accent-emerald-700"
+                    />
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      placeholder="Numéro WhatsApp"
+                      value={headerConfig.whatsappNumber}
+                      onChange={(e) =>
+                        updateHeaderConfig((h) => ({
+                          ...h,
+                          whatsappNumber: e.target.value,
+                        }))
+                      }
+                      className="rounded-lg border border-emerald-200 bg-white px-2 py-1.5 font-mono text-xs"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Libellé (ex: WhatsApp)"
+                      value={headerConfig.whatsappLabel}
+                      onChange={(e) =>
+                        updateHeaderConfig((h) => ({
+                          ...h,
+                          whatsappLabel: e.target.value,
+                        }))
+                      }
+                      className="rounded-lg border border-emerald-200 bg-white px-2 py-1.5 text-xs"
+                    />
+                  </div>
+                </div>
+
+                {/* Nav Links */}
+                <div className="space-y-2 border-t border-[#102D45]/10 pt-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-[#102D45]">
+                      Liens vers les sections ({headerConfig.navLinks.length})
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        updateHeaderConfig((h) => ({
+                          ...h,
+                          navLinks: [
+                            ...h.navLinks,
+                            {
+                              id: `nav-${Date.now().toString(36)}`,
+                              label: 'Nouvelle section',
+                              target: '#offres',
+                            },
+                          ],
+                        }))
+                      }
+                      className="text-[11px] font-bold text-[#1C4967] hover:underline"
+                    >
+                      + Ajouter lien
+                    </button>
+                  </div>
+                  {headerConfig.navLinks.map((lnk, idx) => (
+                    <div
+                      key={lnk.id}
+                      className="grid grid-cols-[1fr_95px_24px] gap-1.5 items-center"
+                    >
+                      <input
+                        type="text"
+                        value={lnk.label}
+                        onChange={(e) =>
+                          updateHeaderConfig((h) => ({
+                            ...h,
+                            navLinks: h.navLinks.map((x, i) =>
+                              i === idx ? { ...x, label: e.target.value } : x
+                            ),
+                          }))
+                        }
+                        className="rounded border border-[#102D45]/15 bg-[#F5F7FA] px-2 py-1 text-xs"
+                      />
+                      <input
+                        type="text"
+                        value={lnk.target}
+                        onChange={(e) =>
+                          updateHeaderConfig((h) => ({
+                            ...h,
+                            navLinks: h.navLinks.map((x, i) =>
+                              i === idx ? { ...x, target: e.target.value } : x
+                            ),
+                          }))
+                        }
+                        className="rounded border border-[#102D45]/15 bg-[#F5F7FA] px-2 py-1 font-mono text-[11px]"
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          updateHeaderConfig((h) => ({
+                            ...h,
+                            navLinks: h.navLinks.filter((_, i) => i !== idx),
+                          }))
+                        }
+                        className="p-1 text-rose-500"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* TAB: FOOTER CONFIGURABLE */}
+            {rightTab === 'footer' && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border-b border-[#102D45]/10 pb-2">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-[#C8922A]">
+                      Pied de page complet
+                    </p>
+                    <h3 className="text-xs font-bold text-[#102D45]">
+                      Footer & Coordonnées réelles
+                    </h3>
+                  </div>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-[#102D45]">
+                    <input
+                      type="checkbox"
+                      checked={footerConfig.enabled}
+                      onChange={(e) =>
+                        updateFooterConfig((f) => ({
+                          ...f,
+                          enabled: e.target.checked,
+                        }))
+                      }
+                      className="accent-[#102D45]"
+                    />
+                    Actif
+                  </label>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                    Présentation courte entreprise
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={footerConfig.companyDescription}
+                    onChange={(e) =>
+                      updateFooterConfig((f) => ({
+                        ...f,
+                        companyDescription: e.target.value,
+                      }))
+                    }
+                    className="w-full rounded-lg border border-[#102D45]/15 bg-[#F5F7FA] px-2.5 py-1.5 text-xs"
+                  />
+                </div>
+
+                <div className="rounded-xl border border-[#102D45]/10 bg-[#F5F7FA] p-3 space-y-2">
+                  <p className="text-[11px] font-bold text-[#102D45]">
+                    Coordonnées réelles (champs vides masqués en public)
+                  </p>
+                  <input
+                    type="text"
+                    placeholder="Téléphone officiel"
+                    value={footerConfig.phone}
+                    onChange={(e) =>
+                      updateFooterConfig((f) => ({ ...f, phone: e.target.value }))
+                    }
+                    className="w-full rounded-lg border border-[#102D45]/15 bg-white px-2.5 py-1.5 text-xs"
+                  />
+                  <input
+                    type="text"
+                    placeholder="WhatsApp Business"
+                    value={footerConfig.whatsapp}
+                    onChange={(e) =>
+                      updateFooterConfig((f) => ({
+                        ...f,
+                        whatsapp: e.target.value,
+                      }))
+                    }
+                    className="w-full rounded-lg border border-[#102D45]/15 bg-white px-2.5 py-1.5 text-xs"
+                  />
+                  <input
+                    type="email"
+                    placeholder="Email de contact"
+                    value={footerConfig.email}
+                    onChange={(e) =>
+                      updateFooterConfig((f) => ({ ...f, email: e.target.value }))
+                    }
+                    className="w-full rounded-lg border border-[#102D45]/15 bg-white px-2.5 py-1.5 text-xs"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Adresse physique"
+                    value={footerConfig.address}
+                    onChange={(e) =>
+                      updateFooterConfig((f) => ({
+                        ...f,
+                        address: e.target.value,
+                      }))
+                    }
+                    className="w-full rounded-lg border border-[#102D45]/15 bg-white px-2.5 py-1.5 text-xs"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-[11px] font-bold text-[#102D45]">
+                    Réseaux sociaux (URL complètes si actives)
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      placeholder="Facebook URL"
+                      value={footerConfig.socialLinks.facebook || ''}
+                      onChange={(e) =>
+                        updateFooterConfig((f) => ({
+                          ...f,
+                          socialLinks: {
+                            ...f.socialLinks,
+                            facebook: e.target.value,
+                          },
+                        }))
+                      }
+                      className="rounded-lg border border-[#102D45]/15 bg-[#F5F7FA] px-2 py-1.5 text-[11px]"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Instagram URL"
+                      value={footerConfig.socialLinks.instagram || ''}
+                      onChange={(e) =>
+                        updateFooterConfig((f) => ({
+                          ...f,
+                          socialLinks: {
+                            ...f.socialLinks,
+                            instagram: e.target.value,
+                          },
+                        }))
+                      }
+                      className="rounded-lg border border-[#102D45]/15 bg-[#F5F7FA] px-2 py-1.5 text-[11px]"
+                    />
+                    <input
+                      type="text"
+                      placeholder="LinkedIn URL"
+                      value={footerConfig.socialLinks.linkedin || ''}
+                      onChange={(e) =>
+                        updateFooterConfig((f) => ({
+                          ...f,
+                          socialLinks: {
+                            ...f.socialLinks,
+                            linkedin: e.target.value,
+                          },
+                        }))
+                      }
+                      className="rounded-lg border border-[#102D45]/15 bg-[#F5F7FA] px-2 py-1.5 text-[11px]"
+                    />
+                    <input
+                      type="text"
+                      placeholder="YouTube URL"
+                      value={footerConfig.socialLinks.youtube || ''}
+                      onChange={(e) =>
+                        updateFooterConfig((f) => ({
+                          ...f,
+                          socialLinks: {
+                            ...f.socialLinks,
+                            youtube: e.target.value,
+                          },
+                        }))
+                      }
+                      className="rounded-lg border border-[#102D45]/15 bg-[#F5F7FA] px-2 py-1.5 text-[11px]"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2 border-t border-[#102D45]/10 pt-3">
+                  <p className="text-[11px] font-bold text-[#102D45]">
+                    Mentions légales & Copyright
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      placeholder="Libellé mentions légales"
+                      value={footerConfig.legalLinks.termsLabel || ''}
+                      onChange={(e) =>
+                        updateFooterConfig((f) => ({
+                          ...f,
+                          legalLinks: {
+                            ...f.legalLinks,
+                            termsLabel: e.target.value,
+                          },
+                        }))
+                      }
+                      className="rounded-lg border border-[#102D45]/15 bg-[#F5F7FA] px-2 py-1.5 text-[11px]"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Lien mentions (/mentions)"
+                      value={footerConfig.legalLinks.termsUrl || ''}
+                      onChange={(e) =>
+                        updateFooterConfig((f) => ({
+                          ...f,
+                          legalLinks: {
+                            ...f.legalLinks,
+                            termsUrl: e.target.value,
+                          },
+                        }))
+                      }
+                      className="rounded-lg border border-[#102D45]/15 bg-[#F5F7FA] px-2 py-1.5 text-[11px]"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Libellé confidentialité"
+                      value={footerConfig.legalLinks.privacyLabel || ''}
+                      onChange={(e) =>
+                        updateFooterConfig((f) => ({
+                          ...f,
+                          legalLinks: {
+                            ...f.legalLinks,
+                            privacyLabel: e.target.value,
+                          },
+                        }))
+                      }
+                      className="rounded-lg border border-[#102D45]/15 bg-[#F5F7FA] px-2 py-1.5 text-[11px]"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Lien confidentialité"
+                      value={footerConfig.legalLinks.privacyUrl || ''}
+                      onChange={(e) =>
+                        updateFooterConfig((f) => ({
+                          ...f,
+                          legalLinks: {
+                            ...f.legalLinks,
+                            privacyUrl: e.target.value,
+                          },
+                        }))
+                      }
+                      className="rounded-lg border border-[#102D45]/15 bg-[#F5F7FA] px-2 py-1.5 text-[11px]"
+                    />
+                  </div>
+                  <input
+                    type="text"
+                    value={footerConfig.copyrightText}
+                    onChange={(e) =>
+                      updateFooterConfig((f) => ({
+                        ...f,
+                        copyrightText: e.target.value,
+                      }))
+                    }
+                    className="w-full rounded-lg border border-[#102D45]/15 bg-[#F5F7FA] px-2.5 py-1.5 text-xs"
+                  />
+                </div>
+              </div>
+            )}
+
             {rightTab === 'block' && selectedBlock && (
               <>
                 <div className="flex items-center justify-between border-b border-[#102D45]/10 pb-2">
@@ -582,6 +1612,21 @@ export function PageEditorWorkspace({
                     <h3 className="text-xs font-bold text-[#102D45]">
                       {selectedBlock.name}
                     </h3>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-[10px] text-slate-400">#</span>
+                    <input
+                      type="text"
+                      placeholder="ancre"
+                      value={selectedBlock.anchorId || ''}
+                      onChange={(e) =>
+                        updateSelectedBlock((b) => ({
+                          ...b,
+                          anchorId: e.target.value.replace(/^#/, '') || undefined,
+                        }))
+                      }
+                      className="w-24 rounded border border-[#102D45]/15 bg-[#F5F7FA] px-1.5 py-0.5 font-mono text-[10px]"
+                    />
                   </div>
                 </div>
 
@@ -677,6 +1722,53 @@ export function PageEditorWorkspace({
                         ))}
                     </select>
                   </div>
+
+                  {/* Multi-image Gallery Selector */}
+                  {(selectedBlock.type === 'gallery' ||
+                    selectedBlock.type === 'voyage_gallery' ||
+                    selectedBlock.type === 'hotel_gallery') && (
+                    <div className="rounded-xl border border-[#102D45]/10 bg-[#F5F7FA] p-2.5 space-y-1.5">
+                      <p className="text-[11px] font-bold text-[#102D45]">
+                        Photos de la galerie (multi-sélection)
+                      </p>
+                      <div className="grid grid-cols-2 gap-1 max-h-36 overflow-y-auto">
+                        {(Object.keys(HERO_MEDIA_MAP) as HeroImageKey[]).map(
+                          (k) => {
+                            const selectedKeys =
+                              selectedBlock.content.galleryImageKeys ?? [];
+                            const checked = selectedKeys.includes(k);
+                            return (
+                              <label
+                                key={k}
+                                className="flex items-center gap-1.5 rounded bg-white px-2 py-1 text-[10px] cursor-pointer"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={checked}
+                                  onChange={(e) => {
+                                    const nextKeys = e.target.checked
+                                      ? [...selectedKeys, k]
+                                      : selectedKeys.filter((x) => x !== k);
+                                    updateSelectedBlock((b) => ({
+                                      ...b,
+                                      content: {
+                                        ...b.content,
+                                        galleryImageKeys: nextKeys,
+                                      },
+                                    }));
+                                  }}
+                                  className="accent-[#102D45]"
+                                />
+                                <span className="truncate">
+                                  {HERO_MEDIA_MAP[k].label.split('—')[0].trim()}
+                                </span>
+                              </label>
+                            );
+                          }
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                   {/* CTA / Link */}
                   {(selectedBlock.type === 'hero_image' ||

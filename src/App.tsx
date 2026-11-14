@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, Laptop, Smartphone, Tablet } from 'lucide-react';
 import { BLOCK_CATALOG } from './components/block-library/blockCatalog';
 import { BlockLibraryView } from './components/block-library/BlockLibraryView';
+import { CreatePageWizardModal } from './components/create-flow/CreatePageWizardModal';
 import { StudioDashboard } from './components/dashboard/StudioDashboard';
 import { CreatorLayout } from './components/layout/CreatorLayout';
 import { MediaLibraryView } from './components/media-library/MediaLibraryView';
@@ -23,6 +24,7 @@ import {
 import {
   addBlockToPage,
   clonePageData,
+  createBlankModularPage,
   createPageFromTemplate,
   duplicatePageEntity,
   publishPageSnapshot,
@@ -114,6 +116,7 @@ export default function App() {
   >('draft');
   const [autoSaveSavedAt, setAutoSaveSavedAt] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [createWizardOpen, setCreateWizardOpen] = useState(false);
 
   const hasHydratedRef = useRef(false);
   const saveTimeoutRef = useRef<number | null>(null);
@@ -285,6 +288,27 @@ export default function App() {
     showToast(`Page créée : ${created.title}`);
   };
 
+  const handleCreatedFullPage = (page: Page, toastText: string) => {
+    setState((prev) => ({ ...prev, pages: [page, ...prev.pages] }));
+    setCreateWizardOpen(false);
+    setEditingPageId(page.id);
+    showToast(toastText);
+  };
+
+  const handleCreateBlankPage = (params: {
+    title: string;
+    slug: string;
+    universe: BusinessUniverse;
+    language: CreatorLanguage;
+    brandName: string;
+  }) => {
+    const created = createBlankModularPage(params);
+    setState((prev) => ({ ...prev, pages: [created, ...prev.pages] }));
+    setCreateWizardOpen(false);
+    setEditingPageId(created.id);
+    showToast(`Page modulaire créée : ${created.title}`);
+  };
+
   const handleDuplicateTemplate = (templateId: string) => {
     const src = state.templates.find((t) => t.id === templateId);
     if (!src) return;
@@ -338,6 +362,12 @@ export default function App() {
       offerRef: previewPage.offerRef,
       language: previewPage.language,
       title: previewPage.title,
+      folderGroup: previewPage.folderGroup,
+      creationMode: previewPage.creationMode,
+      brandIdentity: previewPage.brandIdentity,
+      header: previewPage.header,
+      footer: previewPage.footer,
+      commerceModules: previewPage.commerceModules,
     };
 
     const snapshot =
@@ -463,6 +493,10 @@ export default function App() {
       notifications={state.notifications}
       counts={counts}
       onSelectNav={(nav) => {
+        if (nav === 'create_page') {
+          setCreateWizardOpen(true);
+          return;
+        }
         setEditingPageId(null);
         setTemplateUniverseFilter('all');
         setActiveNav(nav);
@@ -519,9 +553,14 @@ export default function App() {
           pages={state.pages}
           templates={state.templates}
           onNavigate={(nav) => {
+            if (nav === 'create_page') {
+              setCreateWizardOpen(true);
+              return;
+            }
             setTemplateUniverseFilter('all');
             setActiveNav(nav);
           }}
+          onOpenCreateWizard={() => setCreateWizardOpen(true)}
           onStartUniversePage={(universe) => {
             setTemplateUniverseFilter(universe);
             setActiveNav('create_page');
@@ -550,10 +589,7 @@ export default function App() {
           language={studioLanguage}
           pages={state.pages}
           searchQuery={searchQuery}
-          onCreateNew={() => {
-            setTemplateUniverseFilter('all');
-            setActiveNav('create_page');
-          }}
+          onCreateNew={() => setCreateWizardOpen(true)}
           onOpenEditor={handleOpenEditor}
           onPreviewPage={handleOpenFullPreview}
           onPublishPage={handlePublishPage}
@@ -591,6 +627,20 @@ export default function App() {
           onResetDemoData={() => void handleResetDemoData()}
         />
       )}
+
+      <CreatePageWizardModal
+        open={createWizardOpen}
+        defaultLanguage={studioLanguage}
+        onClose={() => setCreateWizardOpen(false)}
+        onCreatedPage={handleCreatedFullPage}
+        onOpenTemplatesGallery={(universe) => {
+          setCreateWizardOpen(false);
+          setEditingPageId(null);
+          setTemplateUniverseFilter(universe ?? 'all');
+          setActiveNav('templates');
+        }}
+        onCreateBlankPage={handleCreateBlankPage}
+      />
     </CreatorLayout>
   );
 }

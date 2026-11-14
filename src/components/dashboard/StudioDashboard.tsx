@@ -12,6 +12,7 @@ import {
   Plane,
   ShieldCheck,
 } from 'lucide-react';
+import { BLOCK_CATALOG } from '../block-library/blockCatalog';
 import { STUDIO_I18N } from '../../lib/i18n';
 import { getHeroImageSrc } from '../../lib/mediaRegistry';
 import type {
@@ -28,6 +29,7 @@ interface StudioDashboardProps {
   pages: Page[];
   templates: PageTemplate[];
   onNavigate: (nav: StudioNavId) => void;
+  onOpenCreateWizard?: () => void;
   onStartUniversePage: (universe: BusinessUniverse) => void;
   onOpenEditor: (pageId: string) => void;
   onPreviewPage: (pageId: string) => void;
@@ -50,6 +52,7 @@ export function StudioDashboard({
   pages,
   templates,
   onNavigate,
+  onOpenCreateWizard,
   onStartUniversePage,
   onOpenEditor,
   onPreviewPage,
@@ -111,7 +114,9 @@ export function StudioDashboard({
           <div className="flex flex-wrap items-center gap-2.5">
             <button
               type="button"
-              onClick={() => onNavigate('create_page')}
+              onClick={() =>
+                onOpenCreateWizard ? onOpenCreateWizard() : onNavigate('create_page')
+              }
               className="inline-flex items-center gap-2 rounded-xl bg-[#E7B34C] px-4 py-2.5 text-xs font-bold text-[#102D45] transition-colors hover:bg-[#f1c468] whitespace-nowrap shrink-0"
             >
               <FilePlus2 className="h-4 w-4" />
@@ -168,7 +173,7 @@ export function StudioDashboard({
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1C4967] hover:text-[#102D45]"
           >
             <Blocks className="h-3.5 w-3.5" />
-            {t.nav.blockLibrary} (44)
+            {t.nav.blockLibrary} ({BLOCK_CATALOG.length})
           </button>
         </div>
 
@@ -339,12 +344,14 @@ export function StudioDashboard({
             <div className="mt-3 grid grid-cols-2 gap-2.5">
               <button
                 type="button"
-                onClick={() => onNavigate('create_page')}
+                onClick={() =>
+                  onOpenCreateWizard ? onOpenCreateWizard() : onNavigate('create_page')
+                }
                 className="rounded-xl border border-[#102D45]/12 bg-[#F5F7FA] p-3 text-start hover:border-[#E7B34C]"
               >
                 <p className="text-xs font-bold text-[#102D45]">Nouvelle page</p>
                 <p className="mt-0.5 text-[11px] text-slate-500">
-                  Depuis un modèle
+                  Page complète ou modules
                 </p>
               </button>
               <button

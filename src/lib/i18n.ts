@@ -104,7 +104,7 @@ export const STUDIO_I18N: Record<CreatorLanguage, StudioStrings> = {
       archived: 'Archivée',
     },
     actions: {
-      newPage: 'Créer une page',
+      newPage: 'Créer une nouvelle page',
       edit: 'Ouvrir l’éditeur',
       preview: 'Prévisualiser',
       publish: 'Publier',
@@ -175,7 +175,7 @@ export const STUDIO_I18N: Record<CreatorLanguage, StudioStrings> = {
       archived: 'Archived',
     },
     actions: {
-      newPage: 'Create Page',
+      newPage: 'Create New Page',
       edit: 'Open Editor',
       preview: 'Preview',
       publish: 'Publish',
@@ -246,7 +246,7 @@ export const STUDIO_I18N: Record<CreatorLanguage, StudioStrings> = {
       archived: 'مؤرشفة',
     },
     actions: {
-      newPage: 'إنشاء صفحة',
+      newPage: 'إنشاء صفحة جديدة',
       edit: 'فتح المحرر',
       preview: 'معاينة',
       publish: 'نشر',

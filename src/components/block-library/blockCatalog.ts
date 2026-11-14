@@ -462,6 +462,130 @@ export const BLOCK_CATALOG: BlockCatalogEntry[] = [
       ar: 'إجابات حول الآجال والبصمة البيومترية.',
     },
   },
+
+  // === 4 BLOCS STRUCTURELS PAGE COMPLÈTE ===
+  {
+    type: 'brand_story',
+    category: 'common',
+    labels: { fr: 'Histoire & Identité', en: 'Brand Story', ar: 'قصة العلامة والهوية' },
+    description: {
+      fr: 'Section éditoriale présentant l’agence, son positionnement et son engagement qualité.',
+      en: 'Editorial brand narrative highlighting positioning, trust and expertise.',
+      ar: 'قسم تعريفي يبرز هوية الوكالة وخبرتها والتزامها بالجودة.',
+    },
+  },
+  {
+    type: 'destinations_grid',
+    category: 'common',
+    labels: { fr: 'Grille Destinations / Univers', en: 'Destinations Showcase', ar: 'شبكة الوجهات والعروض' },
+    description: {
+      fr: 'Grille vitrine des destinations ou gammes phares avec renvoi vers devis.',
+      en: 'Multi-card destination showcase linking directly to inquiry.',
+      ar: 'عرض مرئي للوجهات والباقات الرئيسية مع رابط للطلب.',
+    },
+  },
+  {
+    type: 'why_choose_us',
+    category: 'common',
+    labels: { fr: 'Pourquoi nous choisir', en: 'Why Choose Us', ar: 'لماذا تختاروننا' },
+    description: {
+      fr: 'Piliers de confiance structurés (accompagnement, transparence, assistance).',
+      en: 'Structured trust pillars highlighting reliability and advisory.',
+      ar: 'ركائز الثقة والجودة والشفافية ومرافقة المسافرين.',
+    },
+  },
+  {
+    type: 'booking_process',
+    category: 'common',
+    labels: { fr: 'Parcours de réservation', en: 'Booking Process', ar: 'مراحل الحجز' },
+    description: {
+      fr: 'Étapes claires en 3 ou 4 temps : demande, conseil, confirmation, départ.',
+      en: 'Clear step-by-step customer journey from inquiry to departure.',
+      ar: 'خطوات واضحة من إرسال الطلب إلى تأكيد السفر.',
+    },
+  },
+
+  // === 8 MODULES COMMERCE VOYAGE UNIVERSELS ===
+  {
+    type: 'module_hotels_search',
+    category: 'commerce',
+    labels: { fr: 'Module Hôtels & Séjours', en: 'Hotels & Stays Module', ar: 'وحدة الفنادق والإقامات' },
+    description: {
+      fr: 'Module de pré-sélection séjour hôtelier (destination, dates, formule) vers devis CRM.',
+      en: 'Hotel stay inquiry selector (destination, dates, board plan) linked to CRM form.',
+      ar: 'وحدة اختيار الإقامة الفندقية والتواريخ مرتبطة بنموذج الطلب.',
+    },
+  },
+  {
+    type: 'module_flights',
+    category: 'commerce',
+    labels: { fr: 'Module Billetterie Aérienne', en: 'Flights Ticketing Module', ar: 'وحدة تذاكر الطيران' },
+    description: {
+      fr: 'Module vols directs/escales avec choix cabine, bagages et demande de tarif.',
+      en: 'Flight routing & fare inquiry module with cabin and baggage options.',
+      ar: 'وحدة حجز تذاكر الطيران واختيار المسار ودرجة السفر.',
+    },
+  },
+  {
+    type: 'module_ferries',
+    category: 'commerce',
+    labels: { fr: 'Module Bateaux & Ferries', en: 'Ferries & Maritime Module', ar: 'وحدة البواخر والعبّارات' },
+    description: {
+      fr: 'Traversées maritimes (Tunis–Gênes / Marseille), cabines et véhicules.',
+      en: 'Maritime crossings, cabin tiers and vehicle boarding requests.',
+      ar: 'الرحلات البحرية والمقصورات وشحن السيارات.',
+    },
+  },
+  {
+    type: 'module_transfers',
+    category: 'commerce',
+    labels: { fr: 'Module Transferts Privés', en: 'Private Transfers Module', ar: 'وحدة النقل والتوصيل' },
+    description: {
+      fr: 'Navettes aéroport, transferts inter-villes et flotte berline / van VIP.',
+      en: 'Airport pickups, city-to-city transfers and vehicle category selector.',
+      ar: 'نقل المطار والتنقلات الخاصة بين المدن والفنادق.',
+    },
+  },
+  {
+    type: 'module_excursions',
+    category: 'commerce',
+    labels: { fr: 'Module Excursions & Activités', en: 'Excursions & Activities', ar: 'وحدة الأنشطة والرحلات اليومية' },
+    description: {
+      fr: 'Catalogue d’excursions guidées, visites culturelles et billetterie attractions.',
+      en: 'Guided excursions, attraction passes and participant scheduling.',
+      ar: 'برامج الجولات السياحية والتذاكر والأنشطة اليومية.',
+    },
+  },
+  {
+    type: 'module_car_rental',
+    category: 'commerce',
+    labels: { fr: 'Module Location de Voitures', en: 'Car Rental Module', ar: 'وحدة كراء السيارات' },
+    description: {
+      fr: 'Catégories de véhicules, agences de retrait et durée souhaitée.',
+      en: 'Vehicle classes, pickup hubs and rental period request module.',
+      ar: 'فئات السيارات ونقاط الاستلام وفترة الإيجار.',
+    },
+  },
+  {
+    type: 'module_travel_insurance',
+    category: 'commerce',
+    labels: { fr: 'Module Assurance Voyage', en: 'Travel Insurance Module', ar: 'وحدة تأمين السفر' },
+    description: {
+      fr: 'Garanties Schengen, assistance médicale internationale et couverture multi-séjours.',
+      en: 'Schengen-compliant coverage tiers and international medical assistance.',
+      ar: 'صيغ التأمين الصحي للسفر وتأشيرة شنغن.',
+    },
+  },
+  {
+    type: 'module_cruises_vip',
+    category: 'commerce',
+    labels: { fr: 'Module Croisières & VIP', en: 'Cruises & VIP Concierge', ar: 'وحدة الكروز وخدمات VIP' },
+    description: {
+      fr: 'Croisières Méditerranée, expériences gastronomiques et conciergerie sur mesure.',
+      en: 'Mediterranean cruises, fine dining and bespoke VIP concierge services.',
+      ar: 'رحلات الكروز البحرية والضيافة وخدمات كبار الشخصيات.',
+    },
+  },
 ];
 
 export function createDefaultBlock(
@@ -474,6 +598,32 @@ export function createDefaultBlock(
   const isEn = language === 'en';
   const id = `blk-${type}-${Math.random().toString(36).slice(2, 7)}`;
 
+  const anchorByType: Partial<Record<BlockType, string>> = {
+    hero_image: 'top',
+    hero_video: 'top',
+    presentation: 'presentation',
+    brand_story: 'presentation',
+    destinations_grid: 'offres',
+    product_cards: 'offres',
+    services: 'offres',
+    pricing: 'tarifs',
+    why_choose_us: 'avantages',
+    benefits: 'avantages',
+    booking_process: 'parcours',
+    gallery: 'galerie',
+    faq: 'faq',
+    visa_faq: 'faq',
+    lead_form: 'form-block',
+    module_hotels_search: 'module-hotels',
+    module_flights: 'module-vols',
+    module_ferries: 'module-bateaux',
+    module_transfers: 'module-transferts',
+    module_excursions: 'module-excursions',
+    module_car_rental: 'module-voitures',
+    module_travel_insurance: 'module-assurance',
+    module_cruises_vip: 'module-vip',
+  };
+
   const defaultsByType: Partial<Record<BlockType, Partial<PageBlock['content']>>> = {
     hero_image: {
       eyebrow: isAr ? 'Easy2Book · عرض حصري' : isEn ? 'Easy2Book · Featured Offer' : 'Easy2Book · Offre Exclusive',
@@ -482,7 +632,7 @@ export function createDefaultBlock(
       imageKey: 'voyage_istanbul',
       primaryCtaLabel: isAr ? 'احجز الآن' : isEn ? 'Request Quote' : 'Demander un devis',
       primaryCtaTarget: '#form-block',
-      secondaryCtaLabel: '98 140 514',
+      secondaryCtaLabel: '',
     },
     hero_video: {
       eyebrow: isAr ? 'عمرة شهر رمضان كامل · مكة المكرمة والمدينة المنورة' : 'Easy2Book · Présentation Vidéo 9:16',
@@ -493,6 +643,240 @@ export function createDefaultBlock(
       imageKey: 'makkah_haram',
       primaryCtaLabel: isAr ? 'احجز مكانك الآن' : 'Réserver maintenant',
       primaryCtaTarget: '#form-block',
+    },
+    brand_story: {
+      eyebrow: isAr ? 'رؤيتنا ورسالتنا' : isEn ? 'Who We Are' : 'Notre identité & engagement',
+      title: isAr ? 'مرافقة احترافية لكل تفاصيل سفرك' : isEn ? 'A Trusted Travel Partner Built Around Clarity' : 'Un partenaire voyage pensé pour la sérénité et la clarté',
+      description: isAr
+        ? 'من التخطيط المبدئي إلى العودة، نجمع بين الخبرة الميدانية والالتزام بالمواعيد لتقديم رحلات وإقامات منظمة.'
+        : 'De la conception du programme jusqu’au retour, chaque dossier bénéficie d’un interlocuteur dédié, d’hébergements vérifiés et d’une transparence totale.',
+      imageKey: 'dubai_skyline',
+      items: [
+        {
+          id: `${id}-bs1`,
+          title: isAr ? 'تخطيط مخصص' : isEn ? 'Tailored Planning' : 'Conseil sur mesure',
+          subtitle: isAr ? 'برامج متكيفة مع العائلات والمجموعات.' : isEn ? 'Adapted to families, couples and groups.' : 'Des propositions adaptées aux familles, couples et groupes.',
+          badge: '01',
+        },
+        {
+          id: `${id}-bs2`,
+          title: isAr ? 'متابعة مستمرة' : isEn ? 'End-to-End Follow-up' : 'Suivi complet du dossier',
+          subtitle: isAr ? 'تواصل واضح قبل الرحلة وأثناءها.' : isEn ? 'Clear support before and during travel.' : 'Assistance dédiée avant le départ et pendant le séjour.',
+          badge: '02',
+        },
+      ],
+    },
+    destinations_grid: {
+      eyebrow: isAr ? 'وجهاتنا المختارة' : isEn ? 'Featured Universes' : 'Nos univers & destinations',
+      title: isAr ? 'حلول سفر شاملة حسب وجهتك' : isEn ? 'Explore Our Travel Solutions' : 'Des offres adaptées à chaque projet de voyage',
+      description: isAr
+        ? 'اختر الخدمة أو الوجهة المناسبة للحصول على عرض مفصل حسب تواريخك.'
+        : 'Chaque rubrique renvoie vers une demande personnalisée selon vos dates et votre nombre de voyageurs.',
+      items: [
+        {
+          id: `${id}-dg1`,
+          title: isAr ? 'رحلات العمرة' : isEn ? 'Umrah Departures' : 'Omra & Pèlerinages',
+          subtitle: isAr ? 'تنظيم متكامل ومرافقة دينية ولوجستية.' : isEn ? 'Full pilgrimage organization & guidance.' : 'Départs saisonniers et accompagnement complet.',
+          badge: 'Sur devis / Catalogue',
+        },
+        {
+          id: `${id}-dg2`,
+          title: isAr ? 'الرحلات المنظمة' : isEn ? 'Organized Tours' : 'Voyages organisés',
+          subtitle: isAr ? 'مسارات ثقافية وترفيهية متوازنة.' : isEn ? 'Curated multi-day itineraries.' : 'Circuits accompagnés et séjours clé en main.',
+          badge: 'Sur devis / Catalogue',
+        },
+        {
+          id: `${id}-dg3`,
+          title: isAr ? 'فنادق ومنتجعات' : isEn ? 'Hotels & Resorts' : 'Hôtels & Séjours Tunisie',
+          subtitle: isAr ? 'إقامات مختارة للعائلات والأزواج.' : isEn ? 'Verified seaside & city stays.' : 'Établissements sélectionnés selon vos formules.',
+          badge: 'Sur devis / Catalogue',
+        },
+      ],
+    },
+    why_choose_us: {
+      eyebrow: isAr ? 'ضمانات الجودة' : isEn ? 'Trust Pillars' : 'Pourquoi voyager avec nous',
+      title: isAr ? 'معايير واضحة لبناء الثقة' : isEn ? 'Clear Standards At Every Step' : 'Des engagements concrets à chaque étape',
+      description: isAr
+        ? 'نركز على وضوح الشروط وتنظيم الملفات دون مفاجآت.'
+        : 'Transparence des prestations, partenaires sélectionnés et accompagnement humain réactif.',
+      items: [
+        {
+          id: `${id}-wc1`,
+          title: isAr ? 'شفافية الشروط' : isEn ? 'Clear Conditions' : 'Conditions lisibles et vérifiées',
+          subtitle: isAr ? 'تفصيل دقيق لما يشمله البرنامج.' : isEn ? 'Detailed breakdown of included services.' : 'Présentation claire des prestations incluses et optionnelles.',
+          badge: '01',
+        },
+        {
+          id: `${id}-wc2`,
+          title: isAr ? 'شركاء موثوقون' : isEn ? 'Vetted Partners' : 'Partenaires & hôtels audités',
+          subtitle: isAr ? 'اختيار دقيق للفنادق وشركات النقل.' : isEn ? 'Selected hotels and reliable carriers.' : 'Sélection exigeante des hébergements et transporteurs.',
+          badge: '02',
+        },
+        {
+          id: `${id}-wc3`,
+          title: isAr ? 'مرافقة مستمرة' : isEn ? 'Dedicated Advisors' : 'Conseillers dédiés',
+          subtitle: isAr ? 'إجابة سريعة ومرافقة قبل وأثناء السفر.' : isEn ? 'Responsive follow-up from quote to return.' : 'Un interlocuteur unique du premier échange jusqu’au retour.',
+          badge: '03',
+        },
+      ],
+    },
+    booking_process: {
+      eyebrow: isAr ? 'كيف تحجز معنا' : isEn ? 'How It Works' : 'Votre parcours en 4 étapes',
+      title: isAr ? 'خطوات بسيطة لتأكيد رحلتك' : isEn ? 'From Request To Departure' : 'De votre demande jusqu’au départ',
+      description: isAr
+        ? 'عملية واضحة تضمن لك التوجيه الصحيح قبل تأكيد الحجز.'
+        : 'Un circuit fluide permettant de valider vos disponibilités et préférences avec un conseiller.',
+      items: [
+        {
+          id: `${id}-bp1`,
+          title: isAr ? '1. إرسال الطلب' : isEn ? '1. Send Inquiry' : '1. Demande en ligne',
+          subtitle: isAr ? 'حدد وجهتك وتواريخك وعدد المسافرين.' : isEn ? 'Share destination, dates & travelers.' : 'Précisez votre besoin, vos dates et le nombre de voyageurs.',
+        },
+        {
+          id: `${id}-bp2`,
+          title: isAr ? '2. دراسة العرض' : isEn ? '2. Tailored Proposal' : '2. Proposition vérifiée',
+          subtitle: isAr ? 'تثبيت الإمكانية والأسعار الفعلية.' : isEn ? 'Advisor checks live availability.' : 'Vérification des disponibilités et envoi d’une offre claire.',
+        },
+        {
+          id: `${id}-bp3`,
+          title: isAr ? '3. الملف والتأكيد' : isEn ? '3. File & Confirmation' : '3. Validation dossier',
+          subtitle: isAr ? 'إتمام الوثائق وتأكيد الحجز.' : isEn ? 'Documents & booking finalization.' : 'Finalisation administrative et confirmation officielle.',
+        },
+        {
+          id: `${id}-bp4`,
+          title: isAr ? '4. السفر بأمان' : isEn ? '4. Guided Travel' : '4. Départ serein',
+          subtitle: isAr ? 'استلام المستندات والمرافقة.' : isEn ? 'Receive vouchers & travel support.' : 'Remise des titres de voyage et assistance continue.',
+        },
+      ],
+    },
+    gallery: {
+      eyebrow: isAr ? 'معرض الصور' : isEn ? 'Visual Gallery' : 'Galerie visuelle',
+      title: isAr ? 'لقطات من الوجهات والإقامات' : isEn ? 'Curated Destinations & Stays' : 'Aperçu des destinations & hébergements',
+      description: isAr
+        ? 'صور عالية الدقة من مكتبة الوسائط.'
+        : 'Sélection multi-visuels configurable depuis votre médiathèque.',
+      imageKey: 'voyage_istanbul',
+      galleryImageKeys: ['voyage_istanbul', 'tunisia_resort', 'makkah_haram', 'dubai_skyline'],
+    },
+    module_hotels_search: {
+      eyebrow: isAr ? 'وحدة الفنادق' : isEn ? 'Module · Hotels' : 'Module Commerce · Hôtels & Séjours',
+      title: isAr ? 'البحث وطلب الإقامة الفندقية' : isEn ? 'Hotels & Resorts Request' : 'Demande de disponibilité Hôtels & Resorts',
+      description: isAr
+        ? 'حدد الوجهة وفترة الإقامة ونوع الغرفة لإرسال طلب دقيق.'
+        : 'Pré-sélectionnez votre ville, vos dates et votre formule pour recevoir les disponibilités vérifiées.',
+      imageKey: 'tunisia_resort',
+      primaryCtaLabel: isAr ? 'تحقق من الإمكانية' : isEn ? 'Check Availability' : 'Vérifier les disponibilités',
+      primaryCtaTarget: '#form-block',
+      items: [
+        { id: `${id}-mh1`, title: isAr ? 'الوجهة / المدينة' : 'Zone / Ville', subtitle: 'Hammamet, Djerba, Sousse, Gammarth, Monastir' },
+        { id: `${id}-mh2`, title: isAr ? 'نظام الإقامة' : 'Formules', subtitle: 'LPD · Demi-pension · Pension complète · All Inclusive' },
+        { id: `${id}-mh3`, title: isAr ? 'الغرف والعائلات' : 'Hébergement', subtitle: isAr ? 'غرف ثنائية، عائلية أو متصلة' : 'Chambres doubles, familiales, suites & communicantes' },
+      ],
+    },
+    module_flights: {
+      eyebrow: isAr ? 'وحدة الطيران' : isEn ? 'Module · Flights' : 'Module Commerce · Billetterie Aérienne',
+      title: isAr ? 'حجز وطلب تذاكر الطيران' : isEn ? 'Flight Ticketing Inquiry' : 'Billetterie aérienne internationale & régionale',
+      description: isAr
+        ? 'رحلات ذهاب وعودة أو وجهات متعددة مع خيارات الأمتعة.'
+        : 'Itinéraires directs ou avec escales, tarifs familles, groupes et franchises bagages vérifiées.',
+      imageKey: 'tunis_flight',
+      primaryCtaLabel: isAr ? 'طلب تسعيرة طيران' : isEn ? 'Request Flight Quote' : 'Demander un tarif vol',
+      primaryCtaTarget: '#form-block',
+      items: [
+        { id: `${id}-mf1`, title: isAr ? 'نوع الرحلة' : 'Type de trajet', subtitle: 'Aller-Retour · Aller Simple · Multi-destinations' },
+        { id: `${id}-mf2`, title: isAr ? 'درجة السفر' : 'Cabines', subtitle: 'Économique · Premium · Affaires' },
+        { id: `${id}-mf3`, title: isAr ? 'الخدمات' : 'Services inclus', subtitle: isAr ? 'اختيار المقاعد والأمتعة الإضافية' : 'Bagages en soute, flexibilité et assistance émission' },
+      ],
+    },
+    module_ferries: {
+      eyebrow: isAr ? 'وحدة البواخر' : isEn ? 'Module · Ferries' : 'Module Commerce · Bateaux & Ferries',
+      title: isAr ? 'الرحلات البحرية والمقصورات' : isEn ? 'Maritime Crossings & Cabins' : 'Traversées maritimes, cabines & véhicules',
+      description: isAr
+        ? 'تونس – جنوة / مرسيليا مع حجز المقصورات أو السيارات.'
+        : 'Lignes Méditerranée avec sélection cabine, fauteuil et embarquement véhicule.',
+      imageKey: 'cairo_nile',
+      primaryCtaLabel: isAr ? 'طلب حجز بحري' : isEn ? 'Request Crossing' : 'Demander une traversée',
+      primaryCtaTarget: '#form-block',
+      items: [
+        { id: `${id}-mfr1`, title: isAr ? 'الموانئ' : 'Lignes principales', subtitle: 'La Goulette ↔ Marseille / Gênes / Civitavecchia' },
+        { id: `${id}-mfr2`, title: isAr ? 'الإقامة على متن الباخرة' : 'Installation à bord', subtitle: 'Cabine privée, suite ou fauteuil confort' },
+        { id: `${id}-mfr3`, title: isAr ? 'المركبات' : 'Embarquement véhicule', subtitle: 'Voiture tourisme, utilitaire ou moto selon dimensions' },
+      ],
+    },
+    module_transfers: {
+      eyebrow: isAr ? 'وحدة التنقلات' : isEn ? 'Module · Transfers' : 'Module Commerce · Transferts Privés',
+      title: isAr ? 'نقل المطار والتنقلات الخاصة' : isEn ? 'Airport & Intercity Transfers' : 'Transferts aéroports, hôtels & navettes privées',
+      description: isAr
+        ? 'سيارات مريحة ومكيفة مع سائقين محترفين حسب عدد المسافرين.'
+        : 'Prise en charge ponctuelle à l’arrivée, berlines, minivans familiaux et autocars groupes.',
+      imageKey: 'sahara_tozeur',
+      primaryCtaLabel: isAr ? 'حجز خدمة النقل' : isEn ? 'Book Transfer' : 'Réserver un transfert',
+      primaryCtaTarget: '#form-block',
+      items: [
+        { id: `${id}-mt1`, title: isAr ? 'نقل المطار' : 'Aéroports', subtitle: 'Tunis-Carthage · Enfidha · Monastir · Djerba' },
+        { id: `${id}-mt2`, title: isAr ? 'المركبات المتاحة' : 'Flotte disponible', subtitle: 'Berline VIP · Van 7–9 places · Minibus groupe' },
+        { id: `${id}-mt3`, title: isAr ? 'الاستقبال' : 'Accueil personnalisé', subtitle: 'Suivi vol en temps réel et accueil pancarte' },
+      ],
+    },
+    module_excursions: {
+      eyebrow: isAr ? 'وحدة الأنشطة' : isEn ? 'Module · Excursions' : 'Module Commerce · Excursions & Attractions',
+      title: isAr ? 'الجولات السياحية والتذاكر' : isEn ? 'Guided Tours & Attractions' : 'Excursions guidées, sorties & billetterie loisirs',
+      description: isAr
+        ? 'برامج نصف يوم أو يوم كامل مع مرشدين معتمدين.'
+        : 'Découvertes culturelles, safaris Sahara, sorties en mer et billets coupe-file.',
+      imageKey: 'voyage_istanbul',
+      primaryCtaLabel: isAr ? 'احجز نشاطك' : isEn ? 'Inquire Excursion' : 'Demander un programme',
+      primaryCtaTarget: '#form-block',
+      items: [
+        { id: `${id}-me1`, title: isAr ? 'جولات ثقافية' : 'Découverte & Culture', subtitle: 'Guides francophones, arabophones et anglophones' },
+        { id: `${id}-me2`, title: isAr ? 'رحلات صحراوية وبحرية' : 'Expériences Nature', subtitle: 'Tozeur, Douz, îles et sorties privatives' },
+        { id: `${id}-me3`, title: isAr ? 'تنظيم المجموعات' : 'Formules flexibles', subtitle: 'Individuels, familles ou incentives entreprises' },
+      ],
+    },
+    module_car_rental: {
+      eyebrow: isAr ? 'وحدة كراء السيارات' : isEn ? 'Module · Car Rental' : 'Module Commerce · Location de Voitures',
+      title: isAr ? 'كراء السيارات بكل الفئات' : isEn ? 'Car Rental Fleet Inquiry' : 'Location de véhicules courte et moyenne durée',
+      description: isAr
+        ? 'استلام من المطار أو المدينة مع شروط تأمين واضحة.'
+        : 'Citadines, SUV, familiales et utilitaires avec retrait aéroport ou agence.',
+      imageKey: 'djerba_thalasso',
+      primaryCtaLabel: isAr ? 'طلب كراء سيارة' : isEn ? 'Request Vehicle' : 'Demander un devis véhicule',
+      primaryCtaTarget: '#form-block',
+      items: [
+        { id: `${id}-mc1`, title: isAr ? 'فئات السيارات' : 'Catégories', subtitle: 'Économique · Compacte · SUV · Familiale 7 places' },
+        { id: `${id}-mc2`, title: isAr ? 'نقاط الاستلام' : 'Lieux de retrait', subtitle: 'Aéroports internationaux et centres-villes' },
+        { id: `${id}-mc3`, title: isAr ? 'خيارات إضافية' : 'Options disponibles', subtitle: 'Siège bébé, conducteur additionnel, kilométrage' },
+      ],
+    },
+    module_travel_insurance: {
+      eyebrow: isAr ? 'وحدة تأمين السفر' : isEn ? 'Module · Travel Insurance' : 'Module Commerce · Assurance Voyage',
+      title: isAr ? 'تأمين سفر معتمد للتأشيرات والرحلات' : isEn ? 'Schengen & Worldwide Travel Insurance' : 'Assurance voyage internationale & couverture Schengen',
+      description: isAr
+        ? 'تغطية صحية مطابقة لمتطلبات السفارات ومراكز التأشيرة.'
+        : 'Attestations conformes aux exigences consulaires, assistance médicale et rapatriement.',
+      imageKey: 'visa_europe',
+      primaryCtaLabel: isAr ? 'طلب وثيقة التأمين' : isEn ? 'Request Coverage' : 'Demander une attestation',
+      primaryCtaTarget: '#form-block',
+      items: [
+        { id: `${id}-mi1`, title: isAr ? 'تأمين شنغن' : 'Conformité Consulaire', subtitle: 'Couverture minimale 30 000 € pour dossiers Schengen' },
+        { id: `${id}-mi2`, title: isAr ? 'المساعدة الطبية' : 'Garanties Santé', subtitle: 'Frais médicaux d’urgence, hospitalisation & assistance' },
+        { id: `${id}-mi3`, title: isAr ? 'المدة' : 'Durées flexibles', subtitle: 'Court séjour, multi-voyages annuel ou études' },
+      ],
+    },
+    module_cruises_vip: {
+      eyebrow: isAr ? 'وحدة الكروز وVIP' : isEn ? 'Module · Cruises & VIP' : 'Module Commerce · Croisières & Services VIP',
+      title: isAr ? 'رحلات بحرية فاخرة وخدمات كبار الشخصيات' : isEn ? 'Luxury Cruises & VIP Concierge' : 'Croisières, tables sélectionnées & conciergerie VIP',
+      description: isAr
+        ? 'إقامات بحرية على المتوسط والنيل وباقات ضيافة خاصة.'
+        : 'Itinéraires croisière, salons VIP aéroport, accueils privés et séjours sur mesure.',
+      imageKey: 'omra_vip_haram',
+      primaryCtaLabel: isAr ? 'استشارة VIP' : isEn ? 'VIP Inquiry' : 'Contacter la conciergerie',
+      primaryCtaTarget: '#form-block',
+      items: [
+        { id: `${id}-mv1`, title: isAr ? 'كروز المتوسط والنيل' : 'Croisières sélectionnées', subtitle: 'Méditerranée, Îles Grecques & Croisière Nil' },
+        { id: `${id}-mv2`, title: isAr ? 'استقبال VIP بالمطار' : 'Salons & Fast-Track', subtitle: 'Assistance coupe-file et transferts privés' },
+        { id: `${id}-mv3`, title: isAr ? 'تصميم حسب الطلب' : 'Packages sur mesure', subtitle: 'Voyages de noces, directions et événements privés' },
+      ],
     },
     omra_room_rates: {
       eyebrow: isAr ? 'التسعيرة حسب نوع الغرفة' : 'Tarifs par type de chambre',
@@ -520,11 +904,11 @@ export function createDefaultBlock(
         : 'Échangez directement avec un conseiller Easy2Book (action directe hors formulaire CRM).',
       whatsapp: {
         enabled: true,
-        phoneNumber: '98 140 514',
-        buttonLabel: isAr ? 'راسلنا على واتساب · 98 140 514' : 'Discuter sur WhatsApp · 98 140 514',
+        phoneNumber: '',
+        buttonLabel: isAr ? 'تواصل عبر واتساب' : 'Discuter sur WhatsApp',
         prefilledMessage: isAr
-          ? 'السلام عليكم، أرغب في الاستفسار عن العرض المعروض في صفحة Easy2Book.'
-          : 'Bonjour Easy2Book, je souhaite obtenir des informations sur cette offre.',
+          ? 'السلام عليكم، أرغب في الاستفسار عن العرض المعروض في الصفحة.'
+          : 'Bonjour, je souhaite obtenir des informations sur cette offre.',
         trackAsCrmLead: false,
       },
     },
@@ -532,13 +916,13 @@ export function createDefaultBlock(
       eyebrow: isAr ? 'تسجيل الاهتمام' : 'Demande de devis & réservation',
       title: isAr ? 'نموذج الاتصال والاهتمام بالحجز' : 'Recevez votre proposition personnalisée',
       description: isAr
-        ? 'أدخل بياناتك وسيتواصل معك مستشار Easy2Book.'
-        : 'Formulaire connecté à l’adaptateur d’intégration CRM Easy2Book.',
+        ? 'أدخل بياناتك وسيتواصل معك مستشار مخصص.'
+        : 'Formulaire connecté à l’adaptateur d’intégration CRM.',
     },
     footer: {
       eyebrow: 'Easy2Book',
       title: 'Create. Publish. Convert.',
-      description: isAr ? 'المركز الرسمي للحجوزات · 98 140 514 · www.easy2book.tn' : 'Centrale de Réservation · 98 140 514 · www.easy2book.tn',
+      description: isAr ? 'المركز الرسمي للحجوزات · www.easy2book.tn' : 'Centrale de Réservation · www.easy2book.tn',
     },
   };
 
@@ -549,6 +933,7 @@ export function createDefaultBlock(
     type,
     category: entry.category,
     name: entry.labels[language],
+    anchorId: anchorByType[type],
     visible: true,
     visibility: { desktop: true, tablet: true, mobile: true },
     style: {
@@ -565,6 +950,7 @@ export function createDefaultBlock(
       title: specific.title ?? entry.labels[language],
       description: specific.description ?? entry.description[language],
       imageKey: specific.imageKey,
+      galleryImageKeys: specific.galleryImageKeys,
       primaryCtaLabel: specific.primaryCtaLabel,
       primaryCtaTarget: specific.primaryCtaTarget,
       secondaryCtaLabel: specific.secondaryCtaLabel,

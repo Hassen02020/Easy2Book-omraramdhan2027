@@ -3,7 +3,7 @@ import express from "express";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -204,6 +204,262 @@ async function startServer() {
       return res.status(500).json({
         error: "تعذّر توليد التعليق الصوتي حالياً. يمكنك متابعة العرض مع الترجمة التفاعلية.",
         details: message,
+      });
+    }
+  });
+
+  // ==========================================================
+  // GEMINI FULL PAGE GENERATOR (MODE A — STRUCTURED HOMEPAGE)
+  // ==========================================================
+  app.post("/api/ai/generate-full-page", async (req, res) => {
+    try {
+      if (!process.env.GEMINI_API_KEY) {
+        return res.status(503).json({
+          error: "GEMINI_API_KEY_MISSING",
+          message:
+            "Clé Gemini API non configurée sur le serveur. Mode de génération structurée locale activé.",
+        });
+      }
+
+      const prompt =
+        typeof req.body?.prompt === "string" ? req.body.prompt.trim() : "";
+      const language =
+        req.body?.language === "ar" || req.body?.language === "en"
+          ? req.body.language
+          : "fr";
+      const brandName =
+        typeof req.body?.brandName === "string" && req.body.brandName.trim()
+          ? req.body.brandName.trim().slice(0, 80)
+          : "Easy2Book";
+      const visualStyle =
+        typeof req.body?.visualStyle === "string"
+          ? req.body.visualStyle
+          : "premium";
+      const commerceModules = Array.isArray(req.body?.commerceModules)
+        ? req.body.commerceModules.filter(
+            (m: unknown): m is string => typeof m === "string"
+          )
+        : [];
+      const offerContext =
+        req.body?.offerSummary && typeof req.body.offerSummary === "object"
+          ? JSON.stringify(req.body.offerSummary)
+          : "Aucune offre chiffrée fournie : utiliser 'Sur devis' ou 'Selon disponibilité'.";
+
+      const langLabel =
+        language === "ar"
+          ? "Arabic (Modern Standard Arabic, natural tourism/hospitality tone)"
+          : language === "en"
+            ? "English"
+            : "French";
+
+      const systemPrompt = `You are a senior travel SaaS product copywriter and conversion architect for "${brandName}".
+Generate a complete, cohesive, production-grade homepage blueprint in ${langLabel} for a travel/tourism business based on the user's description.
+
+STRICT RULES (NO EXCEPTIONS):
+1. ZERO FABRICATED DATA: Never invent phone numbers, WhatsApp numbers, emails, street addresses, URLs, social media handles, prices, exact room counts, or client testimonials/reviews. If an offer price is not explicitly in OfferContext, state "Sur devis" / "Selon disponibilités".
+2. IMAGE KEYS: Only pick imageKey values from this exact allowlist:
+   makkah_haram, omra_vip_haram, tunis_flight, maysan_suite, madinah_twilight, voyage_istanbul, dubai_skyline, cairo_nile, tunisia_resort, djerba_thalasso, sahara_tozeur, visa_desk, visa_europe.
+3. UNIVERSE: Classify "universe" as one of: "omra", "voyages", "hotels_tunisie", "visa".
+4. VISUAL STYLE: Match the "${visualStyle}" tone cleanly without hype clichés.
+5. MODULES: Write concise custom titles & descriptions for each selected moduleId in: ${JSON.stringify(commerceModules)}.`;
+
+      const userPrompt = `User brief: ${prompt || "Agence de voyage complète proposant séjours hôtels, voyages organisés, billetterie et départs Omra."}
+Requested language: ${language}
+Brand name: ${brandName}
+Selected commerce modules: ${commerceModules.join(", ") || "none"}
+OfferContext: ${offerContext}`;
+
+      const itemSchema = {
+        type: Type.OBJECT,
+        properties: {
+          title: { type: Type.STRING },
+          subtitle: { type: Type.STRING },
+          badge: { type: Type.STRING },
+        },
+        required: ["title", "subtitle"],
+      };
+
+      const response = await ai.models.generateContent({
+        model: "gemini-4-hydrogen",
+        contents: [
+          {
+            role: "user",
+            parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }],
+          },
+        ],
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              pageTitle: { type: Type.STRING },
+              slug: { type: Type.STRING },
+              universe: { type: Type.STRING },
+              tagline: { type: Type.STRING },
+              footerBio: { type: Type.STRING },
+              headerCtaLabel: { type: Type.STRING },
+              hero: {
+                type: Type.OBJECT,
+                properties: {
+                  eyebrow: { type: Type.STRING },
+                  title: { type: Type.STRING },
+                  description: { type: Type.STRING },
+                  primaryCtaLabel: { type: Type.STRING },
+                  imageKey: { type: Type.STRING },
+                },
+                required: [
+                  "eyebrow",
+                  "title",
+                  "description",
+                  "primaryCtaLabel",
+                  "imageKey",
+                ],
+              },
+              brandStory: {
+                type: Type.OBJECT,
+                properties: {
+                  eyebrow: { type: Type.STRING },
+                  title: { type: Type.STRING },
+                  description: { type: Type.STRING },
+                  imageKey: { type: Type.STRING },
+                  items: { type: Type.ARRAY, items: itemSchema },
+                },
+                required: ["eyebrow", "title", "description", "imageKey", "items"],
+              },
+              offersShowcase: {
+                type: Type.OBJECT,
+                properties: {
+                  eyebrow: { type: Type.STRING },
+                  title: { type: Type.STRING },
+                  description: { type: Type.STRING },
+                  items: { type: Type.ARRAY, items: itemSchema },
+                },
+                required: ["eyebrow", "title", "description", "items"],
+              },
+              whyChooseUs: {
+                type: Type.OBJECT,
+                properties: {
+                  eyebrow: { type: Type.STRING },
+                  title: { type: Type.STRING },
+                  description: { type: Type.STRING },
+                  items: { type: Type.ARRAY, items: itemSchema },
+                },
+                required: ["eyebrow", "title", "description", "items"],
+              },
+              bookingProcess: {
+                type: Type.OBJECT,
+                properties: {
+                  eyebrow: { type: Type.STRING },
+                  title: { type: Type.STRING },
+                  description: { type: Type.STRING },
+                  items: { type: Type.ARRAY, items: itemSchema },
+                },
+                required: ["eyebrow", "title", "description", "items"],
+              },
+              gallery: {
+                type: Type.OBJECT,
+                properties: {
+                  eyebrow: { type: Type.STRING },
+                  title: { type: Type.STRING },
+                  description: { type: Type.STRING },
+                  imageKeys: {
+                    type: Type.ARRAY,
+                    items: { type: Type.STRING },
+                  },
+                },
+                required: ["eyebrow", "title", "description", "imageKeys"],
+              },
+              faq: {
+                type: Type.OBJECT,
+                properties: {
+                  eyebrow: { type: Type.STRING },
+                  title: { type: Type.STRING },
+                  description: { type: Type.STRING },
+                  items: { type: Type.ARRAY, items: itemSchema },
+                },
+                required: ["eyebrow", "title", "description", "items"],
+              },
+              cta: {
+                type: Type.OBJECT,
+                properties: {
+                  eyebrow: { type: Type.STRING },
+                  title: { type: Type.STRING },
+                  description: { type: Type.STRING },
+                  primaryCtaLabel: { type: Type.STRING },
+                },
+                required: ["eyebrow", "title", "description", "primaryCtaLabel"],
+              },
+              form: {
+                type: Type.OBJECT,
+                properties: {
+                  title: { type: Type.STRING },
+                  subtitle: { type: Type.STRING },
+                  submitLabel: { type: Type.STRING },
+                  confirmationMessage: { type: Type.STRING },
+                },
+                required: [
+                  "title",
+                  "subtitle",
+                  "submitLabel",
+                  "confirmationMessage",
+                ],
+              },
+              seo: {
+                type: Type.OBJECT,
+                properties: {
+                  metaTitle: { type: Type.STRING },
+                  metaDescription: { type: Type.STRING },
+                },
+                required: ["metaTitle", "metaDescription"],
+              },
+              moduleOverrides: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    moduleId: { type: Type.STRING },
+                    title: { type: Type.STRING },
+                    description: { type: Type.STRING },
+                  },
+                  required: ["moduleId", "title", "description"],
+                },
+              },
+            },
+            required: [
+              "pageTitle",
+              "slug",
+              "universe",
+              "tagline",
+              "footerBio",
+              "headerCtaLabel",
+              "hero",
+              "brandStory",
+              "offersShowcase",
+              "whyChooseUs",
+              "bookingProcess",
+              "gallery",
+              "faq",
+              "cta",
+              "form",
+              "seo",
+            ],
+          },
+        },
+      });
+
+      const text = response.text;
+      if (!text) {
+        return res.status(502).json({ error: "EMPTY_MODEL_RESPONSE" });
+      }
+      const parsed = JSON.parse(text);
+      return res.json({ blueprint: parsed, source: "gemini" });
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Erreur génération IA.";
+      console.error("Full page generation error:", message);
+      return res.status(500).json({
+        error: "GENERATION_FAILED",
+        message,
       });
     }
   });

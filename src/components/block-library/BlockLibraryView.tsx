@@ -10,13 +10,19 @@ interface BlockLibraryViewProps {
   onAddBlockToPage: (pageId: string, blockType: BlockType) => void;
 }
 
+const countByCategory = (cat: BlockCategory | 'all') =>
+  cat === 'all'
+    ? BLOCK_CATALOG.length
+    : BLOCK_CATALOG.filter((b) => b.category === cat).length;
+
 const CATEGORY_LABELS: Record<BlockCategory | 'all', string> = {
-  all: 'Tous les blocs (44)',
-  common: 'Blocs communs (15)',
-  omra: 'Blocs Omra (8)',
-  voyages: 'Blocs Voyages (7)',
-  hotels_tunisie: 'Blocs Hôtels (7)',
-  visa: 'Blocs Visa (7)',
+  all: `Tous les blocs (${countByCategory('all')})`,
+  common: `Blocs communs (${countByCategory('common')})`,
+  commerce: `Modules Commerce (${countByCategory('commerce')})`,
+  omra: `Blocs Omra (${countByCategory('omra')})`,
+  voyages: `Blocs Voyages (${countByCategory('voyages')})`,
+  hotels_tunisie: `Blocs Hôtels (${countByCategory('hotels_tunisie')})`,
+  visa: `Blocs Visa (${countByCategory('visa')})`,
 };
 
 export function BlockLibraryView({
@@ -48,7 +54,7 @@ export function BlockLibraryView({
             Bibliothèque modulaire de blocs ({BLOCK_CATALOG.length})
           </h1>
           <p className="mt-1 text-xs text-slate-600">
-            Blocs communs et blocs spécialisés Omra, Voyages, Hôtels Tunisie et Visa.
+            Blocs structurels, modules commerce voyage universels et blocs spécialisés Omra, Voyages, Hôtels Tunisie et Visa.
           </p>
         </div>
 
@@ -73,22 +79,22 @@ export function BlockLibraryView({
       {/* Category & Search */}
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#102D45]/10 bg-white p-3.5">
         <div className="flex flex-wrap items-center gap-1.5">
-          {(['all', 'common', 'omra', 'voyages', 'hotels_tunisie', 'visa'] as const).map(
-            (cat) => (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => setCategory(cat)}
-                className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
-                  category === cat
-                    ? 'bg-[#102D45] text-white'
-                    : 'bg-[#F5F7FA] text-[#1C4967] hover:text-[#102D45]'
-                }`}
-              >
-                {CATEGORY_LABELS[cat]}
-              </button>
-            )
-          )}
+          {(
+            ['all', 'common', 'commerce', 'omra', 'voyages', 'hotels_tunisie', 'visa'] as const
+          ).map((cat) => (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => setCategory(cat)}
+              className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors whitespace-nowrap shrink-0 ${
+                category === cat
+                  ? 'bg-[#102D45] text-white'
+                  : 'bg-[#F5F7FA] text-[#1C4967] hover:text-[#102D45]'
+              }`}
+            >
+              {CATEGORY_LABELS[cat]}
+            </button>
+          ))}
         </div>
 
         <div className="relative min-w-[220px]">

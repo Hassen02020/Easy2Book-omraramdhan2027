@@ -1,13 +1,23 @@
 import { useEffect, useRef, useState } from 'react';
 import {
+  ArrowRight,
+  BedDouble,
+  Calendar,
+  Car,
   CheckCircle2,
   ChevronDown,
   ChevronUp,
   Code2,
+  Compass,
+  Crown,
   EyeOff,
+  MapPin,
   Phone,
+  Plane,
   RotateCcw,
+  Shield,
   ShieldCheck,
+  Ship,
   Sparkles,
   Volume2,
 } from 'lucide-react';
@@ -25,6 +35,7 @@ import {
 import { getHeroImageSrc } from '../../lib/mediaRegistry';
 import type {
   AttributionSettings,
+  BrandIdentity,
   BusinessUniverse,
   CreatorLanguage,
   FormDefinition,
@@ -36,6 +47,7 @@ import { CountdownTimer } from '../CountdownTimer';
 import { ReelPlayer } from '../ReelPlayer';
 import { TestimonialsSection } from '../TestimonialsSection';
 import { WhatsAppIcon } from '../WhatsAppIcon';
+import { BrandLogoMark } from './SiteHeader';
 
 function decodeBase64ToUint8Array(base64: string): Uint8Array {
   const binary = window.atob(base64);
@@ -55,6 +67,7 @@ interface BlockRendererProps {
   offerRef: OfferReference;
   attribution: AttributionSettings;
   crmConfig: CrmIntegrationConfig;
+  brandIdentity?: BrandIdentity;
   selected?: boolean;
   interactiveEdit?: boolean;
   onSelectBlock?: (blockId: string) => void;
@@ -69,11 +82,21 @@ export function BlockRenderer({
   offerRef,
   attribution,
   crmConfig,
+  brandIdentity,
   selected = false,
   interactiveEdit = false,
   onSelectBlock,
 }: BlockRendererProps) {
   const isAr = language === 'ar';
+  const cardRadiusClass =
+    brandIdentity?.cardShape === 'sharp'
+      ? 'rounded-none'
+      : brandIdentity?.cardShape === 'rounded'
+        ? 'rounded-2xl'
+        : 'rounded-xl';
+  const headingStyle: React.CSSProperties | undefined = brandIdentity?.headingFont
+    ? { fontFamily: `"${brandIdentity.headingFont}", sans-serif` }
+    : undefined;
   const [openFaqId, setOpenFaqId] = useState<string | null>(
     block.content.items?.[0]?.id ?? null
   );
@@ -260,9 +283,14 @@ export function BlockRenderer({
   const isDarkBg =
     block.style.backgroundColor.toLowerCase() === '#102d45' ||
     block.style.backgroundColor.toLowerCase() === '#1c4967' ||
+    block.style.backgroundColor.toLowerCase() === '#0f172a' ||
+    block.style.backgroundColor.toLowerCase() === '#161b22' ||
+    block.style.backgroundColor.toLowerCase() === '#111827' ||
+    block.style.backgroundColor.toLowerCase() === '#0f4c5c' ||
     block.style.textColor.toLowerCase() === '#ffffff';
 
   const wrapperProps = {
+    id: block.anchorId || undefined,
     onClick: interactiveEdit
       ? (e: React.MouseEvent) => {
           e.stopPropagation();
@@ -273,7 +301,7 @@ export function BlockRenderer({
       backgroundColor: block.style.backgroundColor,
       color: block.style.textColor,
     },
-    className: `relative transition-all ${paddingClass} ${borderClass} ${
+    className: `relative scroll-mt-16 transition-all ${paddingClass} ${borderClass} ${
       interactiveEdit
         ? `cursor-pointer group ${
             selected
@@ -305,11 +333,15 @@ export function BlockRenderer({
         <div className="mx-auto grid max-w-5xl items-center gap-8 px-6 lg:grid-cols-12">
           <div className="lg:col-span-7 space-y-4">
             <div className="flex items-center gap-3">
-              <img
-                src="/assets/aistudio/logo_transparent_e9918557.png"
-                alt="Easy2Book"
-                className="h-9 w-auto object-contain"
-              />
+              {brandIdentity ? (
+                <BrandLogoMark brandIdentity={brandIdentity} darkBg={isDarkBg} compact />
+              ) : (
+                <img
+                  src="/assets/aistudio/logo_transparent_e9918557.png"
+                  alt="Easy2Book"
+                  className="h-9 w-auto object-contain"
+                />
+              )}
               <span
                 className="text-xs font-bold tracking-wide"
                 style={{ color: block.style.accentColor }}
@@ -417,19 +449,30 @@ export function BlockRenderer({
 
   if (block.type === 'hero_image') {
     const heroImg = getHeroImageSrc(block.content.imageKey);
+    const imgFrameClass =
+      brandIdentity?.imageStyle === 'full_bleed'
+        ? 'rounded-none'
+        : brandIdentity?.imageStyle === 'editorial'
+          ? 'rounded-lg'
+          : 'rounded-2xl';
+
     return (
       <section {...wrapperProps}>
         {sectionTag}
-        <div className="mx-auto grid max-w-5xl items-center gap-8 px-6 md:grid-cols-12">
+        <div className="mx-auto grid max-w-6xl items-center gap-8 px-6 md:grid-cols-12">
           <div className="md:col-span-7 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-white p-1.5 shadow-xs">
-                <img
-                  src="/assets/aistudio/logo_transparent_e9918557.png"
-                  alt="Easy2Book"
-                  className="h-6 w-auto object-contain"
-                />
-              </div>
+              {brandIdentity ? (
+                <BrandLogoMark brandIdentity={brandIdentity} darkBg={isDarkBg} compact />
+              ) : (
+                <div className="rounded-lg bg-white p-1.5 shadow-xs">
+                  <img
+                    src="/assets/aistudio/logo_transparent_e9918557.png"
+                    alt="Easy2Book"
+                    className="h-6 w-auto object-contain"
+                  />
+                </div>
+              )}
               <p
                 className="text-xs font-bold uppercase tracking-wider"
                 style={{ color: block.style.accentColor }}
@@ -437,7 +480,10 @@ export function BlockRenderer({
                 {block.content.eyebrow}
               </p>
             </div>
-            <h1 className={`${titleScaleClass} font-extrabold leading-tight`}>
+            <h1
+              style={headingStyle}
+              className={`${titleScaleClass} font-extrabold leading-tight`}
+            >
               {block.content.title}
             </h1>
             <p className="text-sm md:text-base opacity-85 leading-relaxed">
@@ -448,14 +494,19 @@ export function BlockRenderer({
                 <a
                   href={block.content.primaryCtaTarget || '#form-block'}
                   onClick={(e) => interactiveEdit && e.preventDefault()}
-                  className="rounded-lg px-5 py-3 text-sm font-bold text-[#102D45] transition-transform hover:scale-[1.01]"
-                  style={{ backgroundColor: block.style.accentColor }}
+                  className={`${cardRadiusClass} px-5 py-3 text-sm font-bold transition-transform hover:scale-[1.01] whitespace-nowrap shrink-0`}
+                  style={{
+                    backgroundColor: brandIdentity?.ctaColor ?? block.style.accentColor,
+                    color: brandIdentity?.ctaTextColor ?? '#102D45',
+                  }}
                 >
                   {block.content.primaryCtaLabel}
                 </a>
               )}
               {block.content.secondaryCtaLabel && (
-                <span className="inline-flex items-center gap-2 rounded-lg border border-current/25 px-4 py-3 font-mono-tabular text-sm font-semibold">
+                <span
+                  className={`inline-flex items-center gap-2 ${cardRadiusClass} border border-current/25 px-4 py-3 font-mono-tabular text-sm font-semibold`}
+                >
                   <Phone className="h-4 w-4" />
                   {block.content.secondaryCtaLabel}
                 </span>
@@ -463,7 +514,7 @@ export function BlockRenderer({
             </div>
           </div>
           <div className="md:col-span-5">
-            <div className="overflow-hidden rounded-2xl border border-white/15 shadow-lg">
+            <div className={`overflow-hidden ${imgFrameClass} border border-white/15 shadow-lg`}>
               <img
                 src={heroImg}
                 alt={block.content.title}
@@ -514,7 +565,7 @@ export function BlockRenderer({
 
   if (block.type === 'lead_form') {
     return (
-      <section id="form-block" {...wrapperProps}>
+      <section {...wrapperProps} id={block.anchorId || 'form-block'}>
         {sectionTag}
         <div className="mx-auto max-w-3xl px-6">
           <div className="rounded-2xl border border-[#102D45]/12 bg-white p-6 md:p-8 text-[#102D45] shadow-xs">
@@ -714,12 +765,16 @@ export function BlockRenderer({
   if (block.type === 'whatsapp_button') {
     const waConfig = block.content.whatsapp ?? {
       enabled: true,
-      phoneNumber: '98 140 514',
-      buttonLabel: isAr ? 'واتساب · 98 140 514' : 'WhatsApp · 98 140 514',
-      prefilledMessage: 'Bonjour Easy2Book',
+      phoneNumber: '',
+      buttonLabel: isAr ? 'واتساب' : 'WhatsApp',
+      prefilledMessage: 'Bonjour',
       trackAsCrmLead: false as const,
     };
-    const href = buildWhatsAppDirectHref(waConfig);
+    const hasPhone = Boolean(waConfig.phoneNumber?.trim());
+    if (!hasPhone && !interactiveEdit) {
+      return null;
+    }
+    const href = hasPhone ? buildWhatsAppDirectHref(waConfig) : '#';
     return (
       <section {...wrapperProps}>
         {sectionTag}
@@ -734,19 +789,25 @@ export function BlockRenderer({
                 {block.content.description}
               </p>
             </div>
-            <a
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => {
-                if (interactiveEdit) e.preventDefault();
-                e.stopPropagation();
-              }}
-              className="inline-flex items-center gap-2.5 rounded-xl bg-[#25D366] px-5 py-3 text-sm font-bold text-white shadow-xs transition-colors hover:bg-[#1FB857] whitespace-nowrap shrink-0"
-            >
-              <WhatsAppIcon className="h-4 w-4" />
-              <span>{waConfig.buttonLabel}</span>
-            </a>
+            {hasPhone ? (
+              <a
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => {
+                  if (interactiveEdit) e.preventDefault();
+                  e.stopPropagation();
+                }}
+                className="inline-flex items-center gap-2.5 rounded-xl bg-[#25D366] px-5 py-3 text-sm font-bold text-white shadow-xs transition-colors hover:bg-[#1FB857] whitespace-nowrap shrink-0"
+              >
+                <WhatsAppIcon className="h-4 w-4" />
+                <span>{waConfig.buttonLabel}</span>
+              </a>
+            ) : (
+              <span className="rounded-xl border border-dashed border-amber-300 bg-amber-50 px-4 py-2.5 text-xs font-semibold text-amber-800">
+                Numéro WhatsApp à configurer (masqué en public)
+              </span>
+            )}
           </div>
         </div>
       </section>
@@ -864,7 +925,286 @@ export function BlockRenderer({
     );
   }
 
-  // Generic structured editorial / pricing / gallery / checklist / itinerary / hotel card renderer
+  // Split Editorial Brand Story
+  if (block.type === 'brand_story') {
+    const items = block.content.items ?? [];
+    const storyImg = getHeroImageSrc(block.content.imageKey);
+    return (
+      <section {...wrapperProps}>
+        {sectionTag}
+        <div className="mx-auto grid max-w-6xl items-center gap-8 px-6 md:grid-cols-12">
+          <div className="md:col-span-5">
+            <div className={`overflow-hidden ${cardRadiusClass} border border-[#102D45]/10 shadow-sm`}>
+              <img
+                src={storyImg}
+                alt={block.content.title}
+                className="h-72 w-full object-cover"
+              />
+            </div>
+          </div>
+          <div className="md:col-span-7 space-y-4">
+            <p
+              className="text-xs font-bold uppercase tracking-wider"
+              style={{ color: block.style.accentColor }}
+            >
+              {block.content.eyebrow}
+            </p>
+            <h2 style={headingStyle} className={`${titleScaleClass} font-bold`}>
+              {block.content.title}
+            </h2>
+            <p className="text-sm opacity-85 leading-relaxed">
+              {block.content.description}
+            </p>
+            {items.length > 0 && (
+              <div className="grid gap-3 sm:grid-cols-2 pt-2">
+                {items.map((item) => (
+                  <div
+                    key={item.id}
+                    className={`${cardRadiusClass} border p-4 ${
+                      isDarkBg
+                        ? 'border-white/15 bg-white/8'
+                        : 'border-[#102D45]/10 bg-[#F5F7FA]'
+                    }`}
+                  >
+                    <p className="text-xs font-bold">{item.title}</p>
+                    {item.subtitle && (
+                      <p className="mt-1 text-[11px] opacity-80 leading-relaxed">
+                        {item.subtitle}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Booking Process 3/4-step timeline
+  if (block.type === 'booking_process') {
+    const items = block.content.items ?? [];
+    return (
+      <section {...wrapperProps}>
+        {sectionTag}
+        <div className="mx-auto max-w-6xl px-6">
+          <div className={`flex flex-col ${alignClass}`}>
+            <p
+              className="text-xs font-bold uppercase tracking-wider"
+              style={{ color: block.style.accentColor }}
+            >
+              {block.content.eyebrow}
+            </p>
+            <h2 style={headingStyle} className={`${titleScaleClass} mt-1 font-bold`}>
+              {block.content.title}
+            </h2>
+            {block.content.description && (
+              <p className="mt-2 max-w-3xl text-sm opacity-80">
+                {block.content.description}
+              </p>
+            )}
+          </div>
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {items.map((item, idx) => (
+              <div
+                key={item.id}
+                className={`${cardRadiusClass} border p-5 flex flex-col justify-between ${
+                  isDarkBg
+                    ? 'border-white/15 bg-white/8'
+                    : 'border-[#102D45]/10 bg-[#F5F7FA]'
+                }`}
+              >
+                <div>
+                  <span
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg font-mono-tabular text-xs font-extrabold"
+                    style={{
+                      backgroundColor: block.style.accentColor,
+                      color: brandIdentity?.ctaTextColor ?? '#102D45',
+                    }}
+                  >
+                    0{idx + 1}
+                  </span>
+                  <h3 className="mt-3 text-sm font-bold">{item.title}</h3>
+                  {item.subtitle && (
+                    <p className="mt-1.5 text-xs opacity-80 leading-relaxed">
+                      {item.subtitle}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Multi-Image Visual Gallery
+  if (block.type === 'gallery' || block.type === 'voyage_gallery' || block.type === 'hotel_gallery') {
+    const keys =
+      block.content.galleryImageKeys && block.content.galleryImageKeys.length > 0
+        ? block.content.galleryImageKeys
+        : [block.content.imageKey || 'voyage_istanbul', 'tunisia_resort', 'dubai_skyline', 'makkah_haram'];
+    return (
+      <section {...wrapperProps}>
+        {sectionTag}
+        <div className="mx-auto max-w-6xl px-6">
+          <div className={`flex flex-col ${alignClass}`}>
+            <p
+              className="text-xs font-bold uppercase tracking-wider"
+              style={{ color: block.style.accentColor }}
+            >
+              {block.content.eyebrow}
+            </p>
+            <h2 style={headingStyle} className={`${titleScaleClass} mt-1 font-bold`}>
+              {block.content.title}
+            </h2>
+            {block.content.description && (
+              <p className="mt-2 max-w-3xl text-sm opacity-80">
+                {block.content.description}
+              </p>
+            )}
+          </div>
+          <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {keys.map((imgKey, idx) => (
+              <div
+                key={`${imgKey}-${idx}`}
+                className={`overflow-hidden ${cardRadiusClass} border border-[#102D45]/10 bg-slate-100`}
+              >
+                <img
+                  src={getHeroImageSrc(imgKey)}
+                  alt={`${block.content.title} ${idx + 1}`}
+                  className="h-48 w-full object-cover transition-transform duration-300 hover:scale-[1.03]"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Universal Travel Commerce Modules (8 pluggable vertical sections)
+  if (block.type.startsWith('module_')) {
+    const items = block.content.items ?? [];
+    const moduleIconMap: Record<string, typeof Plane> = {
+      module_hotels_search: BedDouble,
+      module_flights: Plane,
+      module_ferries: Ship,
+      module_transfers: MapPin,
+      module_excursions: Compass,
+      module_car_rental: Car,
+      module_travel_insurance: Shield,
+      module_cruises_vip: Crown,
+    };
+    const ModIcon = moduleIconMap[block.type] ?? Compass;
+
+    return (
+      <section {...wrapperProps}>
+        {sectionTag}
+        <div className="mx-auto max-w-6xl px-6">
+          <div
+            className={`${cardRadiusClass} border p-6 md:p-8 ${
+              isDarkBg
+                ? 'border-white/15 bg-white/8'
+                : 'border-[#102D45]/12 bg-[#F5F7FA]'
+            }`}
+          >
+            <div className="grid gap-6 lg:grid-cols-12 items-center">
+              <div className="lg:col-span-8 space-y-3">
+                <div className="flex items-center gap-2.5">
+                  <span
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-xl"
+                    style={{
+                      backgroundColor: `${block.style.accentColor}28`,
+                      color: isDarkBg ? block.style.accentColor : '#102D45',
+                    }}
+                  >
+                    <ModIcon className="h-4 w-4" />
+                  </span>
+                  <span
+                    className="text-xs font-bold uppercase tracking-wider"
+                    style={{ color: block.style.accentColor }}
+                  >
+                    {block.content.eyebrow}
+                  </span>
+                </div>
+                <h2 style={headingStyle} className={`${titleScaleClass} font-bold`}>
+                  {block.content.title}
+                </h2>
+                {block.content.description && (
+                  <p className="text-sm opacity-85 leading-relaxed">
+                    {block.content.description}
+                  </p>
+                )}
+
+                {items.length > 0 && (
+                  <div className="grid gap-3 pt-2 sm:grid-cols-3">
+                    {items.map((item) => (
+                      <div
+                        key={item.id}
+                        className={`${cardRadiusClass} border p-3.5 ${
+                          isDarkBg
+                            ? 'border-white/15 bg-white/10'
+                            : 'border-[#102D45]/10 bg-white text-[#102D45]'
+                        }`}
+                      >
+                        <p className="text-xs font-bold">{item.title}</p>
+                        {item.subtitle && (
+                          <p className="mt-1 text-[11px] opacity-75 leading-snug">
+                            {item.subtitle}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="flex flex-wrap items-center gap-3 pt-2">
+                  <a
+                    href={block.content.primaryCtaTarget || '#form-block'}
+                    onClick={(e) => interactiveEdit && e.preventDefault()}
+                    style={{
+                      backgroundColor: brandIdentity?.ctaColor ?? block.style.accentColor,
+                      color: brandIdentity?.ctaTextColor ?? '#102D45',
+                    }}
+                    className={`inline-flex items-center gap-2 ${cardRadiusClass} px-5 py-2.5 text-xs font-bold whitespace-nowrap shrink-0`}
+                  >
+                    <Calendar className="h-3.5 w-3.5" />
+                    <span>
+                      {block.content.primaryCtaLabel ||
+                        (isAr ? 'طلب عرض' : 'Demander une disponibilité')}
+                    </span>
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </a>
+                  <span className="text-[11px] opacity-70">
+                    {isAr
+                      ? 'الأسعار والإمكانية تُؤكَّد حسب التواريخ'
+                      : 'Tarifs et disponibilités confirmés sur devis selon vos dates'}
+                  </span>
+                </div>
+              </div>
+
+              {block.content.imageKey && (
+                <div className="lg:col-span-4">
+                  <div className={`overflow-hidden ${cardRadiusClass} border border-[#102D45]/10 shadow-xs`}>
+                    <img
+                      src={getHeroImageSrc(block.content.imageKey)}
+                      alt={block.content.title}
+                      className="h-52 w-full object-cover"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Generic structured editorial / pricing / destinations / why_choose_us / checklist / itinerary / hotel card renderer
   // covers all remaining Common, Omra, Voyages, Hotels & Visa blocks cleanly
   const items = block.content.items ?? [];
   const hasPrices = items.some((it) => Boolean(it.price));
@@ -873,7 +1213,7 @@ export function BlockRenderer({
   return (
     <section {...wrapperProps}>
       {sectionTag}
-      <div className="mx-auto max-w-5xl px-6">
+      <div className="mx-auto max-w-6xl px-6">
         <div className={`flex flex-col ${alignClass}`}>
           <p
             className="text-xs font-bold uppercase tracking-wider"
@@ -881,7 +1221,7 @@ export function BlockRenderer({
           >
             {block.content.eyebrow}
           </p>
-          <h2 className={`${titleScaleClass} mt-1 font-bold`}>
+          <h2 style={headingStyle} className={`${titleScaleClass} mt-1 font-bold`}>
             {block.content.title}
           </h2>
           {block.content.description && (
@@ -892,7 +1232,7 @@ export function BlockRenderer({
         </div>
 
         {hasImage && (
-          <div className="mt-6 overflow-hidden rounded-2xl border border-[#102D45]/10">
+          <div className={`mt-6 overflow-hidden ${cardRadiusClass} border border-[#102D45]/10`}>
             <img
               src={getHeroImageSrc(block.content.imageKey)}
               alt={block.content.title}
@@ -914,7 +1254,7 @@ export function BlockRenderer({
             {items.map((item) => (
               <div
                 key={item.id}
-                className={`flex flex-col justify-between rounded-xl border p-5 ${
+                className={`flex flex-col justify-between ${cardRadiusClass} border p-5 ${
                   isDarkBg
                     ? 'border-white/15 bg-white/8 text-white'
                     : 'border-[#102D45]/10 bg-white text-[#102D45]'

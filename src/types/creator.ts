@@ -2,6 +2,37 @@ export type CreatorLanguage = 'fr' | 'en' | 'ar';
 
 export type BusinessUniverse = 'omra' | 'voyages' | 'hotels_tunisie' | 'visa';
 
+export type CreationMode = 'full_page' | 'modules';
+
+export type BrandVisualStyle =
+  | 'premium'
+  | 'moderne'
+  | 'luxe'
+  | 'minimaliste'
+  | 'familial'
+  | 'commercial';
+
+export type HeaderVariant =
+  | 'corporate'
+  | 'premium'
+  | 'touristique'
+  | 'minimaliste'
+  | 'hotelier';
+
+export type CommerceModuleId =
+  | 'omra'
+  | 'voyages'
+  | 'hotels'
+  | 'visa'
+  | 'flights'
+  | 'ferries'
+  | 'transfers'
+  | 'excursions'
+  | 'car_rental'
+  | 'travel_insurance'
+  | 'cruises'
+  | 'vip_concierge';
+
 export type PageStatus =
   | 'draft'
   | 'in_review'
@@ -10,13 +41,23 @@ export type PageStatus =
   | 'expired'
   | 'archived';
 
-export type BlockCategory = 'common' | 'omra' | 'voyages' | 'hotels_tunisie' | 'visa';
+export type BlockCategory =
+  | 'common'
+  | 'omra'
+  | 'voyages'
+  | 'hotels_tunisie'
+  | 'visa'
+  | 'commerce';
 
 export type BlockType =
-  // 15 Common blocks
+  // 15 existing Common blocks + 4 Full-Homepage structural sections
   | 'hero_image'
   | 'hero_video'
   | 'presentation'
+  | 'brand_story'
+  | 'destinations_grid'
+  | 'why_choose_us'
+  | 'booking_process'
   | 'gallery'
   | 'benefits'
   | 'services'
@@ -61,9 +102,85 @@ export type BlockType =
   | 'visa_conditions'
   | 'visa_documents'
   | 'visa_steps'
-  | 'visa_faq';
+  | 'visa_faq'
+  // Universal Travel Commerce Modules
+  | 'module_hotels_search'
+  | 'module_flights'
+  | 'module_ferries'
+  | 'module_transfers'
+  | 'module_excursions'
+  | 'module_car_rental'
+  | 'module_travel_insurance'
+  | 'module_cruises_vip';
 
 export type LocalizedText = Record<CreatorLanguage, string>;
+
+export interface BrandIdentity {
+  brandName: string;
+  tagline?: string;
+  /** Real uploaded/selected logo path or data URL; null triggers clean provisional typographic brand mark */
+  logoSrc: string | null;
+  isProvisionalLogo: boolean;
+  primaryColor: string;
+  secondaryColor: string;
+  accentColor: string;
+  ctaColor: string;
+  ctaTextColor: string;
+  surfaceColor: string;
+  textColor: string;
+  headingFont: string;
+  bodyFont: string;
+  imageStyle: 'rounded' | 'editorial' | 'full_bleed';
+  cardShape: 'sharp' | 'soft' | 'rounded';
+  iconStyle: 'outline' | 'duotone' | 'solid';
+  spacingScale: 'compact' | 'balanced' | 'spacious';
+  visualStyle: BrandVisualStyle;
+}
+
+export interface HeaderNavLink {
+  id: string;
+  label: string;
+  target: string;
+}
+
+export interface PageHeaderConfig {
+  enabled: boolean;
+  variant: HeaderVariant;
+  sticky: boolean;
+  showLogo: boolean;
+  showBrandName: boolean;
+  navLinks: HeaderNavLink[];
+  ctaLabel: string;
+  ctaTarget: string;
+  showWhatsapp: boolean;
+  whatsappNumber: string;
+  whatsappLabel: string;
+}
+
+export interface PageFooterConfig {
+  enabled: boolean;
+  showLogo: boolean;
+  companyDescription: string;
+  navLinks: HeaderNavLink[];
+  /** Empty strings mean unconfigured -> automatically hidden in public render & flagged in editor */
+  phone: string;
+  whatsapp: string;
+  email: string;
+  address: string;
+  socialLinks: {
+    facebook?: string;
+    instagram?: string;
+    linkedin?: string;
+    youtube?: string;
+  };
+  legalLinks: {
+    termsLabel?: string;
+    termsUrl?: string;
+    privacyLabel?: string;
+    privacyUrl?: string;
+  };
+  copyrightText: string;
+}
 
 export interface BlockResponsiveVisibility {
   desktop: boolean;
@@ -102,6 +219,8 @@ export interface PageBlock {
   type: BlockType;
   category: BlockCategory;
   name: string;
+  /** Optional HTML anchor id (e.g. 'presentation', 'offres', 'faq') linked from PageHeaderConfig */
+  anchorId?: string;
   visible: boolean;
   visibility: BlockResponsiveVisibility;
   style: BlockStyleSettings;
@@ -110,6 +229,7 @@ export interface PageBlock {
     title: string;
     description: string;
     imageKey?: string;
+    galleryImageKeys?: string[];
     primaryCtaLabel?: string;
     primaryCtaTarget?: string;
     secondaryCtaLabel?: string;
@@ -199,6 +319,11 @@ export interface PageVersionSnapshot {
   language: CreatorLanguage;
   title: string;
   folderGroup?: string;
+  creationMode?: CreationMode;
+  brandIdentity?: BrandIdentity;
+  header?: PageHeaderConfig;
+  footer?: PageFooterConfig;
+  commerceModules?: CommerceModuleId[];
 }
 
 export interface PageVersion {
@@ -219,6 +344,11 @@ export interface Page {
   folderGroup?: string;
   isPilotPage?: boolean;
   pilotRenderer?: 'omra_ramadan_2027';
+  creationMode?: CreationMode;
+  brandIdentity?: BrandIdentity;
+  header?: PageHeaderConfig;
+  footer?: PageFooterConfig;
+  commerceModules?: CommerceModuleId[];
   templateId: string;
   language: CreatorLanguage;
   isDemoData: boolean;
