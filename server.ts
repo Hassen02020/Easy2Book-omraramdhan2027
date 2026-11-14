@@ -41,6 +41,10 @@ const DEFAULT_SCRIPT =
   "تحب تعيش روحانية شهر رمضان الكل في مكة المكرمة، وإنت مرتاح البال ومن غير حتى تعب؟ مع Easy2Book، حضرنالك برنامج عمرة شهر رمضان كامل: طيران تونس جدة تونس، فيزا، وتأطير كامل مع مرشدين مرافقين ليكم خطوة بخطوة، وإقامة مريحة في فندق ميسان الملتزم، وزيد معاهم رحلة للمدينة المنورة! الأسعار تبدأ من خمسة آلاف وتسعمية دينار للشخص في غرفة رباعية أو خماسية، ستة آلاف وأربعمية دينار في غرفة ثلاثية، وستة آلاف وتسعمية دينار في غرفة ثنائية... مع تخفيض ميتين دينار للعائلات انطلاقاً من شخصين! وللمجموعات أكثر من عشرة أشخاص كلمونا للحصول على الإمكانية. عدد الغرف محدود جداً والعرض صالح لـ خمسطاش ديسمبر ألفين وستة وعشرين! كلمنا توا على ثمانية وتسعين، مية وأربعين، خمس مية وأربعطاش، ولا احجز على easy2book.tn. Easy2Book... سفرتك أسهل!";
 
 const ALLOWED_VOICES = new Set([
+  "Elias",
+  "Layla",
+  "Omar",
+  "Sarah",
   "Charon",
   "Kore",
   "Fenrir",
@@ -54,6 +58,32 @@ const ALLOWED_VOICES = new Set([
   "Algenib",
   "Enceladus",
 ]);
+
+const VOICE_PERSONA_MAP: Record<
+  string,
+  { prebuiltVoice: string; defaultStyle: string }
+> = {
+  Elias: {
+    prebuiltVoice: "Algenib",
+    defaultStyle:
+      "Deep, resonant, authoritative masculine narrative storyteller voice in Tunisian Arabic with calm, captivating pacing.",
+  },
+  Layla: {
+    prebuiltVoice: "Sulafat",
+    defaultStyle:
+      "Soft, gentle, warmly welcoming feminine voice in Tunisian Arabic evoking hospitality and peace of mind.",
+  },
+  Omar: {
+    prebuiltVoice: "Orus",
+    defaultStyle:
+      "Dynamic, inspiring, confident masculine Tunisian Arabic voice with uplifting commercial clarity.",
+  },
+  Sarah: {
+    prebuiltVoice: "Zephyr",
+    defaultStyle:
+      "Clear, articulate, polished professional feminine voice in Tunisian Arabic for travel and hospitality offers.",
+  },
+};
 
 function readCreatorStore(): unknown | null {
   try {
@@ -99,11 +129,14 @@ async function synthesizeVoiceoverWav(params: {
   const voiceName = ALLOWED_VOICES.has(requestedVoice)
     ? requestedVoice
     : "Charon";
+  const persona = VOICE_PERSONA_MAP[voiceName];
+  const apiPrebuiltVoice = persona?.prebuiltVoice ?? voiceName;
 
   const style =
     typeof params.style === "string" && params.style.trim()
       ? params.style.trim().slice(0, 200)
-      : "Warm, reassuring, inspiring Tunisian Arabic commercial narrator with dignified pacing and clear pronunciation.";
+      : persona?.defaultStyle ??
+        "Warm, reassuring, inspiring Tunisian Arabic commercial narrator with dignified pacing and clear pronunciation.";
 
   const cacheKey = `${voiceName}::${style}::${script}`;
   const cached = voiceoverCache.get(cacheKey);
@@ -152,7 +185,7 @@ async function synthesizeVoiceoverWav(params: {
       responseModalities: ["AUDIO"],
       speechConfig: {
         voiceConfig: {
-          prebuiltVoiceConfig: { voiceName },
+          prebuiltVoiceConfig: { voiceName: apiPrebuiltVoice },
         },
       },
     },

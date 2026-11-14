@@ -80,6 +80,7 @@ interface BlockRendererProps {
   attribution: AttributionSettings;
   crmConfig: CrmIntegrationConfig;
   brandIdentity?: BrandIdentity;
+  defaultVoiceId?: string;
   selected?: boolean;
   interactiveEdit?: boolean;
   onSelectBlock?: (blockId: string) => void;
@@ -95,6 +96,7 @@ export function BlockRenderer({
   attribution,
   crmConfig,
   brandIdentity,
+  defaultVoiceId,
   selected = false,
   interactiveEdit = false,
   onSelectBlock,
@@ -120,7 +122,15 @@ export function BlockRenderer({
   const [reelMuted, setReelMuted] = useState(false);
   const [audioActive, setAudioActive] = useState(false);
   const [audioLoading, setAudioLoading] = useState(false);
-  const [selectedVoice, setSelectedVoice] = useState('Charon');
+  const [selectedVoice, setSelectedVoice] = useState(
+    defaultVoiceId || 'Charon'
+  );
+
+  useEffect(() => {
+    if (defaultVoiceId) {
+      setSelectedVoice(defaultVoiceId);
+    }
+  }, [defaultVoiceId]);
   const [videoExporting, setVideoExporting] = useState(false);
   const [videoExportPct, setVideoExportPct] = useState(0);
   const [videoExportStatus, setVideoExportStatus] = useState('');
@@ -541,13 +551,14 @@ export function BlockRenderer({
                       void handleToggleReelPlay(v.id);
                     }
                   }}
+                  title={`${v.id} — ${v.descriptionFr}`}
                   className={`rounded-md border px-2 py-1 text-[10px] font-semibold transition-colors ${
                     selectedVoice === v.id
                       ? 'border-[#102D45] bg-[#102D45] text-white'
                       : 'border-[#102D45]/15 bg-white/80 text-[#102D45] hover:border-[#C8922A]'
                   }`}
                 >
-                  {isAr ? v.label : `${v.id} · ${v.tone}`}
+                  {isAr ? v.label : `${v.id} · ${v.descriptionFr}`}
                 </button>
               ))}
             </div>

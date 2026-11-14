@@ -13,6 +13,7 @@ interface PagePreviewCanvasProps {
   snapshot: PageVersionSnapshot;
   viewport: PreviewViewport;
   crmConfig: CrmIntegrationConfig;
+  defaultVoiceId?: string;
   selectedBlockId?: string | null;
   selectedZone?: 'identity' | 'header' | 'footer' | null;
   interactiveEdit?: boolean;
@@ -26,6 +27,7 @@ export function PagePreviewCanvas({
   snapshot,
   viewport,
   crmConfig,
+  defaultVoiceId,
   selectedBlockId,
   selectedZone = null,
   interactiveEdit = false,
@@ -55,6 +57,7 @@ export function PagePreviewCanvas({
           page={page}
           snapshot={snapshot}
           crmConfig={crmConfig}
+          defaultVoiceId={defaultVoiceId}
         />
       </div>
     );
@@ -130,6 +133,7 @@ export function PagePreviewCanvas({
             attribution={snapshot.attribution}
             crmConfig={crmConfig}
             brandIdentity={brandIdentity}
+            defaultVoiceId={defaultVoiceId}
             selected={selectedZone === null && selectedBlockId === block.id}
             interactiveEdit={interactiveEdit}
             onSelectBlock={onSelectBlock}

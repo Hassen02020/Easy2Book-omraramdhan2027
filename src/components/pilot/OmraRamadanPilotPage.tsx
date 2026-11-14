@@ -98,6 +98,7 @@ interface OmraRamadanPilotPageProps {
   page: Page;
   snapshot: PageVersionSnapshot;
   crmConfig: CrmIntegrationConfig;
+  defaultVoiceId?: string;
 }
 
 /**
@@ -115,6 +116,7 @@ export function OmraRamadanPilotPage({
   page,
   snapshot,
   crmConfig,
+  defaultVoiceId,
 }: OmraRamadanPilotPageProps) {
   // Video & Gemini Tunisian Voiceover state
   const [currentTime, setCurrentTime] = useState(0);
@@ -122,7 +124,15 @@ export function OmraRamadanPilotPage({
   const [isPlaying, setIsPlaying] = useState(false);
   const [showCaptions, setShowCaptions] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
-  const [selectedVoice, setSelectedVoice] = useState('Charon');
+  const [selectedVoice, setSelectedVoice] = useState(
+    defaultVoiceId || 'Charon'
+  );
+
+  useEffect(() => {
+    if (defaultVoiceId) {
+      setSelectedVoice(defaultVoiceId);
+    }
+  }, [defaultVoiceId]);
   const [audioActive, setAudioActive] = useState(false);
   const [audioLoading, setAudioLoading] = useState(false);
   const [audioError, setAudioError] = useState<string | null>(null);
@@ -592,7 +602,7 @@ export function OmraRamadanPilotPage({
                           void startOrToggleVoiceover(v.id);
                         }
                       }}
-                      title={v.tone}
+                      title={`${v.id} — ${v.descriptionFr} (${v.tone})`}
                       className={`rounded-lg border px-2.5 py-1.5 text-[11px] font-semibold transition-colors ${
                         selectedVoice === v.id
                           ? 'border-[#0B162C] bg-[#0B162C] text-white'

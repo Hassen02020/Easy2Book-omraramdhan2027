@@ -1,4 +1,5 @@
-import { Code2, RotateCcw, ShieldAlert, Workflow } from 'lucide-react';
+import { Code2, RotateCcw, ShieldAlert, Volume2, Workflow } from 'lucide-react';
+import { VOICE_OPTIONS } from '../../data/campaignData';
 import type { CreatorLanguage, CreatorSettings } from '../../types/creator';
 
 interface CreatorSettingsViewProps {
@@ -92,6 +93,60 @@ export function CreatorSettingsView({
               }
               className="w-full rounded-xl border border-[#102D45]/15 bg-[#F5F7FA] px-3 py-2 font-mono text-xs"
             />
+          </div>
+
+          <div>
+            <label className="flex items-center gap-1.5 text-xs font-semibold text-[#102D45] mb-1">
+              <Volume2 className="h-3.5 w-3.5 text-[#C8922A]" />
+              Voix off par défaut du Studio (Vidéo 9:16)
+            </label>
+            <select
+              value={settings.defaultVoiceId || 'Charon'}
+              onChange={(e) =>
+                onUpdateSettings({
+                  ...settings,
+                  defaultVoiceId: e.target.value,
+                })
+              }
+              className="w-full rounded-xl border border-[#102D45]/15 bg-[#F5F7FA] px-3 py-2 text-xs font-semibold text-[#102D45]"
+            >
+              {VOICE_OPTIONS.map((v) => (
+                <option key={v.id} value={v.id}>
+                  {v.id} — {v.descriptionFr}
+                </option>
+              ))}
+            </select>
+            <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+              {VOICE_OPTIONS.slice(0, 4).map((v) => {
+                const active = (settings.defaultVoiceId || 'Charon') === v.id;
+                return (
+                  <button
+                    key={v.id}
+                    type="button"
+                    onClick={() =>
+                      onUpdateSettings({
+                        ...settings,
+                        defaultVoiceId: v.id,
+                      })
+                    }
+                    className={`rounded-lg border px-2.5 py-2 text-left transition-colors ${
+                      active
+                        ? 'border-[#102D45] bg-[#102D45] text-white'
+                        : 'border-[#102D45]/12 bg-[#F5F7FA] text-[#102D45] hover:border-[#E7B34C]'
+                    }`}
+                  >
+                    <p className="text-xs font-bold">{v.id}</p>
+                    <p
+                      className={`text-[10px] ${
+                        active ? 'text-[#E7B34C]' : 'text-slate-600'
+                      }`}
+                    >
+                      {v.descriptionFr}
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           <label className="flex items-center justify-between rounded-xl border border-[#102D45]/10 bg-[#F5F7FA] p-3 text-xs font-semibold text-[#102D45]">

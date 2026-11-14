@@ -32,6 +32,8 @@ export interface VoiceOption {
   id: string;
   label: string;
   tone: string;
+  descriptionFr: string;
+  prebuiltVoice: string;
   stylePrompt: string;
 }
 
@@ -42,9 +44,47 @@ export const DEFAULT_TUNISIAN_SCRIPT =
 
 export const VOICE_OPTIONS: VoiceOption[] = [
   {
+    id: 'Elias',
+    label: 'إلياس · عميق وسردي (Elias)',
+    tone: 'عميق وسردي',
+    descriptionFr: 'Voix masculine, profonde, narrative',
+    prebuiltVoice: 'Algenib',
+    stylePrompt:
+      'Deep, resonant, authoritative masculine narrative storyteller voice in Tunisian Arabic with calm, captivating pacing.',
+  },
+  {
+    id: 'Layla',
+    label: 'ليلى · ناعمة ومرحبة (Layla)',
+    tone: 'ناعمة ومرحبة',
+    descriptionFr: 'Voix féminine, douce, accueillante',
+    prebuiltVoice: 'Sulafat',
+    stylePrompt:
+      'Soft, gentle, warmly welcoming feminine voice in Tunisian Arabic evoking hospitality and peace of mind.',
+  },
+  {
+    id: 'Omar',
+    label: 'عمر · حيوي وملهم (Omar)',
+    tone: 'حيوي وملهم',
+    descriptionFr: 'Voix masculine, dynamique, inspirante',
+    prebuiltVoice: 'Orus',
+    stylePrompt:
+      'Dynamic, inspiring, confident masculine Tunisian Arabic voice with uplifting commercial clarity.',
+  },
+  {
+    id: 'Sarah',
+    label: 'سارة · احترافية وواضحة (Sarah)',
+    tone: 'احترافية وواضحة',
+    descriptionFr: 'Voix féminine, professionnelle, claire',
+    prebuiltVoice: 'Zephyr',
+    stylePrompt:
+      'Clear, articulate, polished professional feminine voice in Tunisian Arabic for travel and hospitality offers.',
+  },
+  {
     id: 'Charon',
     label: 'صوت رخيم دافئ (Charon)',
     tone: 'وقور وهادئ',
+    descriptionFr: 'Voix masculine, posée et chaleureuse',
+    prebuiltVoice: 'Charon',
     stylePrompt:
       'Warm, reassuring, inspiring Tunisian Arabic commercial narrator with dignified pacing and clear pronunciation.',
   },
@@ -52,6 +92,8 @@ export const VOICE_OPTIONS: VoiceOption[] = [
     id: 'Kore',
     label: 'صوت ناعم واضح (Kore)',
     tone: 'ودود ومطمئن',
+    descriptionFr: 'Voix féminine, claire et rassurante',
+    prebuiltVoice: 'Kore',
     stylePrompt:
       'Gentle, crystal-clear, welcoming Tunisian Arabic female narrator with reassuring family-friendly warmth.',
   },
@@ -59,6 +101,8 @@ export const VOICE_OPTIONS: VoiceOption[] = [
     id: 'Fenrir',
     label: 'صوت إعلاني جهوري (Fenrir)',
     tone: 'حماسي للإعلان',
+    descriptionFr: 'Voix masculine, puissante et commerciale',
+    prebuiltVoice: 'Fenrir',
     stylePrompt:
       'Bold, resonant, energetic Tunisian Arabic commercial broadcast announcer with persuasive clarity.',
   },
@@ -66,6 +110,8 @@ export const VOICE_OPTIONS: VoiceOption[] = [
     id: 'Puck',
     label: 'صوت حيوي مشرق (Puck)',
     tone: 'خفيف وسلس',
+    descriptionFr: 'Voix rythmée, légère et fluide',
+    prebuiltVoice: 'Puck',
     stylePrompt:
       'Upbeat, lively, engaging Tunisian Arabic narrator with crisp modern commercial rhythm.',
   },
@@ -73,6 +119,8 @@ export const VOICE_OPTIONS: VoiceOption[] = [
     id: 'Zephyr',
     label: 'صوت نسائي مشرق وواضح (Zephyr)',
     tone: 'واضح ومنعش',
+    descriptionFr: 'Voix féminine, lumineuse et fluide',
+    prebuiltVoice: 'Zephyr',
     stylePrompt:
       'Bright, articulate, uplifting female Tunisian Arabic travel presenter with smooth flow.',
   },
@@ -80,6 +128,8 @@ export const VOICE_OPTIONS: VoiceOption[] = [
     id: 'Aoede',
     label: 'صوت نسائي هادئ وطبيعي (Aoede)',
     tone: 'سلس ومريح',
+    descriptionFr: 'Voix féminine, naturelle et apaisante',
+    prebuiltVoice: 'Aoede',
     stylePrompt:
       'Breezy, natural, calm female Tunisian Arabic storyteller with warm hospitality tone.',
   },
@@ -87,6 +137,8 @@ export const VOICE_OPTIONS: VoiceOption[] = [
     id: 'Orus',
     label: 'صوت رجالي رصين وموثوق (Orus)',
     tone: 'رصين ومقنع',
+    descriptionFr: 'Voix masculine, posée et fiable',
+    prebuiltVoice: 'Orus',
     stylePrompt:
       'Firm, trustworthy, steady male Tunisian Arabic advisor delivering clear travel details.',
   },
@@ -94,6 +146,8 @@ export const VOICE_OPTIONS: VoiceOption[] = [
     id: 'Leda',
     label: 'صوت شاب حيوي ومباشر (Leda)',
     tone: 'عصري وحيوي',
+    descriptionFr: 'Voix féminine, jeune et énergique',
+    prebuiltVoice: 'Leda',
     stylePrompt:
       'Youthful, dynamic, vibrant female Tunisian Arabic social reel voiceover with crisp energy.',
   },
@@ -101,6 +155,8 @@ export const VOICE_OPTIONS: VoiceOption[] = [
     id: 'Sulafat',
     label: 'صوت دافئ رقيق ومطمئن (Sulafat)',
     tone: 'روحاني دافئ',
+    descriptionFr: 'Voix chaleureuse et spirituelle',
+    prebuiltVoice: 'Sulafat',
     stylePrompt:
       'Warm, serene, compassionate Tunisian Arabic voice suited for spiritual Ramadan Umrah narration.',
   },
@@ -108,6 +164,8 @@ export const VOICE_OPTIONS: VoiceOption[] = [
     id: 'Achird',
     label: 'صوت ترحيبي قريب وودود (Achird)',
     tone: 'ترحيبي وودود',
+    descriptionFr: 'Voix conviviale et proche',
+    prebuiltVoice: 'Achird',
     stylePrompt:
       'Friendly, approachable, conversational Tunisian Arabic travel concierge voice.',
   },
@@ -115,6 +173,8 @@ export const VOICE_OPTIONS: VoiceOption[] = [
     id: 'Algenib',
     label: 'صوت عميق وفخم (Algenib)',
     tone: 'عميق وفخم',
+    descriptionFr: 'Voix grave, premium et posée',
+    prebuiltVoice: 'Algenib',
     stylePrompt:
       'Deep, gravelly, authoritative luxury hospitality narrator in Tunisian Arabic.',
   },
@@ -122,6 +182,8 @@ export const VOICE_OPTIONS: VoiceOption[] = [
     id: 'Enceladus',
     label: 'صوت هادئ وباعث على السكينة (Enceladus)',
     tone: 'هادئ وروحاني',
+    descriptionFr: 'Voix douce et sereine',
+    prebuiltVoice: 'Enceladus',
     stylePrompt:
       'Soft, calm, peaceful Tunisian Arabic narrator evoking serenity and trust.',
   },

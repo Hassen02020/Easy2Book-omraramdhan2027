@@ -67,6 +67,7 @@ interface PageEditorWorkspaceProps {
   studioLanguage: CreatorLanguage;
   media: MediaAsset[];
   crmConfig: CrmIntegrationConfig;
+  defaultVoiceId?: string;
   autoSaveSavedAt: string | null;
   onUpdatePage: (nextPage: Page) => void;
   onSaveDraftVersion: () => void;
@@ -103,6 +104,7 @@ export function PageEditorWorkspace({
   studioLanguage,
   media,
   crmConfig,
+  defaultVoiceId,
   autoSaveSavedAt,
   onUpdatePage,
   onSaveDraftVersion,
@@ -800,6 +802,7 @@ export function PageEditorWorkspace({
             snapshot={activeSnapshot}
             viewport={viewport}
             crmConfig={crmConfig}
+            defaultVoiceId={defaultVoiceId}
             selectedBlockId={selectedBlock?.id}
             selectedZone={
               rightTab === 'identity' ||

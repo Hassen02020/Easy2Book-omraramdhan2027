@@ -65,6 +65,10 @@ function upgradeStudioState(raw: CreatorState): CreatorState {
 
   return {
     ...raw,
+    settings: {
+      ...raw.settings,
+      defaultVoiceId: raw.settings?.defaultVoiceId || 'Charon',
+    },
     templates: mergedTemplates,
     media: mergedMedia,
     pages: raw.pages.map((pg) =>
@@ -476,6 +480,7 @@ export default function App() {
             snapshot={snapshot}
             viewport={previewViewport}
             crmConfig={state.settings.crmIntegration}
+            defaultVoiceId={state.settings.defaultVoiceId}
             forcePilotRender={previewPage.pilotRenderer === 'omra_ramadan_2027'}
           />
         </main>
@@ -524,6 +529,7 @@ export default function App() {
           studioLanguage={studioLanguage}
           media={state.media}
           crmConfig={state.settings.crmIntegration}
+          defaultVoiceId={state.settings.defaultVoiceId}
           autoSaveSavedAt={autoSaveSavedAt}
           onUpdatePage={(nextPage) =>
             updatePageById(editingPage.id, () => nextPage)

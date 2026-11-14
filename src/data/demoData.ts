@@ -2252,6 +2252,7 @@ export const DEMO_NOTIFICATIONS: CreatorNotification[] = [
 export const DEFAULT_CREATOR_SETTINGS: CreatorSettings = {
   defaultLanguage: 'fr',
   defaultWhatsappNumber: '98 140 514',
+  defaultVoiceId: 'Charon',
   autoSaveEnabled: true,
   crmIntegration: {
     endpointUrl: 'https://crm.easy2book.tn/api/integrations/landing-leads',

@@ -403,6 +403,7 @@ export interface CreatorNotification {
 export interface CreatorSettings {
   defaultLanguage: CreatorLanguage;
   defaultWhatsappNumber: string;
+  defaultVoiceId?: string;
   autoSaveEnabled: boolean;
   crmIntegration: {
     endpointUrl: string;
