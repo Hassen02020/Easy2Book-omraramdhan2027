@@ -199,6 +199,7 @@ export function OmraRamadanPilotPage({
     let url = audioUrlMapRef.current.get(voice);
     if (!url) {
       setAudioLoading(true);
+      const voiceMeta = VOICE_OPTIONS.find((v) => v.id === voice);
       try {
         const res = await fetch('/api/voiceover', {
           method: 'POST',
@@ -206,6 +207,7 @@ export function OmraRamadanPilotPage({
           body: JSON.stringify({
             script: DEFAULT_TUNISIAN_SCRIPT,
             voiceName: voice,
+            style: voiceMeta?.stylePrompt,
           }),
         });
         if (!res.ok) {
@@ -572,30 +574,42 @@ export function OmraRamadanPilotPage({
               </div>
 
               {/* Voice Selector */}
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1 text-xs font-bold text-[#475569]">
-                  <Volume2 className="h-3.5 w-3.5 text-[#C8922A]" />
-                  نبرة المعلق:
-                </span>
-                {VOICE_OPTIONS.map((v) => (
-                  <button
-                    key={v.id}
-                    type="button"
-                    onClick={() => {
-                      setSelectedVoice(v.id);
-                      if (isPlaying) {
-                        void startOrToggleVoiceover(v.id);
-                      }
-                    }}
-                    className={`rounded-lg border px-2.5 py-1 text-[11px] font-semibold transition-colors ${
-                      selectedVoice === v.id
-                        ? 'border-[#0B162C] bg-[#0B162C] text-white'
-                        : 'border-[#0B162C]/12 bg-[#FAF9F6] text-[#0B162C]'
-                    }`}
-                  >
-                    {v.label}
-                  </button>
-                ))}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs font-bold text-[#475569]">
+                  <span className="inline-flex items-center gap-1">
+                    <Volume2 className="h-3.5 w-3.5 text-[#C8922A]" />
+                    نبرة المعلق ({VOICE_OPTIONS.length} أصوات متاحة):
+                  </span>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  {VOICE_OPTIONS.map((v) => (
+                    <button
+                      key={v.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedVoice(v.id);
+                        if (isPlaying) {
+                          void startOrToggleVoiceover(v.id);
+                        }
+                      }}
+                      title={v.tone}
+                      className={`rounded-lg border px-2.5 py-1.5 text-[11px] font-semibold transition-colors ${
+                        selectedVoice === v.id
+                          ? 'border-[#0B162C] bg-[#0B162C] text-white'
+                          : 'border-[#0B162C]/12 bg-[#FAF9F6] text-[#0B162C] hover:border-[#C8922A]'
+                      }`}
+                    >
+                      <span>{v.label}</span>
+                      <span
+                        className={`mr-1.5 text-[10px] ${
+                          selectedVoice === v.id ? 'text-[#E7B34C]' : 'text-slate-500'
+                        }`}
+                      >
+                        · {v.tone}
+                      </span>
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {videoExporting && (

@@ -1,6 +1,7 @@
 import {
   REEL_SCENES,
   TOTAL_REEL_DURATION_SEC,
+  VOICE_OPTIONS,
   type ReelScene,
 } from '../data/campaignData';
 
@@ -365,11 +366,13 @@ export async function generateVideoDownloadLink(params: {
 
     onProgress?.(45, 'Assemblage MP4 & voix tunisienne sur le serveur...');
 
+    const voiceStyle = VOICE_OPTIONS.find((v) => v.id === voiceName)?.stylePrompt;
     const res = await fetch('/api/video/export', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         voiceName,
+        voiceStyle,
         showCaptions,
         overlays,
       }),

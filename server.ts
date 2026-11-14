@@ -17,6 +17,7 @@ const isProduction = process.env.NODE_ENV === "production";
 const DATA_DIR = path.join(__dirname, "data");
 const CREATOR_STORE_FILE = path.join(DATA_DIR, "creator-studio.json");
 const VIDEOS_DIR = path.join(DATA_DIR, "generated-videos");
+const VOICEOVER_CACHE_DIR = path.join(DATA_DIR, "voiceover-cache");
 
 const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,
@@ -39,7 +40,20 @@ const voiceoverCache = new Map<string, CachedAudio>();
 const DEFAULT_SCRIPT =
   "تحب تعيش روحانية شهر رمضان الكل في مكة المكرمة، وإنت مرتاح البال ومن غير حتى تعب؟ مع Easy2Book، حضرنالك برنامج عمرة شهر رمضان كامل: طيران تونس جدة تونس، فيزا، وتأطير كامل مع مرشدين مرافقين ليكم خطوة بخطوة، وإقامة مريحة في فندق ميسان الملتزم، وزيد معاهم رحلة للمدينة المنورة! الأسعار تبدأ من خمسة آلاف وتسعمية دينار للشخص في غرفة رباعية أو خماسية، ستة آلاف وأربعمية دينار في غرفة ثلاثية، وستة آلاف وتسعمية دينار في غرفة ثنائية... مع تخفيض ميتين دينار للعائلات انطلاقاً من شخصين! وللمجموعات أكثر من عشرة أشخاص كلمونا للحصول على الإمكانية. عدد الغرف محدود جداً والعرض صالح لـ خمسطاش ديسمبر ألفين وستة وعشرين! كلمنا توا على ثمانية وتسعين، مية وأربعين، خمس مية وأربعطاش، ولا احجز على easy2book.tn. Easy2Book... سفرتك أسهل!";
 
-const ALLOWED_VOICES = new Set(["Charon", "Kore", "Fenrir", "Puck", "Zephyr"]);
+const ALLOWED_VOICES = new Set([
+  "Charon",
+  "Kore",
+  "Fenrir",
+  "Puck",
+  "Zephyr",
+  "Aoede",
+  "Orus",
+  "Leda",
+  "Sulafat",
+  "Achird",
+  "Algenib",
+  "Enceladus",
+]);
 
 function readCreatorStore(): unknown | null {
   try {
@@ -102,6 +116,23 @@ async function synthesizeVoiceoverWav(params: {
     };
   }
 
+  const hash = crypto.createHash("sha256").update(cacheKey).digest("hex").slice(0, 24);
+  const diskCachePath = path.join(VOICEOVER_CACHE_DIR, `${hash}.wav`);
+  if (fs.existsSync(diskCachePath)) {
+    const audioBase64 = fs.readFileSync(diskCachePath).toString("base64");
+    voiceoverCache.set(cacheKey, {
+      audioBase64,
+      mimeType: "audio/wav",
+      createdAt: Date.now(),
+    });
+    return {
+      audioBase64,
+      mimeType: "audio/wav",
+      voiceName,
+      cached: true,
+    };
+  }
+
   const response = await ai.models.generateContent({
     model: "gemini-3.8-flash-lite-tts",
     contents: [
@@ -134,7 +165,7 @@ async function synthesizeVoiceoverWav(params: {
     throw new Error("EMPTY_AUDIO_RESPONSE");
   }
 
-  if (voiceoverCache.size >= 16) {
+  if (voiceoverCache.size >= 32) {
     const oldestKey = voiceoverCache.keys().next().value;
     if (oldestKey) voiceoverCache.delete(oldestKey);
   }
@@ -144,6 +175,13 @@ async function synthesizeVoiceoverWav(params: {
     mimeType: "audio/wav",
     createdAt: Date.now(),
   });
+
+  try {
+    fs.mkdirSync(VOICEOVER_CACHE_DIR, { recursive: true });
+    fs.writeFileSync(diskCachePath, Buffer.from(base64Audio, "base64"));
+  } catch {
+    // Non-fatal disk cache write failure
+  }
 
   return {
     audioBase64: base64Audio,
@@ -262,6 +300,16 @@ async function startServer() {
           error: "لم يُرجع النموذج ملفاً صوتياً، يرجى المحاولة مجدداً.",
         });
       }
+      if (
+        message.includes("429") ||
+        message.includes("RESOURCE_EXHAUSTED")
+      ) {
+        return res.status(429).json({
+          error:
+            "تم بلوغ الحد اليومي لتوليد الأصوات المجاني حالياً. يمكنك تشغيل العرض البصري أو المحاولة لاحقاً.",
+          details: message,
+        });
+      }
       console.error("TTS generation error:", message);
       return res.status(500).json({
         error:
@@ -323,9 +371,14 @@ async function startServer() {
 
       if (process.env.GEMINI_API_KEY) {
         try {
+          const voiceStyle =
+            typeof req.body?.voiceStyle === "string"
+              ? req.body.voiceStyle
+              : undefined;
           const tts = await synthesizeVoiceoverWav({
             script: DEFAULT_SCRIPT,
             voiceName,
+            style: voiceStyle,
           });
           const audioBuf = Buffer.from(tts.audioBase64, "base64");
           wavPath = path.join(tempDir, "voiceover.wav");

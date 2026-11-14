@@ -36,6 +36,7 @@ import {
 import {
   DEFAULT_TUNISIAN_SCRIPT,
   TOTAL_REEL_DURATION_SEC,
+  VOICE_OPTIONS,
 } from '../../data/campaignData';
 import { getHeroImageSrc } from '../../lib/mediaRegistry';
 import {
@@ -119,6 +120,7 @@ export function BlockRenderer({
   const [reelMuted, setReelMuted] = useState(false);
   const [audioActive, setAudioActive] = useState(false);
   const [audioLoading, setAudioLoading] = useState(false);
+  const [selectedVoice, setSelectedVoice] = useState('Charon');
   const [videoExporting, setVideoExporting] = useState(false);
   const [videoExportPct, setVideoExportPct] = useState(0);
   const [videoExportStatus, setVideoExportStatus] = useState('');
@@ -127,7 +129,7 @@ export function BlockRenderer({
   const [videoExportError, setVideoExportError] = useState<string | null>(null);
   const [videoLinkCopied, setVideoLinkCopied] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const audioUrlRef = useRef<string | null>(null);
+  const audioUrlMapRef = useRef<Map<string, string>>(new Map());
 
   useEffect(() => {
     if (block.type !== 'hero_video' || !reelPlaying || audioActive) return;
@@ -140,33 +142,37 @@ export function BlockRenderer({
   }, [audioActive, block.type, reelPlaying]);
 
   useEffect(() => {
+    const map = audioUrlMapRef.current;
     return () => {
       if (audioRef.current) {
         audioRef.current.pause();
       }
-      if (audioUrlRef.current) {
-        URL.revokeObjectURL(audioUrlRef.current);
-      }
+      map.forEach((url) => URL.revokeObjectURL(url));
+      map.clear();
     };
   }, []);
 
-  const handleToggleReelPlay = async () => {
-    if (reelPlaying) {
+  const handleToggleReelPlay = async (forceVoice?: string) => {
+    const voice = forceVoice || selectedVoice;
+    if (reelPlaying && !forceVoice) {
       setReelPlaying(false);
       if (audioRef.current) audioRef.current.pause();
       return;
     }
 
     setReelPlaying(true);
-    if (!audioUrlRef.current && !audioLoading) {
+    let url = audioUrlMapRef.current.get(voice);
+    if (!url && !audioLoading) {
       setAudioLoading(true);
+      const voiceMeta = VOICE_OPTIONS.find((v) => v.id === voice);
       try {
         const res = await fetch('/api/voiceover', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             script: DEFAULT_TUNISIAN_SCRIPT,
-            voiceName: 'Charon',
+            voiceName: voice,
+            style: voiceMeta?.stylePrompt,
           }),
         });
         if (res.ok) {
@@ -179,23 +185,8 @@ export function BlockRenderer({
             const blob = new Blob([bytes.buffer as ArrayBuffer], {
               type: data.mimeType || 'audio/wav',
             });
-            const url = URL.createObjectURL(blob);
-            audioUrlRef.current = url;
-            const audio = new Audio(url);
-            audio.muted = reelMuted;
-            audio.ontimeupdate = () => {
-              setReelTime(audio.currentTime);
-            };
-            audio.onended = () => {
-              setAudioActive(false);
-              setReelPlaying(false);
-              setReelTime(0);
-            };
-            audioRef.current = audio;
-            setAudioActive(true);
-            await audio.play().catch(() => {
-              setAudioActive(false);
-            });
+            url = URL.createObjectURL(blob);
+            audioUrlMapRef.current.set(voice, url);
           }
         }
       } catch {
@@ -203,9 +194,27 @@ export function BlockRenderer({
       } finally {
         setAudioLoading(false);
       }
-    } else if (audioRef.current) {
-      audioRef.current.muted = reelMuted;
-      await audioRef.current.play().catch(() => {});
+    }
+
+    if (url) {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+      const audio = new Audio(url);
+      audio.muted = reelMuted;
+      audio.ontimeupdate = () => {
+        setReelTime(audio.currentTime);
+      };
+      audio.onended = () => {
+        setAudioActive(false);
+        setReelPlaying(false);
+        setReelTime(0);
+      };
+      audioRef.current = audio;
+      setAudioActive(true);
+      await audio.play().catch(() => {
+        setAudioActive(false);
+      });
     }
   };
 
@@ -233,7 +242,7 @@ export function BlockRenderer({
 
     try {
       const result = await generateVideoDownloadLink({
-        voiceName: 'Charon',
+        voiceName: selectedVoice,
         showCaptions: reelCaptions,
         onProgress: (pct, label) => {
           setVideoExportPct(pct);
@@ -510,6 +519,37 @@ export function BlockRenderer({
                       : 'Générer lien de téléchargement'}
                 </span>
               </button>
+            </div>
+
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="flex flex-wrap items-center gap-1.5 pt-1"
+            >
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold opacity-80">
+                <Volume2 className="h-3.5 w-3.5 text-[#C8922A]" />
+                {isAr
+                  ? `نبرة المعلق (${VOICE_OPTIONS.length}):`
+                  : `Voix (${VOICE_OPTIONS.length}) :`}
+              </span>
+              {VOICE_OPTIONS.map((v) => (
+                <button
+                  key={v.id}
+                  type="button"
+                  onClick={() => {
+                    setSelectedVoice(v.id);
+                    if (reelPlaying) {
+                      void handleToggleReelPlay(v.id);
+                    }
+                  }}
+                  className={`rounded-md border px-2 py-1 text-[10px] font-semibold transition-colors ${
+                    selectedVoice === v.id
+                      ? 'border-[#102D45] bg-[#102D45] text-white'
+                      : 'border-[#102D45]/15 bg-white/80 text-[#102D45] hover:border-[#C8922A]'
+                  }`}
+                >
+                  {isAr ? v.label : `${v.id} · ${v.tone}`}
+                </button>
+              ))}
             </div>
 
             {videoExporting && (

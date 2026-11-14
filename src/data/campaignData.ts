@@ -32,6 +32,7 @@ export interface VoiceOption {
   id: string;
   label: string;
   tone: string;
+  stylePrompt: string;
 }
 
 export const TOTAL_REEL_DURATION_SEC = 48;
@@ -40,10 +41,90 @@ export const DEFAULT_TUNISIAN_SCRIPT =
   'تحب تعيش روحانية شهر رمضان الكل في مكة المكرمة، وإنت مرتاح البال ومن غير حتى تعب؟ مع Easy2Book، حضرنالك برنامج عمرة شهر رمضان كامل: طيران تونس جدة تونس، فيزا، وتأطير كامل مع مرشدين مرافقين ليكم خطوة بخطوة، وإقامة مريحة في فندق ميسان الملتزم، وزيد معاهم رحلة للمدينة المنورة! الأسعار تبدأ من خمسة آلاف وتسعمية دينار للشخص في غرفة رباعية أو خماسية، ستة آلاف وأربعمية دينار في غرفة ثلاثية، وستة آلاف وتسعمية دينار في غرفة ثنائية... مع تخفيض ميتين دينار للعائلات انطلاقاً من شخصين! وللمجموعات أكثر من عشرة أشخاص كلمونا للحصول على الإمكانية. عدد الغرف محدود جداً والعرض صالح لـ خمسطاش ديسمبر ألفين وستة وعشرين! كلمنا توا على ثمانية وتسعين، مية وأربعين، خمس مية وأربعطاش، ولا احجز على easy2book.tn. Easy2Book... سفرتك أسهل!';
 
 export const VOICE_OPTIONS: VoiceOption[] = [
-  { id: 'Charon', label: 'صوت رخيم دافئ (Charon)', tone: 'وقور وهادئ' },
-  { id: 'Kore', label: 'صوت ناعم واضح (Kore)', tone: 'ودود ومطمئن' },
-  { id: 'Fenrir', label: 'صوت إعلاني جهوري (Fenrir)', tone: 'حماسي للإعلان' },
-  { id: 'Puck', label: 'صوت حيوي مشرق (Puck)', tone: 'خفيف وسلس' },
+  {
+    id: 'Charon',
+    label: 'صوت رخيم دافئ (Charon)',
+    tone: 'وقور وهادئ',
+    stylePrompt:
+      'Warm, reassuring, inspiring Tunisian Arabic commercial narrator with dignified pacing and clear pronunciation.',
+  },
+  {
+    id: 'Kore',
+    label: 'صوت ناعم واضح (Kore)',
+    tone: 'ودود ومطمئن',
+    stylePrompt:
+      'Gentle, crystal-clear, welcoming Tunisian Arabic female narrator with reassuring family-friendly warmth.',
+  },
+  {
+    id: 'Fenrir',
+    label: 'صوت إعلاني جهوري (Fenrir)',
+    tone: 'حماسي للإعلان',
+    stylePrompt:
+      'Bold, resonant, energetic Tunisian Arabic commercial broadcast announcer with persuasive clarity.',
+  },
+  {
+    id: 'Puck',
+    label: 'صوت حيوي مشرق (Puck)',
+    tone: 'خفيف وسلس',
+    stylePrompt:
+      'Upbeat, lively, engaging Tunisian Arabic narrator with crisp modern commercial rhythm.',
+  },
+  {
+    id: 'Zephyr',
+    label: 'صوت نسائي مشرق وواضح (Zephyr)',
+    tone: 'واضح ومنعش',
+    stylePrompt:
+      'Bright, articulate, uplifting female Tunisian Arabic travel presenter with smooth flow.',
+  },
+  {
+    id: 'Aoede',
+    label: 'صوت نسائي هادئ وطبيعي (Aoede)',
+    tone: 'سلس ومريح',
+    stylePrompt:
+      'Breezy, natural, calm female Tunisian Arabic storyteller with warm hospitality tone.',
+  },
+  {
+    id: 'Orus',
+    label: 'صوت رجالي رصين وموثوق (Orus)',
+    tone: 'رصين ومقنع',
+    stylePrompt:
+      'Firm, trustworthy, steady male Tunisian Arabic advisor delivering clear travel details.',
+  },
+  {
+    id: 'Leda',
+    label: 'صوت شاب حيوي ومباشر (Leda)',
+    tone: 'عصري وحيوي',
+    stylePrompt:
+      'Youthful, dynamic, vibrant female Tunisian Arabic social reel voiceover with crisp energy.',
+  },
+  {
+    id: 'Sulafat',
+    label: 'صوت دافئ رقيق ومطمئن (Sulafat)',
+    tone: 'روحاني دافئ',
+    stylePrompt:
+      'Warm, serene, compassionate Tunisian Arabic voice suited for spiritual Ramadan Umrah narration.',
+  },
+  {
+    id: 'Achird',
+    label: 'صوت ترحيبي قريب وودود (Achird)',
+    tone: 'ترحيبي وودود',
+    stylePrompt:
+      'Friendly, approachable, conversational Tunisian Arabic travel concierge voice.',
+  },
+  {
+    id: 'Algenib',
+    label: 'صوت عميق وفخم (Algenib)',
+    tone: 'عميق وفخم',
+    stylePrompt:
+      'Deep, gravelly, authoritative luxury hospitality narrator in Tunisian Arabic.',
+  },
+  {
+    id: 'Enceladus',
+    label: 'صوت هادئ وباعث على السكينة (Enceladus)',
+    tone: 'هادئ وروحاني',
+    stylePrompt:
+      'Soft, calm, peaceful Tunisian Arabic narrator evoking serenity and trust.',
+  },
 ];
 
 export const REEL_SCENES: ReelScene[] = [
