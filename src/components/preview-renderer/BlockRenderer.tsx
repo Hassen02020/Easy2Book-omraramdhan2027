@@ -4,13 +4,18 @@ import {
   BedDouble,
   Calendar,
   Car,
+  Check,
   CheckCircle2,
   ChevronDown,
   ChevronUp,
   Code2,
   Compass,
+  Copy,
   Crown,
+  Download,
   EyeOff,
+  Film,
+  Loader2,
   MapPin,
   Phone,
   Plane,
@@ -33,6 +38,11 @@ import {
   TOTAL_REEL_DURATION_SEC,
 } from '../../data/campaignData';
 import { getHeroImageSrc } from '../../lib/mediaRegistry';
+import {
+  formatFileSize,
+  generateVideoDownloadLink,
+  type VideoExportResult,
+} from '../../lib/reelVideoExporter';
 import type {
   AttributionSettings,
   BrandIdentity,
@@ -108,6 +118,13 @@ export function BlockRenderer({
   const [reelMuted, setReelMuted] = useState(false);
   const [audioActive, setAudioActive] = useState(false);
   const [audioLoading, setAudioLoading] = useState(false);
+  const [videoExporting, setVideoExporting] = useState(false);
+  const [videoExportPct, setVideoExportPct] = useState(0);
+  const [videoExportStatus, setVideoExportStatus] = useState('');
+  const [videoExportResult, setVideoExportResult] =
+    useState<VideoExportResult | null>(null);
+  const [videoExportError, setVideoExportError] = useState<string | null>(null);
+  const [videoLinkCopied, setVideoLinkCopied] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioUrlRef = useRef<string | null>(null);
 
@@ -196,6 +213,54 @@ export function BlockRenderer({
     setReelMuted(next);
     if (audioRef.current) {
       audioRef.current.muted = next;
+    }
+  };
+
+  const handleGenerateVideoLink = async () => {
+    if (videoExporting) return;
+    setVideoExportError(null);
+    setVideoLinkCopied(false);
+    setVideoExporting(true);
+    setVideoExportPct(8);
+    setVideoExportStatus(
+      isAr ? 'جاري إنشاء رابط الفيديو...' : 'Génération du lien vidéo...'
+    );
+
+    if (videoExportResult?.source === 'browser_webm') {
+      URL.revokeObjectURL(videoExportResult.downloadUrl);
+    }
+
+    try {
+      const result = await generateVideoDownloadLink({
+        voiceName: 'Charon',
+        showCaptions: reelCaptions,
+        onProgress: (pct, label) => {
+          setVideoExportPct(pct);
+          setVideoExportStatus(label);
+        },
+      });
+      setVideoExportResult(result);
+    } catch (err) {
+      setVideoExportError(
+        err instanceof Error
+          ? err.message
+          : isAr
+            ? 'تعذّر إنشاء رابط التحميل.'
+            : 'Impossible de générer le lien de téléchargement.'
+      );
+    } finally {
+      setVideoExporting(false);
+    }
+  };
+
+  const handleCopyVideoLink = async () => {
+    if (!videoExportResult) return;
+    try {
+      await navigator.clipboard.writeText(videoExportResult.downloadUrl);
+      setVideoLinkCopied(true);
+      window.setTimeout(() => setVideoLinkCopied(false), 2000);
+    } catch {
+      // Ignored if clipboard blocked
     }
   };
 
@@ -420,7 +485,119 @@ export function BlockRenderer({
               >
                 <RotateCcw className="h-4 w-4" />
               </button>
+              <button
+                type="button"
+                disabled={videoExporting}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  void handleGenerateVideoLink();
+                }}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-[#102D45] px-4 py-3 text-xs font-bold text-white hover:bg-[#1C4967] disabled:opacity-60"
+              >
+                {videoExporting ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-[#E7B34C]" />
+                ) : (
+                  <Download className="h-3.5 w-3.5 text-[#E7B34C]" />
+                )}
+                <span>
+                  {videoExporting
+                    ? isAr
+                      ? `جاري التحضير (${videoExportPct}%)`
+                      : `Génération (${videoExportPct}%)`
+                    : isAr
+                      ? 'إنشاء رابط تحميل الفيديو'
+                      : 'Générer lien de téléchargement'}
+                </span>
+              </button>
             </div>
+
+            {videoExporting && (
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="rounded-xl border border-[#102D45]/15 bg-white p-3 space-y-2 text-[#102D45]"
+              >
+                <div className="flex items-center justify-between text-xs font-bold">
+                  <span className="inline-flex items-center gap-1.5">
+                    <Film className="h-3.5 w-3.5 text-[#C8922A]" />
+                    {videoExportStatus}
+                  </span>
+                  <span className="font-mono-tabular" dir="ltr">
+                    {videoExportPct}%
+                  </span>
+                </div>
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#102D45]/10">
+                  <div
+                    className="h-full bg-[#C8922A] transition-all duration-300"
+                    style={{ width: `${videoExportPct}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {videoExportError && (
+              <p className="rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-800">
+                {videoExportError}
+              </p>
+            )}
+
+            {videoExportResult && !videoExporting && (
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="rounded-xl border border-emerald-200 bg-emerald-50 p-3.5 space-y-2.5 text-[#102D45]"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-emerald-900">
+                  <span className="inline-flex items-center gap-1.5">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                    {isAr
+                      ? 'رابط تحميل الفيديو جاهز'
+                      : 'Lien de téléchargement vidéo prêt'}
+                  </span>
+                  <span className="font-mono-tabular text-[11px]" dir="ltr">
+                    {videoExportResult.format.toUpperCase()} ·{' '}
+                    {formatFileSize(videoExportResult.sizeBytes)} ·{' '}
+                    {videoExportResult.durationSec}s
+                  </span>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <a
+                    href={videoExportResult.downloadUrl}
+                    download={videoExportResult.fileName}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-700 px-3.5 py-2 text-xs font-bold text-white hover:bg-emerald-800"
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                    {isAr
+                      ? `تحميل الفيديو (${videoExportResult.format.toUpperCase()})`
+                      : `Télécharger (${videoExportResult.format.toUpperCase()})`}
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => void handleCopyVideoLink()}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-300 bg-white px-3 py-2 text-xs font-bold text-emerald-900 hover:bg-emerald-100/50"
+                  >
+                    {videoLinkCopied ? (
+                      <>
+                        <Check className="h-3.5 w-3.5 text-emerald-600" />
+                        {isAr ? 'تم النسخ' : 'Lien copié'}
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-3.5 w-3.5" />
+                        {isAr ? 'نسخ الرابط' : 'Copier le lien'}
+                      </>
+                    )}
+                  </button>
+                </div>
+                <input
+                  type="text"
+                  readOnly
+                  dir="ltr"
+                  value={videoExportResult.downloadUrl}
+                  onFocus={(e) => e.currentTarget.select()}
+                  className="w-full rounded-lg border border-emerald-200 bg-white px-2.5 py-1.5 font-mono text-[11px] text-[#102D45] outline-none"
+                  aria-label="Lien de téléchargement vidéo"
+                />
+              </div>
+            )}
           </div>
           <div className="lg:col-span-5">
             <ReelPlayer

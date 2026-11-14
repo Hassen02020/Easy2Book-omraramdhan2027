@@ -1,11 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Building2,
+  Check,
   CheckCircle2,
   Code2,
   Compass,
+  Copy,
+  Download,
   Eye,
   EyeOff,
+  Film,
+  Loader2,
   Pause,
   Phone,
   Plane,
@@ -22,6 +27,11 @@ import {
   TOTAL_REEL_DURATION_SEC,
   VOICE_OPTIONS,
 } from '../../data/campaignData';
+import {
+  formatFileSize,
+  generateVideoDownloadLink,
+  type VideoExportResult,
+} from '../../lib/reelVideoExporter';
 import {
   buildCrmSubmissionPayload,
   SimulatedCrmAdapter,
@@ -115,6 +125,13 @@ export function OmraRamadanPilotPage({
   const [audioActive, setAudioActive] = useState(false);
   const [audioLoading, setAudioLoading] = useState(false);
   const [audioError, setAudioError] = useState<string | null>(null);
+  const [videoExporting, setVideoExporting] = useState(false);
+  const [videoExportPct, setVideoExportPct] = useState(0);
+  const [videoExportStatus, setVideoExportStatus] = useState('');
+  const [videoExportResult, setVideoExportResult] =
+    useState<VideoExportResult | null>(null);
+  const [videoExportError, setVideoExportError] = useState<string | null>(null);
+  const [videoLinkCopied, setVideoLinkCopied] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioUrlMapRef = useRef<Map<string, string>>(new Map());
@@ -267,6 +284,50 @@ export function OmraRamadanPilotPage({
     const next = !isMuted;
     setIsMuted(next);
     if (audioRef.current) audioRef.current.muted = next;
+  };
+
+  const handleGenerateVideoLink = async () => {
+    if (videoExporting) return;
+    setVideoExportError(null);
+    setVideoLinkCopied(false);
+    setVideoExporting(true);
+    setVideoExportPct(8);
+    setVideoExportStatus('جاري تحضير الفيديو 9:16...');
+
+    if (videoExportResult?.source === 'browser_webm') {
+      URL.revokeObjectURL(videoExportResult.downloadUrl);
+    }
+
+    try {
+      const result = await generateVideoDownloadLink({
+        voiceName: selectedVoice,
+        showCaptions,
+        onProgress: (pct, label) => {
+          setVideoExportPct(pct);
+          setVideoExportStatus(label);
+        },
+      });
+      setVideoExportResult(result);
+    } catch (err) {
+      setVideoExportError(
+        err instanceof Error
+          ? err.message
+          : 'تعذّر إنشاء رابط تحميل الفيديو حالياً.'
+      );
+    } finally {
+      setVideoExporting(false);
+    }
+  };
+
+  const handleCopyVideoLink = async () => {
+    if (!videoExportResult) return;
+    try {
+      await navigator.clipboard.writeText(videoExportResult.downloadUrl);
+      setVideoLinkCopied(true);
+      window.setTimeout(() => setVideoLinkCopied(false), 2000);
+    } catch {
+      // Fallback: focus/select handled by readOnly input
+    }
   };
 
   // Pricing Estimator logic
@@ -489,6 +550,24 @@ export function OmraRamadanPilotPage({
                   )}
                   {showCaptions ? 'إخفاء نصوص الفيديو' : 'إظهار نصوص الفيديو'}
                 </button>
+
+                <button
+                  type="button"
+                  disabled={videoExporting}
+                  onClick={() => void handleGenerateVideoLink()}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-[#0B162C] px-4 py-3 text-xs font-bold text-white shadow-xs hover:bg-[#1C4967] disabled:opacity-60"
+                >
+                  {videoExporting ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin text-[#C8922A]" />
+                  ) : (
+                    <Download className="h-3.5 w-3.5 text-[#C8922A]" />
+                  )}
+                  <span>
+                    {videoExporting
+                      ? `جاري إنشاء الرابط (${videoExportPct}%)`
+                      : 'إنشاء رابط تحميل الفيديو (MP4)'}
+                  </span>
+                </button>
               </div>
 
               {/* Voice Selector */}
@@ -517,6 +596,87 @@ export function OmraRamadanPilotPage({
                   </button>
                 ))}
               </div>
+
+              {videoExporting && (
+                <div className="rounded-xl border border-[#C8922A]/40 bg-[#FAF9F6] p-3.5 space-y-2">
+                  <div className="flex items-center justify-between text-xs font-bold text-[#0B162C]">
+                    <span className="inline-flex items-center gap-1.5">
+                      <Film className="h-3.5 w-3.5 text-[#C8922A]" />
+                      {videoExportStatus || 'جاري تجهيز ملف الفيديو MP4...'}
+                    </span>
+                    <span className="font-mono-tabular" dir="ltr">
+                      {videoExportPct}%
+                    </span>
+                  </div>
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-[#0B162C]/10">
+                    <div
+                      className="h-full bg-[#C8922A] transition-all duration-300"
+                      style={{ width: `${videoExportPct}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {videoExportError && (
+                <p className="rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-800">
+                  {videoExportError}
+                </p>
+              )}
+
+              {videoExportResult && !videoExporting && (
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-4 space-y-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 text-xs font-bold text-emerald-900">
+                      <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                      <span>رابط تحميل الفيديو جاهز ({videoExportResult.format.toUpperCase()} · 9:16 HD)</span>
+                    </div>
+                    <span className="font-mono-tabular text-[11px] font-semibold text-emerald-800" dir="ltr">
+                      {formatFileSize(videoExportResult.sizeBytes)} · {videoExportResult.durationSec}s
+                      {videoExportResult.hasAudio ? ' · Audio OK' : ''}
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <a
+                      href={videoExportResult.downloadUrl}
+                      download={videoExportResult.fileName}
+                      className="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-xs font-bold text-white hover:bg-emerald-800"
+                    >
+                      <Download className="h-3.5 w-3.5" />
+                      تحميل الفيديو الآن ({videoExportResult.format.toUpperCase()})
+                    </a>
+
+                    <button
+                      type="button"
+                      onClick={() => void handleCopyVideoLink()}
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-300 bg-white px-3.5 py-2.5 text-xs font-bold text-emerald-900 hover:bg-emerald-50"
+                    >
+                      {videoLinkCopied ? (
+                        <>
+                          <Check className="h-3.5 w-3.5 text-emerald-600" />
+                          تم نسخ الرابط
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-3.5 w-3.5" />
+                          نسخ رابط التحميل
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-white px-3 py-1.5" dir="ltr">
+                    <input
+                      type="text"
+                      readOnly
+                      value={videoExportResult.downloadUrl}
+                      onFocus={(e) => e.currentTarget.select()}
+                      className="w-full bg-transparent font-mono text-[11px] text-[#0B162C] outline-none"
+                      aria-label="رابط تحميل الفيديو"
+                    />
+                  </div>
+                </div>
+              )}
 
               {audioError && (
                 <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">

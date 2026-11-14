@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Pause, Play, Volume2, VolumeX, Plane, Building2, Compass } from 'lucide-react';
 import {
   REEL_SCENES,
-  SUBTITLE_CUES,
   TOTAL_REEL_DURATION_SEC,
   type ReelScene,
 } from '../data/campaignData';
@@ -13,7 +12,7 @@ interface ReelPlayerProps {
   isPlaying: boolean;
   showCaptions: boolean;
   isMuted: boolean;
-  audioActive: boolean;
+  audioActive?: boolean;
   onTogglePlay: () => void;
   onToggleMute: () => void;
   onSelectScene: (targetSec: number) => void;
@@ -35,17 +34,6 @@ function getSceneAtTime(timeSec: number, totalDuration: number): ReelScene {
   );
 }
 
-function getSubtitleAtTime(timeSec: number, totalDuration: number): string {
-  const scaled = Math.max(
-    0,
-    Math.min(TOTAL_REEL_DURATION_SEC - 0.01, getScaledTime(timeSec, totalDuration))
-  );
-  const cue = SUBTITLE_CUES.find(
-    (c) => scaled >= c.startSec && scaled < c.endSec
-  );
-  return cue ? cue.text : SUBTITLE_CUES[0].text;
-}
-
 function formatTimecode(sec: number): string {
   const whole = Math.max(0, Math.floor(sec));
   const s = String(whole % 60).padStart(2, '0');
@@ -59,7 +47,6 @@ export function ReelPlayer({
   isPlaying,
   showCaptions,
   isMuted,
-  audioActive,
   onTogglePlay,
   onToggleMute,
   onSelectScene,
@@ -75,7 +62,6 @@ export function ReelPlayer({
     elapsedInScene >= activeScene.matchCutOffsetSec;
 
   const isStudioScene = activeScene.id === 'scene-4';
-  const activeSubtitle = getSubtitleAtTime(currentTime, totalDuration);
 
   const handleImageError = (src: string) => {
     setFailedImages((prev) => ({ ...prev, [src]: true }));
@@ -286,7 +272,7 @@ export function ReelPlayer({
 
         {/* Scene 4 Centered Brand Lockup (Placed inside the designed negative space) */}
         {isStudioScene && (
-          <div className="pointer-events-none absolute inset-0 z-20 flex flex-col items-center justify-center px-6 pt-12 pb-28 text-center">
+          <div className="pointer-events-none absolute inset-0 z-20 flex flex-col items-center justify-center px-6 pt-12 pb-14 text-center">
             <img
               src="/assets/aistudio/logo_transparent_e9918557.png"
               alt="Easy2Book Centrale de Réservation"
@@ -315,7 +301,7 @@ export function ReelPlayer({
 
         {/* On-Screen Commercial Typography Overlays for Scenes 1-3 */}
         {showCaptions && !isStudioScene && (
-          <div className="pointer-events-none absolute inset-x-5 bottom-24 z-20 text-right">
+          <div className="pointer-events-none absolute inset-x-5 bottom-8 z-20 text-right">
             <h3 className="text-2xl font-extrabold leading-snug text-white drop-shadow-md">
               {activeScene.overlayHeadline}
             </h3>
@@ -341,24 +327,6 @@ export function ReelPlayer({
             )}
           </div>
         )}
-
-        {/* Synchronized Voiceover Subtitle Bar */}
-        <div
-          className={`pointer-events-none absolute inset-x-4 bottom-4 z-20 rounded-xl px-3.5 py-2.5 text-center transition-colors ${
-            isStudioScene
-              ? 'bg-[#0B162C]/92 text-white'
-              : 'bg-black/60 text-white backdrop-blur-sm'
-          }`}
-        >
-          <p className="text-xs leading-relaxed font-medium text-white/95">
-            {activeSubtitle}
-          </p>
-          {audioActive && (
-            <p className="mt-1 text-[11px] font-medium text-[#F5D68A]">
-              التعليق الصوتي باللهجة التونسية قيد التشغيل
-            </p>
-          )}
-        </div>
       </div>
     </div>
   );

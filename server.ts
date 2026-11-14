@@ -1,10 +1,14 @@
 import "dotenv/config";
 import express from "express";
+import { execFile } from "node:child_process";
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { promisify } from "node:util";
 import { GoogleGenAI, Type } from "@google/genai";
 
+const execFileAsync = promisify(execFile);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -12,6 +16,7 @@ const PORT = Number(process.env.PORT) || 3000;
 const isProduction = process.env.NODE_ENV === "production";
 const DATA_DIR = path.join(__dirname, "data");
 const CREATOR_STORE_FILE = path.join(DATA_DIR, "creator-studio.json");
+const VIDEOS_DIR = path.join(DATA_DIR, "generated-videos");
 
 const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,
@@ -55,9 +60,121 @@ function writeCreatorStore(state: unknown): void {
   fs.writeFileSync(CREATOR_STORE_FILE, JSON.stringify(state, null, 2), "utf8");
 }
 
+async function synthesizeVoiceoverWav(params: {
+  script?: string;
+  voiceName?: string;
+  style?: string;
+}): Promise<{
+  audioBase64: string;
+  mimeType: string;
+  voiceName: string;
+  cached: boolean;
+}> {
+  if (!process.env.GEMINI_API_KEY) {
+    throw new Error("GEMINI_API_KEY_MISSING");
+  }
+
+  const rawScript =
+    typeof params.script === "string" && params.script.trim()
+      ? params.script.trim()
+      : DEFAULT_SCRIPT;
+  const script = rawScript.slice(0, 1500);
+
+  const requestedVoice =
+    typeof params.voiceName === "string" ? params.voiceName : "Charon";
+  const voiceName = ALLOWED_VOICES.has(requestedVoice)
+    ? requestedVoice
+    : "Charon";
+
+  const style =
+    typeof params.style === "string" && params.style.trim()
+      ? params.style.trim().slice(0, 200)
+      : "Warm, reassuring, inspiring Tunisian Arabic commercial narrator with dignified pacing and clear pronunciation.";
+
+  const cacheKey = `${voiceName}::${style}::${script}`;
+  const cached = voiceoverCache.get(cacheKey);
+  if (cached) {
+    return {
+      audioBase64: cached.audioBase64,
+      mimeType: cached.mimeType,
+      voiceName,
+      cached: true,
+    };
+  }
+
+  const response = await ai.models.generateContent({
+    model: "gemini-3.8-flash-lite-tts",
+    contents: [
+      {
+        role: "user",
+        parts: [
+          {
+            text: script,
+            speechMetadata: {
+              style,
+            },
+          },
+        ],
+      },
+    ],
+    config: {
+      responseModalities: ["AUDIO"],
+      speechConfig: {
+        voiceConfig: {
+          prebuiltVoiceConfig: { voiceName },
+        },
+      },
+    },
+  });
+
+  const base64Audio =
+    response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+
+  if (!base64Audio) {
+    throw new Error("EMPTY_AUDIO_RESPONSE");
+  }
+
+  if (voiceoverCache.size >= 16) {
+    const oldestKey = voiceoverCache.keys().next().value;
+    if (oldestKey) voiceoverCache.delete(oldestKey);
+  }
+
+  voiceoverCache.set(cacheKey, {
+    audioBase64: base64Audio,
+    mimeType: "audio/wav",
+    createdAt: Date.now(),
+  });
+
+  return {
+    audioBase64: base64Audio,
+    mimeType: "audio/wav",
+    voiceName,
+    cached: false,
+  };
+}
+
+function cleanupOldGeneratedVideos(): void {
+  try {
+    if (!fs.existsSync(VIDEOS_DIR)) return;
+    const files = fs
+      .readdirSync(VIDEOS_DIR)
+      .filter((f) => f.endsWith(".mp4"))
+      .map((f) => {
+        const full = path.join(VIDEOS_DIR, f);
+        return { name: f, full, mtimeMs: fs.statSync(full).mtimeMs };
+      })
+      .sort((a, b) => b.mtimeMs - a.mtimeMs);
+    for (const stale of files.slice(12)) {
+      fs.unlinkSync(stale.full);
+    }
+  } catch {
+    // Best-effort cleanup
+  }
+}
+
 async function startServer() {
   const app = express();
-  app.use(express.json({ limit: "5mb" }));
+  app.use(express.json({ limit: "15mb" }));
 
   app.get("/api/health", (_req, res) => {
     res.json({ ok: true, hasGeminiKey: Boolean(process.env.GEMINI_API_KEY) });
@@ -118,94 +235,277 @@ async function startServer() {
         });
       }
 
-      const rawScript =
-        typeof req.body?.script === "string" && req.body.script.trim()
-          ? req.body.script.trim()
-          : DEFAULT_SCRIPT;
-      const script = rawScript.slice(0, 1500);
-
-      const requestedVoice =
-        typeof req.body?.voiceName === "string" ? req.body.voiceName : "Charon";
-      const voiceName = ALLOWED_VOICES.has(requestedVoice)
-        ? requestedVoice
-        : "Charon";
-
-      const style =
-        typeof req.body?.style === "string" && req.body.style.trim()
-          ? req.body.style.trim().slice(0, 200)
-          : "Warm, reassuring, inspiring Tunisian Arabic commercial narrator with dignified pacing and clear pronunciation.";
-
-      const cacheKey = `${voiceName}::${style}::${script}`;
-      const cached = voiceoverCache.get(cacheKey);
-      if (cached) {
-        return res.json({
-          audioBase64: cached.audioBase64,
-          mimeType: cached.mimeType,
-          voiceName,
-          cached: true,
-        });
-      }
-
-      const response = await ai.models.generateContent({
-        model: "gemini-3.8-flash-lite-tts",
-        contents: [
-          {
-            role: "user",
-            parts: [
-              {
-                text: script,
-                speechMetadata: {
-                  style,
-                },
-              },
-            ],
-          },
-        ],
-        config: {
-          responseModalities: ["AUDIO"],
-          speechConfig: {
-            voiceConfig: {
-              prebuiltVoiceConfig: { voiceName },
-            },
-          },
-        },
+      const result = await synthesizeVoiceoverWav({
+        script: req.body?.script,
+        voiceName: req.body?.voiceName,
+        style: req.body?.style,
       });
 
-      const base64Audio =
-        response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-
-      if (!base64Audio) {
+      return res.json(result);
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "خطأ غير متوقع أثناء توليد الصوت.";
+      if (message === "EMPTY_AUDIO_RESPONSE") {
         return res.status(502).json({
           error: "لم يُرجع النموذج ملفاً صوتياً، يرجى المحاولة مجدداً.",
         });
       }
-
-      if (voiceoverCache.size >= 16) {
-        const oldestKey = voiceoverCache.keys().next().value;
-        if (oldestKey) voiceoverCache.delete(oldestKey);
-      }
-
-      voiceoverCache.set(cacheKey, {
-        audioBase64: base64Audio,
-        mimeType: "audio/wav",
-        createdAt: Date.now(),
-      });
-
-      return res.json({
-        audioBase64: base64Audio,
-        mimeType: "audio/wav",
-        voiceName,
-        cached: false,
-      });
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "خطأ غير متوقع أثناء توليد الصوت.";
       console.error("TTS generation error:", message);
       return res.status(500).json({
-        error: "تعذّر توليد التعليق الصوتي حالياً. يمكنك متابعة العرض مع الترجمة التفاعلية.",
+        error:
+          "تعذّر توليد التعليق الصوتي حالياً. يمكنك متابعة العرض مع الترجمة التفاعلية.",
         details: message,
       });
     }
+  });
+
+  // ==========================================================
+  // MP4 VIDEO EXPORT & DIRECT DOWNLOAD LINK GENERATOR (9:16)
+  // ==========================================================
+  app.post("/api/video/export", async (req, res) => {
+    const jobId = crypto.randomBytes(6).toString("hex");
+    const tempDir = path.join(DATA_DIR, `tmp-video-${jobId}`);
+
+    try {
+      fs.mkdirSync(VIDEOS_DIR, { recursive: true });
+      fs.mkdirSync(tempDir, { recursive: true });
+
+      const voiceName =
+        typeof req.body?.voiceName === "string" &&
+        ALLOWED_VOICES.has(req.body.voiceName)
+          ? req.body.voiceName
+          : "Charon";
+
+      const rawOverlays = Array.isArray(req.body?.overlays)
+        ? (req.body.overlays as Array<{
+            startSec?: number;
+            endSec?: number;
+            pngBase64?: string;
+          }>)
+        : [];
+
+      // Resolve scene images (supporting src/assets/images or dist fallback)
+      const imageNames = [
+        "makkah_haram_sunrise_1794604285606.jpg",
+        "tunis_jeddah_flight_1794604285597.jpg",
+        "makkah_maysan_suite_1794604285710.jpg",
+        "madinah_umbrellas_twilight_1794604286691.jpg",
+        "easy2book_studio_backdrop_1794604286505.jpg",
+      ];
+      const imagePaths = imageNames.map((name) =>
+        path.join(__dirname, "src", "assets", "images", name)
+      );
+      for (const p of imagePaths) {
+        if (!fs.existsSync(p)) {
+          return res.status(500).json({
+            error: "ASSET_MISSING",
+            message: `Scene asset missing: ${path.basename(p)}`,
+          });
+        }
+      }
+
+      // 1. Optional Gemini TTS audio synthesis
+      let wavPath: string | null = null;
+      let totalDuration = 48;
+      let hasAudio = false;
+
+      if (process.env.GEMINI_API_KEY) {
+        try {
+          const tts = await synthesizeVoiceoverWav({
+            script: DEFAULT_SCRIPT,
+            voiceName,
+          });
+          const audioBuf = Buffer.from(tts.audioBase64, "base64");
+          wavPath = path.join(tempDir, "voiceover.wav");
+          fs.writeFileSync(wavPath, audioBuf);
+
+          const { stdout } = await execFileAsync("ffprobe", [
+            "-v",
+            "error",
+            "-show_entries",
+            "format=duration",
+            "-of",
+            "default=noprint_wrappers=1:nokey=1",
+            wavPath,
+          ]);
+          const parsedDur = Number.parseFloat(stdout.trim());
+          if (Number.isFinite(parsedDur) && parsedDur > 5) {
+            totalDuration = parsedDur;
+            hasAudio = true;
+          }
+        } catch (ttsErr) {
+          console.warn(
+            "Video export proceeding without TTS audio:",
+            ttsErr instanceof Error ? ttsErr.message : ttsErr
+          );
+          wavPath = null;
+        }
+      }
+
+      // 2. Write valid PNG overlays rendered in browser canvas
+      const validOverlays: {
+        filePath: string;
+        startSec: number;
+        endSec: number;
+      }[] = [];
+      const scale = totalDuration / 48;
+      for (let i = 0; i < Math.min(rawOverlays.length, 10); i++) {
+        const ov = rawOverlays[i];
+        if (
+          typeof ov?.pngBase64 === "string" &&
+          typeof ov.startSec === "number" &&
+          typeof ov.endSec === "number"
+        ) {
+          const cleanB64 = ov.pngBase64.replace(/^data:image\/png;base64,/, "");
+          const ovPath = path.join(tempDir, `overlay-${i}.png`);
+          fs.writeFileSync(ovPath, Buffer.from(cleanB64, "base64"));
+          validOverlays.push({
+            filePath: ovPath,
+            startSec: Math.max(0, ov.startSec * scale),
+            endSec: Math.min(totalDuration + 0.1, ov.endSec * scale),
+          });
+        }
+      }
+
+      // 3. Build 5-clip 9:16 timeline with smooth Ken Burns zoom & crossfades
+      const fadeDur = 0.5;
+      const baseSegments = [10, 6.5, 8.5, 11, 12];
+      const clipDurations = baseSegments.map((s, idx) =>
+        Math.max(2, s * scale + (idx < baseSegments.length - 1 ? fadeDur : 0))
+      );
+
+      const fps = 24;
+      const ffmpegArgs: string[] = ["-y"];
+
+      imagePaths.forEach((imgPath) => {
+        ffmpegArgs.push("-i", imgPath);
+      });
+
+      const overlayInputOffset = imagePaths.length;
+      validOverlays.forEach((ov) => {
+        ffmpegArgs.push("-i", ov.filePath);
+      });
+
+      const audioInputIndex =
+        wavPath && hasAudio ? overlayInputOffset + validOverlays.length : -1;
+      if (wavPath && hasAudio) {
+        ffmpegArgs.push("-i", wavPath);
+      }
+
+      const filters: string[] = [];
+      for (let i = 0; i < imagePaths.length; i++) {
+        const frames = Math.max(24, Math.ceil(clipDurations[i] * fps));
+        filters.push(
+          `[${i}:v]scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280,setsar=1,zoompan=z='min(zoom+0.0007,1.10)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=${frames}:s=720x1280:fps=${fps},format=yuv420p[v${i}]`
+        );
+      }
+
+      // Chain xfades across the 5 clips
+      let prevLabel = "v0";
+      let timelineCursor = 0;
+      for (let i = 1; i < imagePaths.length; i++) {
+        timelineCursor += baseSegments[i - 1] * scale;
+        const offset = Math.max(0.5, timelineCursor);
+        const outLabel = i === imagePaths.length - 1 ? "vbase" : `xf${i}`;
+        filters.push(
+          `[${prevLabel}][v${i}]xfade=transition=fade:duration=${fadeDur}:offset=${offset.toFixed(3)}[${outLabel}]`
+        );
+        prevLabel = outLabel;
+      }
+
+      // Overlay crisp RTL PNG layers at exact cue timestamps
+      let finalVideoLabel = "vbase";
+      validOverlays.forEach((ov, idx) => {
+        const inIdx = overlayInputOffset + idx;
+        const outLabel = idx === validOverlays.length - 1 ? "vout" : `ov${idx}`;
+        filters.push(
+          `[${finalVideoLabel}][${inIdx}:v]overlay=0:0:enable='between(t,${ov.startSec.toFixed(3)},${ov.endSec.toFixed(3)})'[${outLabel}]`
+        );
+        finalVideoLabel = outLabel;
+      });
+
+      const outputFileName = `easy2book-omra-2027-${jobId}.mp4`;
+      const outputPath = path.join(VIDEOS_DIR, outputFileName);
+
+      ffmpegArgs.push(
+        "-filter_complex",
+        filters.join(";"),
+        "-map",
+        `[${finalVideoLabel}]`
+      );
+
+      if (audioInputIndex >= 0) {
+        ffmpegArgs.push(
+          "-map",
+          `${audioInputIndex}:a`,
+          "-c:a",
+          "aac",
+          "-b:a",
+          "160k",
+          "-shortest"
+        );
+      } else {
+        ffmpegArgs.push("-an");
+      }
+
+      ffmpegArgs.push(
+        "-c:v",
+        "libx264",
+        "-preset",
+        "veryfast",
+        "-crf",
+        "23",
+        "-pix_fmt",
+        "yuv420p",
+        "-movflags",
+        "+faststart",
+        outputPath
+      );
+
+      await execFileAsync("ffmpeg", ffmpegArgs, { timeout: 90000 });
+
+      const stat = fs.statSync(outputPath);
+      cleanupOldGeneratedVideos();
+
+      return res.json({
+        videoId: jobId,
+        downloadPath: `/api/video/download/${outputFileName}`,
+        fileName: "Easy2Book-Omra-Ramadan-2027-9x16.mp4",
+        sizeBytes: stat.size,
+        durationSec: Number(totalDuration.toFixed(1)),
+        hasAudio,
+        format: "mp4",
+      });
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error ? err.message : "Erreur lors de la génération MP4.";
+      console.error("Video export error:", msg);
+      return res.status(500).json({
+        error: "VIDEO_EXPORT_FAILED",
+        message: msg,
+      });
+    } finally {
+      try {
+        fs.rmSync(tempDir, { recursive: true, force: true });
+      } catch {
+        // Ignore temp cleanup failure
+      }
+    }
+  });
+
+  app.get("/api/video/download/:filename", (req, res) => {
+    const raw = req.params.filename || "";
+    const safeName = path.basename(raw);
+    if (!/^easy2book-omra-2027-[a-f0-9]+\.mp4$/i.test(safeName)) {
+      return res.status(400).json({ error: "Nom de fichier invalide." });
+    }
+    const targetPath = path.join(VIDEOS_DIR, safeName);
+    if (!fs.existsSync(targetPath)) {
+      return res.status(404).json({
+        error: "Vidéo expirée ou introuvable. Veuillez régénérer le lien.",
+      });
+    }
+    return res.download(targetPath, "Easy2Book-Omra-Ramadan-2027-9x16.mp4");
   });
 
   // ==========================================================
