@@ -224,45 +224,78 @@ export function StudioDashboard({
         </div>
       </section>
 
-      {/* Arborescence Omra : Groupe Ramadan 2027 (Page Pilote) */}
+      {/* Pages Pilotes Easy2Book (Omra, Excursions Égypte, Excursions Turquie & Services Visa) */}
       {(() => {
-        const pilotPage = pages.find(
-          (p) => p.isPilotPage || p.id === 'page-omra-ramadan-2027'
+        const pilotPages = pages.filter(
+          (p) =>
+            p.isPilotPage ||
+            p.id === 'page-omra-ramadan-2027' ||
+            p.id === 'page-excursions-egypte-easy2book' ||
+            p.id === 'page-excursions-turquie-easy2book' ||
+            p.id === 'page-visas-services-easy2book'
         );
-        if (!pilotPage) return null;
+        if (pilotPages.length === 0) return null;
         return (
-          <section className="rounded-2xl border border-[#E7B34C]/60 bg-white p-5 shadow-2xs">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="space-y-1">
-                <p className="text-[11px] font-bold text-[#C8922A]">
-                  Arborescence Module Omra › Groupe {pilotPage.folderGroup || 'Ramadan 2027'} · Page Pilote
-                </p>
-                <h2 className="text-lg font-extrabold text-[#102D45]">
-                  {pilotPage.title}
-                </h2>
-                <p className="text-xs text-slate-600">
-                  Page pilote conservée intégralement avec vidéo 9:16, voix tunisienne Gemini TTS, tarifs 5,900 / 6,400 / 6,900 د.ت, remise famille 200 د.ت, compte à rebours, témoignages et WhatsApp Business 98140514.
-                </p>
-              </div>
-              <div className="flex flex-wrap items-center gap-2 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => onPreviewPage(pilotPage.id)}
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-[#E7B34C] px-4 py-2.5 text-xs font-bold text-[#102D45] hover:bg-[#f0c264]"
+          <section className="grid gap-4 md:grid-cols-2">
+            {pilotPages.map((pilotPage) => {
+              const isEgypt =
+                pilotPage.pilotRenderer === 'egypt_excursions_2026' ||
+                pilotPage.id === 'page-excursions-egypte-easy2book';
+              const isTurkey =
+                pilotPage.pilotRenderer === 'turkey_excursions_2026' ||
+                pilotPage.id === 'page-excursions-turquie-easy2book';
+              const isVisa =
+                pilotPage.pilotRenderer === 'visa_services_2026' ||
+                pilotPage.id === 'page-visas-services-easy2book';
+              return (
+                <div
+                  key={pilotPage.id}
+                  className="flex flex-col justify-between gap-4 rounded-2xl border border-[#E7B34C]/60 bg-white p-5 shadow-2xs"
                 >
-                  <Eye className="h-3.5 w-3.5" />
-                  Ouvrir la Page Pilote
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onOpenEditor(pilotPage.id)}
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-[#102D45] px-4 py-2.5 text-xs font-bold text-white hover:bg-[#1C4967]"
-                >
-                  <Edit3 className="h-3.5 w-3.5 text-[#E7B34C]" />
-                  Ouvrir dans l’éditeur
-                </button>
-              </div>
-            </div>
+                  <div className="space-y-1">
+                    <p className="text-[11px] font-bold text-[#C8922A]">
+                      {isVisa
+                        ? `Arborescence Module Visa › ${pilotPage.folderGroup || 'Visas & E-Visa'} · Page Pilote`
+                        : isTurkey
+                          ? `Arborescence Module Turquie › ${pilotPage.folderGroup || 'Excursions Turquie'} · Page Pilote`
+                          : isEgypt
+                            ? `Arborescence Module Égypte › ${pilotPage.folderGroup || 'Excursions Égypte'} · Page Pilote`
+                            : `Arborescence Module Omra › Groupe ${pilotPage.folderGroup || 'Ramadan 2027'} · Page Pilote`}
+                    </p>
+                    <h2 className="text-lg font-extrabold text-[#102D45]">
+                      {pilotPage.title}
+                    </h2>
+                    <p className="text-xs text-slate-600">
+                      {isVisa
+                        ? 'Page pilote arabe RTL avec vidéo 9:16 voix féminine (Layla), export MP4/PDF, 33 formules Visa (+30 DT : Égypte, Schengen, Dubaï, Qatar, Oman, Omra, Chine, Albanie, Thaïlande, Canada/USA/UK/AU), 53 E-Visa et WhatsApp 98140514.'
+                        : isTurkey
+                          ? 'Page pilote arabe RTL avec vidéo 9:16 voix féminine (Layla), export MP4/PDF, 22 excursions/croisières (+25 DT), Vialand, Pack Antalya, transferts IST/SAW et WhatsApp 98140514.'
+                          : isEgypt
+                            ? 'Page pilote arabe RTL avec vidéo 9:16 voix féminine tunisienne (Layla), export MP4, galerie photos pro, simulateur multi-excursions (175 à 2,425 د.ت) et WhatsApp 98140514.'
+                            : 'Page pilote conservée intégralement avec vidéo 9:16, voix tunisienne Gemini TTS, tarifs 5,900 / 6,400 / 6,900 د.ت, remise famille 200 د.ت, compte à rebours, témoignages et WhatsApp Business 98140514.'}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => onPreviewPage(pilotPage.id)}
+                      className="inline-flex items-center gap-1.5 rounded-xl bg-[#E7B34C] px-4 py-2.5 text-xs font-bold text-[#102D45] hover:bg-[#f0c264]"
+                    >
+                      <Eye className="h-3.5 w-3.5" />
+                      Ouvrir la Page Pilote
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onOpenEditor(pilotPage.id)}
+                      className="inline-flex items-center gap-1.5 rounded-xl bg-[#102D45] px-4 py-2.5 text-xs font-bold text-white hover:bg-[#1C4967]"
+                    >
+                      <Edit3 className="h-3.5 w-3.5 text-[#E7B34C]" />
+                      Ouvrir dans l’éditeur
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
           </section>
         );
       })()}

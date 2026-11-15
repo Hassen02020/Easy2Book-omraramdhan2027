@@ -1,7 +1,8 @@
 import {
-  REEL_SCENES,
+  getReelConfig,
   TOTAL_REEL_DURATION_SEC,
   VOICE_OPTIONS,
+  type ReelPresetId,
   type ReelScene,
 } from '../data/campaignData';
 
@@ -57,8 +58,8 @@ function drawRoundedRect(
   ctx.closePath();
 }
 
-function buildOverlayTimeline(): OverlaySegment[] {
-  return REEL_SCENES.map((scene) => ({
+function buildOverlayTimeline(scenes: ReelScene[]): OverlaySegment[] {
+  return scenes.map((scene) => ({
     startSec: scene.startSec,
     endSec: scene.endSec,
     scene,
@@ -68,6 +69,8 @@ function buildOverlayTimeline(): OverlaySegment[] {
 function renderOverlayToCanvas(
   ctx: CanvasRenderingContext2D,
   seg: OverlaySegment,
+  scenes: ReelScene[],
+  endBadgeText: string,
   showCaptions: boolean,
   logoImg: HTMLImageElement | null
 ) {
@@ -91,10 +94,10 @@ function renderOverlayToCanvas(
   const barY = 26;
   const barGap = 10;
   const sidePad = 24;
-  const totalBarsWidth = WIDTH - sidePad * 2 - barGap * (REEL_SCENES.length - 1);
-  const barW = totalBarsWidth / REEL_SCENES.length;
+  const totalBarsWidth = WIDTH - sidePad * 2 - barGap * (scenes.length - 1);
+  const barW = totalBarsWidth / scenes.length;
 
-  REEL_SCENES.forEach((sc, idx) => {
+  scenes.forEach((sc, idx) => {
     const bx = sidePad + idx * (barW + barGap);
     ctx.fillStyle = isStudioScene ? 'rgba(11, 22, 44, 0.16)' : 'rgba(255, 255, 255, 0.32)';
     drawRoundedRect(ctx, bx, barY, barW, 8, 4);
@@ -144,11 +147,7 @@ function renderOverlayToCanvas(
     if (showCaptions) {
       ctx.font = '700 24px Cairo, sans-serif';
       ctx.fillStyle = '#9A6E1B';
-      ctx.fillText(
-        'عدد غرف محدود جداً · عرض صالح لـ 15 ديسمبر 2026',
-        centerX,
-        616
-      );
+      ctx.fillText(endBadgeText, centerX, 616);
 
       ctx.direction = 'ltr';
       ctx.font = '800 36px "JetBrains Mono", monospace';
@@ -191,9 +190,12 @@ function renderOverlayToCanvas(
 async function renderBrowserWebmFallback(params: {
   voiceName: string;
   showCaptions: boolean;
+  preset?: ReelPresetId;
   onProgress?: (pct: number, label: string) => void;
 }): Promise<VideoExportResult> {
-  const { voiceName, showCaptions, onProgress } = params;
+  const { voiceName, showCaptions, preset = 'omra', onProgress } = params;
+  const config = getReelConfig(preset);
+  const scenes = config.scenes;
   onProgress?.(10, 'Préparation du rendu navigateur...');
 
   const canvas = document.createElement('canvas');
@@ -204,7 +206,7 @@ async function renderBrowserWebmFallback(params: {
 
   const [logoImg, ...sceneImgs] = await Promise.all([
     loadImageSafe('/assets/aistudio/logo_transparent_e9918557.png'),
-    ...REEL_SCENES.flatMap((sc) => [
+    ...scenes.flatMap((sc) => [
       loadImageSafe(sc.primaryImage),
       sc.secondaryImage ? loadImageSafe(sc.secondaryImage) : Promise.resolve(null),
     ]),
@@ -212,13 +214,13 @@ async function renderBrowserWebmFallback(params: {
 
   const imgMap = new Map<string, HTMLImageElement | null>();
   let idx = 0;
-  for (const sc of REEL_SCENES) {
+  for (const sc of scenes) {
     imgMap.set(sc.primaryImage, sceneImgs[idx++]);
     const secImg = sceneImgs[idx++];
     if (sc.secondaryImage) imgMap.set(sc.secondaryImage, secImg);
   }
 
-  const timeline = buildOverlayTimeline();
+  const timeline = buildOverlayTimeline(scenes);
   const mimeCandidates = [
     'video/webm;codecs=vp9,opus',
     'video/webm;codecs=vp8,opus',
@@ -296,7 +298,7 @@ async function renderBrowserWebmFallback(params: {
       }
 
       if (overlayCtx) {
-        renderOverlayToCanvas(overlayCtx, seg, showCaptions, logoImg);
+        renderOverlayToCanvas(overlayCtx, seg, scenes, config.endBadgeText, showCaptions, logoImg);
         ctx.drawImage(overlayCanvas, 0, 0);
       }
 
@@ -322,7 +324,7 @@ async function renderBrowserWebmFallback(params: {
     blobUrl,
     downloadUrl: blobUrl,
     downloadPath: blobUrl,
-    fileName: `Easy2Book-Omra-Ramadan-2027-${voiceName}.webm`,
+    fileName: `${config.outputBaseName}-${voiceName}.webm`,
     sizeBytes: blob.size,
     durationSec: fallbackDuration,
     hasAudio: false,
@@ -334,9 +336,12 @@ async function renderBrowserWebmFallback(params: {
 export async function generateVideoDownloadLink(params: {
   voiceName: string;
   showCaptions: boolean;
+  preset?: ReelPresetId;
   onProgress?: (pct: number, label: string) => void;
 }): Promise<VideoExportResult> {
-  const { voiceName, showCaptions, onProgress } = params;
+  const { voiceName, showCaptions, preset = 'omra', onProgress } = params;
+  const config = getReelConfig(preset);
+  const scenes = config.scenes;
 
   try {
     onProgress?.(15, 'Préparation des calques HD 9:16...');
@@ -354,9 +359,9 @@ export async function generateVideoDownloadLink(params: {
     const ctx = canvas.getContext('2d');
     if (!ctx) throw new Error('Canvas 2D indisponible');
 
-    const segments = buildOverlayTimeline();
+    const segments = buildOverlayTimeline(scenes);
     const overlays = segments.map((seg) => {
-      renderOverlayToCanvas(ctx, seg, showCaptions, logoImg);
+      renderOverlayToCanvas(ctx, seg, scenes, config.endBadgeText, showCaptions, logoImg);
       return {
         startSec: seg.startSec,
         endSec: seg.endSec,
@@ -371,6 +376,8 @@ export async function generateVideoDownloadLink(params: {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        preset,
+        script: config.script,
         voiceName,
         voiceStyle,
         showCaptions,

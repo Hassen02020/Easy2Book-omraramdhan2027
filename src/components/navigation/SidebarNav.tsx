@@ -4,6 +4,7 @@ import {
   Blocks,
   ChevronDown,
   ChevronRight,
+  Compass,
   FileCheck2,
   FileEdit,
   FilePlus2,
@@ -14,6 +15,7 @@ import {
   LayoutTemplate,
   MoonStar,
   Settings,
+  ShieldCheck,
   Star,
 } from 'lucide-react';
 import { STUDIO_I18N } from '../../lib/i18n';
@@ -61,6 +63,9 @@ export function SidebarNav({
   const t = STUDIO_I18N[language].nav;
   const [omraTreeOpen, setOmraTreeOpen] = useState(true);
   const [ramadanGroupOpen, setRamadanGroupOpen] = useState(true);
+  const [egyptTreeOpen, setEgyptTreeOpen] = useState(true);
+  const [turkeyTreeOpen, setTurkeyTreeOpen] = useState(true);
+  const [visaTreeOpen, setVisaTreeOpen] = useState(true);
 
   const omraPages = pages.filter((p) => p.universe === 'omra');
   const ramadan2027Pages = omraPages.filter(
@@ -68,6 +73,24 @@ export function SidebarNav({
   );
   const otherOmraPages = omraPages.filter(
     (p) => (p.folderGroup || 'Ramadan 2027') !== 'Ramadan 2027'
+  );
+  const egyptPages = pages.filter(
+    (p) =>
+      p.id === 'page-excursions-egypte-easy2book' ||
+      p.pilotRenderer === 'egypt_excursions_2026' ||
+      p.folderGroup === 'Excursions Égypte'
+  );
+  const turkeyPages = pages.filter(
+    (p) =>
+      p.id === 'page-excursions-turquie-easy2book' ||
+      p.pilotRenderer === 'turkey_excursions_2026' ||
+      p.folderGroup === 'Excursions Turquie'
+  );
+  const visaPages = pages.filter(
+    (p) =>
+      p.id === 'page-visas-services-easy2book' ||
+      p.pilotRenderer === 'visa_services_2026' ||
+      p.universe === 'visa'
   );
 
   const items: {
@@ -226,6 +249,177 @@ export function SidebarNav({
             </div>
           )}
         </div>
+
+        {/* Arborescence Module Excursions Égypte */}
+        {egyptPages.length > 0 && (
+          <div className="mx-3 mt-2 rounded-xl border border-[#102D45]/10 bg-[#F5F7FA] p-2.5">
+            <button
+              type="button"
+              onClick={() => setEgyptTreeOpen((o) => !o)}
+              className="flex w-full items-center justify-between text-[11px] font-extrabold text-[#102D45]"
+            >
+              <span className="flex items-center gap-1.5">
+                <Compass className="h-3.5 w-3.5 text-[#E7B34C]" />
+                Arborescence · Excursions Égypte
+              </span>
+              {egyptTreeOpen ? (
+                <ChevronDown className="h-3.5 w-3.5 text-[#1C4967]" />
+              ) : (
+                <ChevronRight className="h-3.5 w-3.5 text-[#1C4967]" />
+              )}
+            </button>
+
+            {egyptTreeOpen && (
+              <div className="mt-2 space-y-1 ps-1">
+                {egyptPages.map((pg) => {
+                  const isCurrent = activePageId === pg.id;
+                  return (
+                    <button
+                      key={pg.id}
+                      type="button"
+                      onClick={() => onOpenPilotOrPage(pg.id, pg.isPilotPage)}
+                      className={`flex w-full flex-col rounded-lg px-2 py-1.5 text-start transition-colors ${
+                        isCurrent
+                          ? 'bg-[#102D45] text-white'
+                          : 'bg-white text-[#102D45] hover:border-[#E7B34C] border border-[#102D45]/8'
+                      }`}
+                    >
+                      <span className="flex items-center gap-1 text-[11px] font-bold leading-snug">
+                        {pg.isPilotPage && (
+                          <Star className="h-3 w-3 shrink-0 fill-[#E7B34C] text-[#E7B34C]" />
+                        )}
+                        <span className="truncate">{pg.title}</span>
+                      </span>
+                      {pg.isPilotPage && (
+                        <span
+                          className={`text-[9px] font-semibold ${
+                            isCurrent ? 'text-[#E7B34C]' : 'text-[#1C4967]'
+                          }`}
+                        >
+                          Page Pilote Complète
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Arborescence Module Excursions Turquie */}
+        {turkeyPages.length > 0 && (
+          <div className="mx-3 mt-2 rounded-xl border border-[#102D45]/10 bg-[#F5F7FA] p-2.5">
+            <button
+              type="button"
+              onClick={() => setTurkeyTreeOpen((o) => !o)}
+              className="flex w-full items-center justify-between text-[11px] font-extrabold text-[#102D45]"
+            >
+              <span className="flex items-center gap-1.5">
+                <Compass className="h-3.5 w-3.5 text-[#E7B34C]" />
+                Arborescence · Excursions Turquie
+              </span>
+              {turkeyTreeOpen ? (
+                <ChevronDown className="h-3.5 w-3.5 text-[#1C4967]" />
+              ) : (
+                <ChevronRight className="h-3.5 w-3.5 text-[#1C4967]" />
+              )}
+            </button>
+
+            {turkeyTreeOpen && (
+              <div className="mt-2 space-y-1 ps-1">
+                {turkeyPages.map((pg) => {
+                  const isCurrent = activePageId === pg.id;
+                  return (
+                    <button
+                      key={pg.id}
+                      type="button"
+                      onClick={() => onOpenPilotOrPage(pg.id, pg.isPilotPage)}
+                      className={`flex w-full flex-col rounded-lg px-2 py-1.5 text-start transition-colors ${
+                        isCurrent
+                          ? 'bg-[#102D45] text-white'
+                          : 'bg-white text-[#102D45] hover:border-[#E7B34C] border border-[#102D45]/8'
+                      }`}
+                    >
+                      <span className="flex items-center gap-1 text-[11px] font-bold leading-snug">
+                        {pg.isPilotPage && (
+                          <Star className="h-3 w-3 shrink-0 fill-[#E7B34C] text-[#E7B34C]" />
+                        )}
+                        <span className="truncate">{pg.title}</span>
+                      </span>
+                      {pg.isPilotPage && (
+                        <span
+                          className={`text-[9px] font-semibold ${
+                            isCurrent ? 'text-[#E7B34C]' : 'text-[#1C4967]'
+                          }`}
+                        >
+                          Page Pilote Complète
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Arborescence Module Services Visa */}
+        {visaPages.length > 0 && (
+          <div className="mx-3 mt-2 rounded-xl border border-[#102D45]/10 bg-[#F5F7FA] p-2.5">
+            <button
+              type="button"
+              onClick={() => setVisaTreeOpen((o) => !o)}
+              className="flex w-full items-center justify-between text-[11px] font-extrabold text-[#102D45]"
+            >
+              <span className="flex items-center gap-1.5">
+                <ShieldCheck className="h-3.5 w-3.5 text-[#E7B34C]" />
+                Arborescence · Services Visa
+              </span>
+              {visaTreeOpen ? (
+                <ChevronDown className="h-3.5 w-3.5 text-[#1C4967]" />
+              ) : (
+                <ChevronRight className="h-3.5 w-3.5 text-[#1C4967]" />
+              )}
+            </button>
+
+            {visaTreeOpen && (
+              <div className="mt-2 space-y-1 ps-1">
+                {visaPages.map((pg) => {
+                  const isCurrent = activePageId === pg.id;
+                  return (
+                    <button
+                      key={pg.id}
+                      type="button"
+                      onClick={() => onOpenPilotOrPage(pg.id, pg.isPilotPage)}
+                      className={`flex w-full flex-col rounded-lg px-2 py-1.5 text-start transition-colors ${
+                        isCurrent
+                          ? 'bg-[#102D45] text-white'
+                          : 'bg-white text-[#102D45] hover:border-[#E7B34C] border border-[#102D45]/8'
+                      }`}
+                    >
+                      <span className="flex items-center gap-1 text-[11px] font-bold leading-snug">
+                        {pg.isPilotPage && (
+                          <Star className="h-3 w-3 shrink-0 fill-[#E7B34C] text-[#E7B34C]" />
+                        )}
+                        <span className="truncate">{pg.title}</span>
+                      </span>
+                      {pg.isPilotPage && (
+                        <span
+                          className={`text-[9px] font-semibold ${
+                            isCurrent ? 'text-[#E7B34C]' : 'text-[#1C4967]'
+                          }`}
+                        >
+                          Page Pilote Complète
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="m-3 rounded-xl border border-[#102D45]/10 bg-[#F5F7FA] p-3.5 text-[11px] text-[#1C4967]">

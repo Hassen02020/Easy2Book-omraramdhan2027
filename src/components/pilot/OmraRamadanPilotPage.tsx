@@ -42,6 +42,7 @@ import {
 import type { Page, PageVersionSnapshot } from '../../types/creator';
 import { CountdownTimer } from '../CountdownTimer';
 import { ReelPlayer } from '../ReelPlayer';
+import { PdfBrochureControl } from '../shared-components/PdfBrochureControl';
 import { TestimonialsSection } from '../TestimonialsSection';
 import { WhatsAppIcon } from '../WhatsAppIcon';
 
@@ -581,6 +582,12 @@ export function OmraRamadanPilotPage({
                       : 'إنشاء رابط تحميل الفيديو (MP4)'}
                   </span>
                 </button>
+
+                <PdfBrochureControl
+                  variant="pilot_inline"
+                  pageTitle={page.title}
+                  slug={snapshot.seo.slug}
+                />
               </div>
 
               {/* Voice Selector */}
@@ -623,7 +630,7 @@ export function OmraRamadanPilotPage({
               </div>
 
               {videoExporting && (
-                <div className="rounded-xl border border-[#C8922A]/40 bg-[#FAF9F6] p-3.5 space-y-2">
+                <div data-pdf-exclude="true" className="rounded-xl border border-[#C8922A]/40 bg-[#FAF9F6] p-3.5 space-y-2">
                   <div className="flex items-center justify-between text-xs font-bold text-[#0B162C]">
                     <span className="inline-flex items-center gap-1.5">
                       <Film className="h-3.5 w-3.5 text-[#C8922A]" />
@@ -649,7 +656,7 @@ export function OmraRamadanPilotPage({
               )}
 
               {videoExportResult && !videoExporting && (
-                <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-4 space-y-3">
+                <div data-pdf-exclude="true" className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-4 space-y-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex items-center gap-2 text-xs font-bold text-emerald-900">
                       <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />

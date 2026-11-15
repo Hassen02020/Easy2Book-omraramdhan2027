@@ -44,6 +44,7 @@ import {
   type PreviewViewport,
 } from '../preview-renderer/PagePreviewCanvas';
 import { PublicationPanel } from '../publication/PublicationPanel';
+import { PdfBrochureControl } from '../shared-components/PdfBrochureControl';
 import { StatusBadge } from '../shared-components/StatusBadge';
 import { VersionHistoryPanel } from '../version-history/VersionHistoryPanel';
 import type {
@@ -449,6 +450,11 @@ export function PageEditorWorkspace({
             <Save className="h-3.5 w-3.5 text-[#1C4967]" />
             Sauvegarder
           </button>
+          <PdfBrochureControl
+            variant="toolbar"
+            pageTitle={page.title}
+            slug={page.seo.slug}
+          />
           <button
             type="button"
             onClick={() => onOpenFullPreview(page.id)}
@@ -756,14 +762,29 @@ export function PageEditorWorkspace({
 
         {/* ZONE 2 (CENTER): Live Interactive Preview */}
         <div className="flex-1 overflow-y-auto bg-[#EDF1F7] p-4 md:p-6">
-          {page.pilotRenderer === 'omra_ramadan_2027' && (
+          {(page.pilotRenderer === 'omra_ramadan_2027' ||
+            page.pilotRenderer === 'egypt_excursions_2026' ||
+            page.pilotRenderer === 'turkey_excursions_2026' ||
+            page.pilotRenderer === 'visa_services_2026') && (
             <div className="mx-auto mb-3 flex max-w-5xl flex-wrap items-center justify-between gap-2 rounded-xl border border-[#E7B34C]/60 bg-white px-4 py-2 text-xs">
               <div className="flex items-center gap-2">
                 <span className="rounded bg-[#E7B34C]/20 px-2 py-0.5 text-[10px] font-bold text-[#102D45]">
-                  Page Pilote · Omra / {page.folderGroup || 'Ramadan 2027'}
+                  {page.pilotRenderer === 'visa_services_2026'
+                    ? `Page Pilote · Visa / ${page.folderGroup || 'Visas & E-Visa'}`
+                    : page.pilotRenderer === 'turkey_excursions_2026'
+                      ? `Page Pilote · Voyages / ${page.folderGroup || 'Excursions Turquie'}`
+                      : page.pilotRenderer === 'egypt_excursions_2026'
+                        ? `Page Pilote · Voyages / ${page.folderGroup || 'Excursions Égypte'}`
+                        : `Page Pilote · Omra / ${page.folderGroup || 'Ramadan 2027'}`}
                 </span>
                 <span className="font-semibold text-[#102D45]">
-                  Easy2Book — عمرة رمضان كامل
+                  {page.pilotRenderer === 'visa_services_2026'
+                    ? 'Easy2Book — خدمات الفيزا و E-Visa'
+                    : page.pilotRenderer === 'turkey_excursions_2026'
+                      ? 'Easy2Book — رحلات تركيا اليومية'
+                      : page.pilotRenderer === 'egypt_excursions_2026'
+                        ? 'Easy2Book — رحلات يومية مصر'
+                        : 'Easy2Book — عمرة رمضان كامل'}
                 </span>
               </div>
               <div className="flex items-center rounded-lg border border-[#102D45]/12 bg-[#F5F7FA] p-0.5">
@@ -815,8 +836,7 @@ export function PageEditorWorkspace({
               previewMode === 'draft' && pilotRenderMode === 'blocks'
             }
             forcePilotRender={
-              page.pilotRenderer === 'omra_ramadan_2027' &&
-              pilotRenderMode === 'pilot'
+              Boolean(page.pilotRenderer) && pilotRenderMode === 'pilot'
             }
             onSelectBlock={(id) => {
               setSelectedBlockId(id);
@@ -1703,19 +1723,11 @@ export function PageEditorWorkspace({
                       className="w-full rounded-lg border border-[#102D45]/15 bg-[#F5F7FA] px-2.5 py-1.5 text-xs"
                     >
                       <option value="">Aucune image</option>
-                      <option value="makkah_haram">La Mecque — Masjid Al-Haram</option>
-                      <option value="omra_vip_haram">Omra VIP 5★ — Vue Haram</option>
-                      <option value="tunis_flight">Vol Tunis – Djeddah</option>
-                      <option value="maysan_suite">Hôtel Maysan Al Multazim</option>
-                      <option value="madinah_twilight">Médine — Masjid Nabawi</option>
-                      <option value="voyage_istanbul">Voyages — Istanbul & Bosphore</option>
-                      <option value="dubai_skyline">Voyages — Dubaï Marina Luxe</option>
-                      <option value="cairo_nile">Voyages — Le Caire & Nil</option>
-                      <option value="tunisia_resort">Hôtels Tunisie — Hammamet 5★</option>
-                      <option value="djerba_thalasso">Hôtels Tunisie — Djerba Thalasso</option>
-                      <option value="sahara_tozeur">Tunisie — Oasis Sahara Tozeur</option>
-                      <option value="visa_desk">Service Visa — Accompagnement</option>
-                      <option value="visa_europe">Visa Europe — Paris</option>
+                      {(Object.keys(HERO_MEDIA_MAP) as HeroImageKey[]).map((k) => (
+                        <option key={k} value={k}>
+                          {HERO_MEDIA_MAP[k].label}
+                        </option>
+                      ))}
                       {media
                         .filter((m) => !m.isDemoAsset)
                         .map((m) => (
@@ -1763,7 +1775,13 @@ export function PageEditorWorkspace({
                                   className="accent-[#102D45]"
                                 />
                                 <span className="truncate">
-                                  {HERO_MEDIA_MAP[k].label.split('—')[0].trim()}
+                                  {HERO_MEDIA_MAP[k].label.includes('—')
+                                    ? HERO_MEDIA_MAP[k].label
+                                        .split('—')
+                                        .slice(1)
+                                        .join('—')
+                                        .trim()
+                                    : HERO_MEDIA_MAP[k].label}
                                 </span>
                               </label>
                             );
@@ -1772,6 +1790,302 @@ export function PageEditorWorkspace({
                       </div>
                     </div>
                   )}
+
+                  {/* Video Gallery Configurator (YouTube / MP4, Autoplay, Loop) */}
+                  {selectedBlock.type === 'video_gallery' && (() => {
+                    const vs = selectedBlock.content.videoSettings ?? {
+                      autoplay: false,
+                      loop: true,
+                      muted: true,
+                      showControls: true,
+                      columns: 2 as const,
+                    };
+                    const vids = selectedBlock.content.videos ?? [];
+                    const updateVideoSettings = (
+                      patch: Partial<NonNullable<typeof selectedBlock.content.videoSettings>>
+                    ) => {
+                      updateSelectedBlock((b) => ({
+                        ...b,
+                        content: {
+                          ...b.content,
+                          videoSettings: {
+                            autoplay: vs.autoplay,
+                            loop: vs.loop,
+                            muted: vs.muted,
+                            showControls: vs.showControls,
+                            columns: vs.columns,
+                            ...patch,
+                          },
+                        },
+                      }));
+                    };
+
+                    return (
+                      <div className="space-y-3 border-t border-[#102D45]/10 pt-3">
+                        <div className="rounded-xl border border-[#102D45]/10 bg-[#F5F7FA] p-3 space-y-2.5">
+                          <p className="text-[11px] font-bold text-[#102D45]">
+                            Options de lecture (YouTube & MP4)
+                          </p>
+                          <div className="grid grid-cols-2 gap-2 text-[11px]">
+                            <label className="flex items-center gap-1.5 font-semibold cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={vs.autoplay}
+                                onChange={(e) =>
+                                  updateVideoSettings({
+                                    autoplay: e.target.checked,
+                                    muted: e.target.checked ? true : vs.muted,
+                                  })
+                                }
+                                className="accent-[#102D45]"
+                              />
+                              Lecture auto
+                            </label>
+                            <label className="flex items-center gap-1.5 font-semibold cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={vs.loop}
+                                onChange={(e) =>
+                                  updateVideoSettings({ loop: e.target.checked })
+                                }
+                                className="accent-[#102D45]"
+                              />
+                              Boucle (Loop)
+                            </label>
+                            <label className="flex items-center gap-1.5 font-semibold cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={vs.autoplay ? true : vs.muted}
+                                disabled={vs.autoplay}
+                                onChange={(e) =>
+                                  updateVideoSettings({ muted: e.target.checked })
+                                }
+                                className="accent-[#102D45]"
+                              />
+                              Muet
+                            </label>
+                            <label className="flex items-center gap-1.5 font-semibold cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={vs.showControls}
+                                onChange={(e) =>
+                                  updateVideoSettings({
+                                    showControls: e.target.checked,
+                                  })
+                                }
+                                className="accent-[#102D45]"
+                              />
+                              Contrôles
+                            </label>
+                          </div>
+
+                          <div>
+                            <label className="block text-[10px] font-semibold text-slate-600 mb-1">
+                              Colonnes d’affichage
+                            </label>
+                            <div className="grid grid-cols-3 gap-1">
+                              {([1, 2, 3] as const).map((cols) => (
+                                <button
+                                  key={cols}
+                                  type="button"
+                                  onClick={() => updateVideoSettings({ columns: cols })}
+                                  className={`rounded-md py-1 text-[11px] font-bold ${
+                                    vs.columns === cols
+                                      ? 'bg-[#102D45] text-white'
+                                      : 'bg-white text-[#102D45] border border-[#102D45]/10'
+                                  }`}
+                                >
+                                  {cols} col.
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-bold text-[#102D45]">
+                              Vidéos promotionnelles ({vids.length})
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                updateSelectedBlock((b) => ({
+                                  ...b,
+                                  content: {
+                                    ...b.content,
+                                    videos: [
+                                      ...(b.content.videos ?? []),
+                                      {
+                                        id: `vid-${Date.now().toString(36)}`,
+                                        badge: 'Omra · Promo',
+                                        title: 'Nouvelle vidéo promotionnelle',
+                                        caption: 'Description de la vidéo',
+                                        url: '',
+                                        posterKey: 'makkah_haram',
+                                        aspectRatio: '16:9',
+                                      },
+                                    ],
+                                  },
+                                }))
+                              }
+                              className="text-[11px] font-bold text-[#1C4967] hover:underline"
+                            >
+                              + Ajouter vidéo
+                            </button>
+                          </div>
+
+                          {vids.map((vid, idx) => (
+                            <div
+                              key={vid.id}
+                              className="rounded-xl border border-[#102D45]/12 bg-[#F5F7FA] p-2.5 space-y-2"
+                            >
+                              <div className="flex items-center justify-between gap-1.5">
+                                <input
+                                  type="text"
+                                  placeholder="Titre de la vidéo"
+                                  value={vid.title}
+                                  onChange={(e) =>
+                                    updateSelectedBlock((b) => ({
+                                      ...b,
+                                      content: {
+                                        ...b.content,
+                                        videos: vids.map((v, i) =>
+                                          i === idx ? { ...v, title: e.target.value } : v
+                                        ),
+                                      },
+                                    }))
+                                  }
+                                  className="flex-1 rounded border border-[#102D45]/10 bg-white px-2 py-1 text-xs font-semibold"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    updateSelectedBlock((b) => ({
+                                      ...b,
+                                      content: {
+                                        ...b.content,
+                                        videos: vids.filter((_, i) => i !== idx),
+                                      },
+                                    }))
+                                  }
+                                  className="p-1 text-rose-500"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+
+                              <div>
+                                <label className="block text-[10px] font-semibold text-slate-600 mb-0.5">
+                                  Lien YouTube ou MP4 direct
+                                </label>
+                                <input
+                                  type="text"
+                                  placeholder="https://youtube.com/watch?v=... ou https://.../video.mp4"
+                                  value={vid.url}
+                                  onChange={(e) =>
+                                    updateSelectedBlock((b) => ({
+                                      ...b,
+                                      content: {
+                                        ...b.content,
+                                        videos: vids.map((v, i) =>
+                                          i === idx ? { ...v, url: e.target.value } : v
+                                        ),
+                                      },
+                                    }))
+                                  }
+                                  className="w-full rounded border border-[#102D45]/10 bg-white px-2 py-1 font-mono text-[11px]"
+                                />
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-1.5">
+                                <input
+                                  type="text"
+                                  placeholder="Badge (ex: Omra 16:9)"
+                                  value={vid.badge || ''}
+                                  onChange={(e) =>
+                                    updateSelectedBlock((b) => ({
+                                      ...b,
+                                      content: {
+                                        ...b.content,
+                                        videos: vids.map((v, i) =>
+                                          i === idx ? { ...v, badge: e.target.value } : v
+                                        ),
+                                      },
+                                    }))
+                                  }
+                                  className="rounded border border-[#102D45]/10 bg-white px-2 py-1 text-[11px]"
+                                />
+                                <select
+                                  value={vid.aspectRatio || '16:9'}
+                                  onChange={(e) =>
+                                    updateSelectedBlock((b) => ({
+                                      ...b,
+                                      content: {
+                                        ...b.content,
+                                        videos: vids.map((v, i) =>
+                                          i === idx
+                                            ? {
+                                                ...v,
+                                                aspectRatio: e.target.value as '16:9' | '9:16',
+                                              }
+                                            : v
+                                        ),
+                                      },
+                                    }))
+                                  }
+                                  className="rounded border border-[#102D45]/10 bg-white px-2 py-1 text-[11px] font-semibold"
+                                >
+                                  <option value="16:9">Format 16:9</option>
+                                  <option value="9:16">Reel 9:16</option>
+                                </select>
+                              </div>
+
+                              <select
+                                value={vid.posterKey || 'omra_vip_haram'}
+                                onChange={(e) =>
+                                  updateSelectedBlock((b) => ({
+                                    ...b,
+                                    content: {
+                                      ...b.content,
+                                      videos: vids.map((v, i) =>
+                                        i === idx ? { ...v, posterKey: e.target.value } : v
+                                      ),
+                                    },
+                                  }))
+                                }
+                                className="w-full rounded border border-[#102D45]/10 bg-white px-2 py-1 text-[11px]"
+                              >
+                                {(Object.keys(HERO_MEDIA_MAP) as HeroImageKey[]).map((k) => (
+                                  <option key={k} value={k}>
+                                    Vignette : {HERO_MEDIA_MAP[k].label}
+                                  </option>
+                                ))}
+                              </select>
+
+                              <input
+                                type="text"
+                                placeholder="Légende / description courte"
+                                value={vid.caption || ''}
+                                onChange={(e) =>
+                                  updateSelectedBlock((b) => ({
+                                    ...b,
+                                    content: {
+                                      ...b.content,
+                                      videos: vids.map((v, i) =>
+                                        i === idx ? { ...v, caption: e.target.value } : v
+                                      ),
+                                    },
+                                  }))
+                                }
+                                className="w-full rounded border border-[#102D45]/10 bg-white px-2 py-1 text-[11px]"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   {/* CTA / Link */}
                   {(selectedBlock.type === 'hero_image' ||
@@ -1913,7 +2227,8 @@ export function PageEditorWorkspace({
                     )}
 
                   {/* List Items Editor */}
-                  {Array.isArray(selectedBlock.content.items) && (
+                  {selectedBlock.type !== 'video_gallery' &&
+                    Array.isArray(selectedBlock.content.items) && (
                     <div className="space-y-2 border-t border-[#102D45]/10 pt-3">
                       <div className="flex items-center justify-between">
                         <span className="text-[11px] font-bold text-[#102D45]">

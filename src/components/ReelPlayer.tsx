@@ -13,6 +13,10 @@ interface ReelPlayerProps {
   showCaptions: boolean;
   isMuted: boolean;
   audioActive?: boolean;
+  scenes?: ReelScene[];
+  endBadgeText?: string;
+  secondaryLabelA?: string;
+  secondaryLabelB?: string;
   onTogglePlay: () => void;
   onToggleMute: () => void;
   onSelectScene: (targetSec: number) => void;
@@ -23,14 +27,18 @@ function getScaledTime(timeSec: number, totalDuration: number): number {
   return (timeSec / totalDuration) * TOTAL_REEL_DURATION_SEC;
 }
 
-function getSceneAtTime(timeSec: number, totalDuration: number): ReelScene {
+function getSceneAtTime(
+  timeSec: number,
+  totalDuration: number,
+  sceneList: ReelScene[]
+): ReelScene {
   const scaled = Math.max(
     0,
     Math.min(TOTAL_REEL_DURATION_SEC - 0.01, getScaledTime(timeSec, totalDuration))
   );
   return (
-    REEL_SCENES.find((s) => scaled >= s.startSec && scaled < s.endSec) ||
-    REEL_SCENES[0]
+    sceneList.find((s) => scaled >= s.startSec && scaled < s.endSec) ||
+    sceneList[0]
   );
 }
 
@@ -47,13 +55,18 @@ export function ReelPlayer({
   isPlaying,
   showCaptions,
   isMuted,
+  scenes,
+  endBadgeText = 'عدد غرف محدود جداً · عرض صالح لـ 15 ديسمبر 2026',
+  secondaryLabelA = 'رحلة مباشرة تونس - جدة',
+  secondaryLabelB = 'جناح فندقي فاخر · إطلالة مكة',
   onTogglePlay,
   onToggleMute,
   onSelectScene,
 }: ReelPlayerProps) {
+  const activeScenes = scenes && scenes.length > 0 ? scenes : REEL_SCENES;
   const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
   const scaledTime = getScaledTime(currentTime, totalDuration);
-  const activeScene = getSceneAtTime(currentTime, totalDuration);
+  const activeScene = getSceneAtTime(currentTime, totalDuration, activeScenes);
   const elapsedInScene = scaledTime - activeScene.startSec;
 
   const isScene2Secondary =
@@ -81,7 +94,7 @@ export function ReelPlayer({
           dir="ltr"
           aria-label="مؤشر المشاهد"
         >
-          {REEL_SCENES.map((scene) => {
+          {activeScenes.map((scene) => {
             const duration = scene.endSec - scene.startSec;
             let fillPercent = 0;
             if (scaledTime >= scene.endSec) {
@@ -134,7 +147,7 @@ export function ReelPlayer({
 
         {/* Visual Scene Canvas Layer */}
         <div className="absolute inset-0">
-          {REEL_SCENES.map((scene) => {
+          {activeScenes.map((scene) => {
             const isActive = scene.id === activeScene.id;
             const animationName =
               scene.id === 'scene-1'
@@ -286,7 +299,7 @@ export function ReelPlayer({
             {showCaptions && (
               <div className="mt-3 space-y-1 text-[#0B162C]">
                 <p className="text-xs font-bold text-[#9A6E1B]">
-                  عدد غرف محدود جداً · عرض صالح لـ 15 ديسمبر 2026
+                  {endBadgeText}
                 </p>
                 <p className="font-mono-tabular text-lg font-extrabold text-[#0B162C]" dir="ltr">
                   📞 98 140 514
@@ -319,9 +332,7 @@ export function ReelPlayer({
               <div className="mt-3 flex items-center gap-2 text-xs font-medium text-white/80">
                 <Plane className="h-3.5 w-3.5 text-[#C8922A]" aria-hidden="true" />
                 <span>
-                  {isScene2Secondary
-                    ? 'جناح فندقي فاخر · إطلالة مكة'
-                    : 'رحلة مباشرة تونس - جدة'}
+                  {isScene2Secondary ? secondaryLabelB : secondaryLabelA}
                 </span>
               </div>
             )}

@@ -1,7 +1,10 @@
 import type { CrmIntegrationConfig } from '../../integration-contracts/crmAdapter';
 import { createDefaultBrandIdentity } from '../../lib/commerceModulesCatalog';
 import type { Page, PageVersionSnapshot } from '../../types/creator';
+import { EgyptExcursionsPilotPage } from '../pilot/EgyptExcursionsPilotPage';
 import { OmraRamadanPilotPage } from '../pilot/OmraRamadanPilotPage';
+import { TurkeyExcursionsPilotPage } from '../pilot/TurkeyExcursionsPilotPage';
+import { VisaServicesPilotPage } from '../pilot/VisaServicesPilotPage';
 import { BlockRenderer } from './BlockRenderer';
 import { SiteFooter } from './SiteFooter';
 import { SiteHeader } from './SiteHeader';
@@ -45,20 +48,47 @@ export function PagePreviewCanvas({
         : 'w-full';
 
   const shouldRenderFullPilot =
-    page.pilotRenderer === 'omra_ramadan_2027' &&
+    (page.pilotRenderer === 'omra_ramadan_2027' ||
+      page.pilotRenderer === 'egypt_excursions_2026' ||
+      page.pilotRenderer === 'turkey_excursions_2026' ||
+      page.pilotRenderer === 'visa_services_2026') &&
     (forcePilotRender ?? !interactiveEdit);
 
   if (shouldRenderFullPilot) {
     return (
       <div
+        data-brochure-root="true"
         className={`mx-auto ${frameWidthClass} overflow-hidden rounded-2xl border border-[#102D45]/12 bg-white shadow-[0_18px_48px_-12px_rgba(16,45,69,0.16)] transition-all duration-300`}
       >
-        <OmraRamadanPilotPage
-          page={page}
-          snapshot={snapshot}
-          crmConfig={crmConfig}
-          defaultVoiceId={defaultVoiceId}
-        />
+        {page.pilotRenderer === 'visa_services_2026' ? (
+          <VisaServicesPilotPage
+            page={page}
+            snapshot={snapshot}
+            crmConfig={crmConfig}
+            defaultVoiceId={defaultVoiceId}
+          />
+        ) : page.pilotRenderer === 'turkey_excursions_2026' ? (
+          <TurkeyExcursionsPilotPage
+            page={page}
+            snapshot={snapshot}
+            crmConfig={crmConfig}
+            defaultVoiceId={defaultVoiceId}
+          />
+        ) : page.pilotRenderer === 'egypt_excursions_2026' ? (
+          <EgyptExcursionsPilotPage
+            page={page}
+            snapshot={snapshot}
+            crmConfig={crmConfig}
+            defaultVoiceId={defaultVoiceId}
+          />
+        ) : (
+          <OmraRamadanPilotPage
+            page={page}
+            snapshot={snapshot}
+            crmConfig={crmConfig}
+            defaultVoiceId={defaultVoiceId}
+          />
+        )}
       </div>
     );
   }
@@ -97,6 +127,7 @@ export function PagePreviewCanvas({
 
   return (
     <div
+      data-brochure-root="true"
       dir={isAr ? 'rtl' : 'ltr'}
       style={canvasStyle}
       className={`mx-auto ${frameWidthClass} ${

@@ -55,6 +55,16 @@ export const BLOCK_CATALOG: BlockCatalogEntry[] = [
     },
   },
   {
+    type: 'video_gallery',
+    category: 'common',
+    labels: { fr: 'Galerie Vidéo', en: 'Video Gallery', ar: 'معرض الفيديو' },
+    description: {
+      fr: 'Grille de vidéos promotionnelles YouTube ou MP4 avec lecture automatique et boucle (idéal modules Omra).',
+      en: 'Promotional YouTube or MP4 video showcase with autoplay and loop controls (ideal for Umrah modules).',
+      ar: 'معرض فيديوهات ترويجية (YouTube أو MP4) مع خيارات التشغيل التلقائي والتكرار لبرامج العمرة.',
+    },
+  },
+  {
     type: 'benefits',
     category: 'common',
     labels: { fr: 'Avantages', en: 'Key Benefits', ar: 'المزايا الرئيسية' },
@@ -611,6 +621,7 @@ export function createDefaultBlock(
     benefits: 'avantages',
     booking_process: 'parcours',
     gallery: 'galerie',
+    video_gallery: 'videos',
     faq: 'faq',
     visa_faq: 'faq',
     lead_form: 'form-block',
@@ -757,6 +768,44 @@ export function createDefaultBlock(
         : 'Sélection multi-visuels configurable depuis votre médiathèque.',
       imageKey: 'voyage_istanbul',
       galleryImageKeys: ['voyage_istanbul', 'tunisia_resort', 'makkah_haram', 'dubai_skyline'],
+    },
+    video_gallery: {
+      eyebrow: isAr ? 'فيديوهات العمرة والرحلات' : isEn ? 'Promotional Video Gallery' : 'Vidéos Promotionnelles · Omra & Circuits',
+      title: isAr ? 'اكتشف أجواء العمرة والفنادق بالفيديو' : isEn ? 'Watch Our Promotional Videos' : 'Découvrez nos programmes Omra en vidéo',
+      description: isAr
+        ? 'معرض فيديوهات ترويجية (YouTube أو MP4) مع دعم التشغيل التلقائي والتكرار.'
+        : 'Intégrez vos vidéos promotionnelles YouTube ou MP4 avec lecture automatique et boucle.',
+      videoSettings: {
+        autoplay: false,
+        loop: true,
+        muted: true,
+        showControls: true,
+        columns: 2,
+      },
+      videos: [
+        {
+          id: `${id}-vid-1`,
+          badge: isAr ? 'عمرة رمضان · 16:9' : 'Omra · YouTube / MP4',
+          title: isAr ? 'جولة الحرم المكي وفندق ميسان' : 'Présentation Omra Makkah & Médine',
+          caption: isAr
+            ? 'أضف رابط فيديو YouTube أو MP4 الترويجي من لوحة الإعدادات.'
+            : 'Collez un lien YouTube ou MP4 dans l’inspecteur droit.',
+          url: '',
+          posterKey: 'omra_vip_haram',
+          aspectRatio: '16:9',
+        },
+        {
+          id: `${id}-vid-2`,
+          badge: isAr ? 'ريلز عمودي · 9:16' : 'Reel Omra · MP4 / YouTube',
+          title: isAr ? 'إقامة قريبة من المسجد النبوي' : 'Atmosphère Spirituelle & Hébergement',
+          caption: isAr
+            ? 'يدعم التشغيل التلقائي والتكرار المستمر.'
+            : 'Compatible lecture automatique, boucle infinie et format MP4.',
+          url: '',
+          posterKey: 'makkah_haram',
+          aspectRatio: '16:9',
+        },
+      ],
     },
     module_hotels_search: {
       eyebrow: isAr ? 'وحدة الفنادق' : isEn ? 'Module · Hotels' : 'Module Commerce · Hôtels & Séjours',
@@ -951,22 +1000,32 @@ export function createDefaultBlock(
       description: specific.description ?? entry.description[language],
       imageKey: specific.imageKey,
       galleryImageKeys: specific.galleryImageKeys,
+      videos: specific.videos,
+      videoSettings: specific.videoSettings,
       primaryCtaLabel: specific.primaryCtaLabel,
       primaryCtaTarget: specific.primaryCtaTarget,
       secondaryCtaLabel: specific.secondaryCtaLabel,
       targetDateIso: specific.targetDateIso,
-      items: specific.items ?? [
-        {
-          id: `${id}-1`,
-          title: isAr ? 'العنصر الأول في هذا القسم' : 'Point clé 01',
-          subtitle: isAr ? 'يمكنك تعديل هذا النص من لوحة الخصائص.' : 'Personnalisable depuis le panneau droit.',
-        },
-        {
-          id: `${id}-2`,
-          title: isAr ? 'العنصر الثاني في هذا القسم' : 'Point clé 02',
-          subtitle: isAr ? 'تصميم متجاوب بالكامل للكمبيوتر والهاتف.' : 'Rendu responsive ordinateur, tablette et mobile.',
-        },
-      ],
+      items:
+        specific.items ??
+        (type === 'video_gallery'
+          ? undefined
+          : [
+              {
+                id: `${id}-1`,
+                title: isAr ? 'العنصر الأول في هذا القسم' : 'Point clé 01',
+                subtitle: isAr
+                  ? 'يمكنك تعديل هذا النص من لوحة الخصائص.'
+                  : 'Personnalisable depuis le panneau droit.',
+              },
+              {
+                id: `${id}-2`,
+                title: isAr ? 'العنصر الثاني في هذا القسم' : 'Point clé 02',
+                subtitle: isAr
+                  ? 'تصميم متجاوب بالكامل للكمبيوتر والهاتف.'
+                  : 'Rendu responsive ordinateur, tablette et mobile.',
+              },
+            ]),
       whatsapp: specific.whatsapp,
     },
   };

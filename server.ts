@@ -17,6 +17,7 @@ const isProduction = process.env.NODE_ENV === "production";
 const DATA_DIR = path.join(__dirname, "data");
 const CREATOR_STORE_FILE = path.join(DATA_DIR, "creator-studio.json");
 const VIDEOS_DIR = path.join(DATA_DIR, "generated-videos");
+const BROCHURES_DIR = path.join(DATA_DIR, "generated-brochures");
 const VOICEOVER_CACHE_DIR = path.join(DATA_DIR, "voiceover-cache");
 
 const ai = new GoogleGenAI({
@@ -255,9 +256,29 @@ function cleanupOldGeneratedVideos(): void {
   }
 }
 
+function cleanupOldGeneratedBrochures(): void {
+  try {
+    if (fs.existsSync(BROCHURES_DIR)) {
+      const files = fs
+        .readdirSync(BROCHURES_DIR)
+        .filter((f) => f.endsWith(".pdf"))
+        .map((f) => {
+          const full = path.join(BROCHURES_DIR, f);
+          return { name: f, full, mtimeMs: fs.statSync(full).mtimeMs };
+        })
+        .sort((a, b) => b.mtimeMs - a.mtimeMs);
+      for (const stale of files.slice(24)) {
+        fs.unlinkSync(stale.full);
+      }
+    }
+  } catch {
+    // Best-effort cleanup
+  }
+}
+
 async function startServer() {
   const app = express();
-  app.use(express.json({ limit: "15mb" }));
+  app.use(express.json({ limit: "35mb" }));
 
   app.get("/api/health", (_req, res) => {
     res.json({ ok: true, hasGeminiKey: Boolean(process.env.GEMINI_API_KEY) });
@@ -377,14 +398,48 @@ async function startServer() {
           }>)
         : [];
 
-      // Resolve scene images (supporting src/assets/images or dist fallback)
-      const imageNames = [
-        "makkah_haram_sunrise_1794604285606.jpg",
-        "tunis_jeddah_flight_1794604285597.jpg",
-        "makkah_maysan_suite_1794604285710.jpg",
-        "madinah_umbrellas_twilight_1794604286691.jpg",
-        "easy2book_studio_backdrop_1794604286505.jpg",
-      ];
+      const preset =
+        req.body?.preset === "egypt_excursions"
+          ? "egypt_excursions"
+          : req.body?.preset === "turkey_excursions"
+            ? "turkey_excursions"
+            : req.body?.preset === "visa_services"
+              ? "visa_services"
+              : "omra";
+
+      // Resolve scene images (supporting src/assets/images)
+      const imageNames =
+        preset === "visa_services"
+          ? [
+              "visa_travel_desk_1794651030778.jpg",
+              "visa_europe_paris_1794652721585.jpg",
+              "dubai_skyline_luxury_1794652718471.jpg",
+              "visa_canada_toronto_1794678796674.jpg",
+              "easy2book_studio_backdrop_1794604286505.jpg",
+            ]
+          : preset === "turkey_excursions"
+            ? [
+                "turkey_istanbul_reel_9x16_1794695568829.jpg",
+                "turkey_sapanca_reel_9x16_1794695570077.jpg",
+                "egypt_vip_transfer_9x16_1794694254172.jpg",
+                "turkey_bosphorus_reel_9x16_1794695569156.jpg",
+                "easy2book_studio_backdrop_1794604286505.jpg",
+              ]
+            : preset === "egypt_excursions"
+              ? [
+                  "egypt_pyramids_gem_9x16_1794694253332.jpg",
+                  "egypt_nile_cruise_9x16_1794694254619.jpg",
+                  "egypt_vip_transfer_9x16_1794694254172.jpg",
+                  "egypt_islamic_cairo_9x16_1794694254977.jpg",
+                  "easy2book_studio_backdrop_1794604286505.jpg",
+                ]
+              : [
+                  "makkah_haram_sunrise_1794604285606.jpg",
+                  "tunis_jeddah_flight_1794604285597.jpg",
+                  "makkah_maysan_suite_1794604285710.jpg",
+                  "madinah_umbrellas_twilight_1794604286691.jpg",
+                  "easy2book_studio_backdrop_1794604286505.jpg",
+                ];
       const imagePaths = imageNames.map((name) =>
         path.join(__dirname, "src", "assets", "images", name)
       );
@@ -408,8 +463,12 @@ async function startServer() {
             typeof req.body?.voiceStyle === "string"
               ? req.body.voiceStyle
               : undefined;
+          const customScript =
+            typeof req.body?.script === "string" && req.body.script.trim()
+              ? req.body.script.trim()
+              : DEFAULT_SCRIPT;
           const tts = await synthesizeVoiceoverWav({
-            script: DEFAULT_SCRIPT,
+            script: customScript,
             voiceName,
             style: voiceStyle,
           });
@@ -522,7 +581,14 @@ async function startServer() {
         finalVideoLabel = outLabel;
       });
 
-      const outputFileName = `easy2book-omra-2027-${jobId}.mp4`;
+      const outputFileName =
+        preset === "visa_services"
+          ? `easy2book-visa-${jobId}.mp4`
+          : preset === "turkey_excursions"
+            ? `easy2book-turkey-${jobId}.mp4`
+            : preset === "egypt_excursions"
+              ? `easy2book-egypt-${jobId}.mp4`
+              : `easy2book-omra-2027-${jobId}.mp4`;
       const outputPath = path.join(VIDEOS_DIR, outputFileName);
 
       ffmpegArgs.push(
@@ -568,7 +634,14 @@ async function startServer() {
       return res.json({
         videoId: jobId,
         downloadPath: `/api/video/download/${outputFileName}`,
-        fileName: "Easy2Book-Omra-Ramadan-2027-9x16.mp4",
+        fileName:
+          preset === "visa_services"
+            ? "Easy2Book-Visas-Services-9x16.mp4"
+            : preset === "turkey_excursions"
+              ? "Easy2Book-Excursions-Turquie-9x16.mp4"
+              : preset === "egypt_excursions"
+                ? "Easy2Book-Excursions-Egypte-9x16.mp4"
+                : "Easy2Book-Omra-Ramadan-2027-9x16.mp4",
         sizeBytes: stat.size,
         durationSec: Number(totalDuration.toFixed(1)),
         hasAudio,
@@ -594,7 +667,7 @@ async function startServer() {
   app.get("/api/video/download/:filename", (req, res) => {
     const raw = req.params.filename || "";
     const safeName = path.basename(raw);
-    if (!/^easy2book-omra-2027-[a-f0-9]+\.mp4$/i.test(safeName)) {
+    if (!/^easy2book-(omra-2027|egypt|turkey|visa)-[a-f0-9]+\.mp4$/i.test(safeName)) {
       return res.status(400).json({ error: "Nom de fichier invalide." });
     }
     const targetPath = path.join(VIDEOS_DIR, safeName);
@@ -603,17 +676,119 @@ async function startServer() {
         error: "Vidéo expirée ou introuvable. Veuillez régénérer le lien.",
       });
     }
+    const downloadLabel = safeName.toLowerCase().startsWith("easy2book-visa-")
+      ? "Easy2Book-Visas-Services-9x16.mp4"
+      : safeName.toLowerCase().startsWith("easy2book-turkey-")
+        ? "Easy2Book-Excursions-Turquie-9x16.mp4"
+        : safeName.toLowerCase().startsWith("easy2book-egypt-")
+          ? "Easy2Book-Excursions-Egypte-9x16.mp4"
+          : "Easy2Book-Omra-Ramadan-2027-9x16.mp4";
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Cache-Control", "no-store");
     res.setHeader("Content-Type", "video/mp4");
     if (req.query.inline === "1") {
       res.setHeader(
         "Content-Disposition",
-        'inline; filename="Easy2Book-Omra-Ramadan-2027-9x16.mp4"'
+        `inline; filename="${downloadLabel}"`
       );
       return res.sendFile(targetPath);
     }
-    return res.download(targetPath, "Easy2Book-Omra-Ramadan-2027-9x16.mp4");
+    return res.download(targetPath, downloadLabel);
+  });
+
+  // ==========================================================
+  // PDF BROCHURE EXPORT & DIRECT DOWNLOAD LINK GENERATOR
+  // ==========================================================
+  app.post("/api/brochure/export", (req, res) => {
+    try {
+      fs.mkdirSync(BROCHURES_DIR, { recursive: true });
+      const rawPdfBase64 =
+        typeof req.body?.pdfBase64 === "string" ? req.body.pdfBase64 : "";
+      const cleanBase64 = rawPdfBase64.replace(
+        /^data:application\/pdf;base64,/,
+        ""
+      );
+      if (!cleanBase64) {
+        return res.status(400).json({ error: "Contenu PDF manquant." });
+      }
+      const pdfBuffer = Buffer.from(cleanBase64, "base64");
+      if (
+        pdfBuffer.length < 100 ||
+        !pdfBuffer.subarray(0, 5).toString("ascii").startsWith("%PDF-")
+      ) {
+        return res.status(400).json({ error: "Fichier PDF invalide." });
+      }
+
+      const jobId = crypto.randomBytes(6).toString("hex");
+      const storageFileName = `easy2book-brochure-${jobId}.pdf`;
+      const outputPath = path.join(BROCHURES_DIR, storageFileName);
+      fs.writeFileSync(outputPath, pdfBuffer);
+      cleanupOldGeneratedBrochures();
+
+      const requestedName =
+        typeof req.body?.fileName === "string" && req.body.fileName.trim()
+          ? path
+              .basename(req.body.fileName.trim())
+              .replace(/[^a-zA-Z0-9._-]/g, "-")
+          : "Easy2Book-Brochure.pdf";
+      const safeDownloadName = requestedName.toLowerCase().endsWith(".pdf")
+        ? requestedName
+        : `${requestedName}.pdf`;
+
+      return res.json({
+        brochureId: jobId,
+        downloadPath: `/api/brochure/download/${storageFileName}?name=${encodeURIComponent(
+          safeDownloadName
+        )}`,
+        fileName: safeDownloadName,
+        sizeBytes: pdfBuffer.length,
+      });
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error
+          ? err.message
+          : "Erreur lors de l'enregistrement de la brochure PDF.";
+      console.error("Brochure export error:", msg);
+      return res.status(500).json({
+        error: "BROCHURE_EXPORT_FAILED",
+        message: msg,
+      });
+    }
+  });
+
+  app.get("/api/brochure/download/:filename", (req, res) => {
+    const raw = req.params.filename || "";
+    const safeName = path.basename(raw);
+    if (!/^easy2book-brochure-[a-f0-9]+\.pdf$/i.test(safeName)) {
+      return res.status(400).json({ error: "Nom de fichier invalide." });
+    }
+    const targetPath = path.join(BROCHURES_DIR, safeName);
+    if (!fs.existsSync(targetPath)) {
+      return res.status(404).json({
+        error: "Brochure PDF expirée ou introuvable. Veuillez régénérer le PDF.",
+      });
+    }
+    const rawQueryName =
+      typeof req.query.name === "string" && req.query.name.trim()
+        ? path
+            .basename(req.query.name.trim())
+            .replace(/[^a-zA-Z0-9._-]/g, "-")
+        : "Easy2Book-Brochure.pdf";
+    const downloadLabel = rawQueryName.toLowerCase().endsWith(".pdf")
+      ? rawQueryName
+      : `${rawQueryName}.pdf`;
+
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Cache-Control", "no-store");
+    res.setHeader("Content-Type", "application/pdf");
+    if (req.query.inline === "1") {
+      res.setHeader(
+        "Content-Disposition",
+        `inline; filename="${downloadLabel}"`
+      );
+      return res.sendFile(targetPath);
+    }
+    return res.download(targetPath, downloadLabel);
   });
 
   // ==========================================================

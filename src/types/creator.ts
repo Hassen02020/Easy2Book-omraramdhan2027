@@ -59,6 +59,7 @@ export type BlockType =
   | 'why_choose_us'
   | 'booking_process'
   | 'gallery'
+  | 'video_gallery'
   | 'benefits'
   | 'services'
   | 'pricing'
@@ -214,6 +215,24 @@ export interface WhatsAppActionConfig {
   trackAsCrmLead: false; // Strictly false per architecture specification
 }
 
+export interface VideoGalleryItem {
+  id: string;
+  title: string;
+  caption?: string;
+  badge?: string;
+  url: string;
+  posterKey?: string;
+  aspectRatio?: '16:9' | '9:16';
+}
+
+export interface VideoGallerySettings {
+  autoplay: boolean;
+  loop: boolean;
+  muted: boolean;
+  showControls: boolean;
+  columns: 1 | 2 | 3;
+}
+
 export interface PageBlock {
   id: string;
   type: BlockType;
@@ -230,6 +249,8 @@ export interface PageBlock {
     description: string;
     imageKey?: string;
     galleryImageKeys?: string[];
+    videos?: VideoGalleryItem[];
+    videoSettings?: VideoGallerySettings;
     primaryCtaLabel?: string;
     primaryCtaTarget?: string;
     secondaryCtaLabel?: string;
@@ -343,7 +364,11 @@ export interface Page {
   /** Arborescence / dossier métier (ex: "Ramadan 2027" dans le module Omra) */
   folderGroup?: string;
   isPilotPage?: boolean;
-  pilotRenderer?: 'omra_ramadan_2027';
+  pilotRenderer?:
+    | 'omra_ramadan_2027'
+    | 'egypt_excursions_2026'
+    | 'turkey_excursions_2026'
+    | 'visa_services_2026';
   creationMode?: CreationMode;
   brandIdentity?: BrandIdentity;
   header?: PageHeaderConfig;

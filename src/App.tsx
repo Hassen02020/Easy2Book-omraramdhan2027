@@ -14,11 +14,13 @@ import {
   type PreviewViewport,
 } from './components/preview-renderer/PagePreviewCanvas';
 import { CreatorSettingsView } from './components/settings/CreatorSettingsView';
+import { PdfBrochureControl } from './components/shared-components/PdfBrochureControl';
 import { StatusBadge } from './components/shared-components/StatusBadge';
 import { TemplatesGallery } from './components/templates/TemplatesGallery';
 import {
   createInitialCreatorState,
   DEMO_MEDIA_ASSETS,
+  DEMO_PAGES,
   DEMO_TEMPLATES,
 } from './data/demoData';
 import {
@@ -63,6 +65,65 @@ function upgradeStudioState(raw: CreatorState): CreatorState {
     ...customMedia,
   ];
 
+  const demoEgyptPage = DEMO_PAGES.find(
+    (p) => p.id === 'page-excursions-egypte-easy2book'
+  );
+  const demoTurkeyPage = DEMO_PAGES.find(
+    (p) => p.id === 'page-excursions-turquie-easy2book'
+  );
+  const demoVisaPage = DEMO_PAGES.find(
+    (p) => p.id === 'page-visas-services-easy2book'
+  );
+  const upgradedPages = raw.pages.map((pg) => {
+    if (pg.id === 'page-omra-ramadan-2027') {
+      return {
+        ...pg,
+        title:
+          pg.title === 'عمرة رمضان 2027 — العرض الكامل'
+            ? 'Easy2Book — عمرة رمضان كامل'
+            : pg.title,
+        folderGroup: pg.folderGroup || 'Ramadan 2027',
+        isPilotPage: true,
+        pilotRenderer: 'omra_ramadan_2027' as const,
+      };
+    }
+    if (pg.id === 'page-excursions-egypte-easy2book' && demoEgyptPage) {
+      if (
+        pg.updatedAt === '2026-11-14T14:05:00Z' ||
+        pg.updatedAt === '2026-11-14T14:20:00Z'
+      ) {
+        return JSON.parse(JSON.stringify(demoEgyptPage)) as Page;
+      }
+      return {
+        ...pg,
+        folderGroup: pg.folderGroup || 'Excursions Égypte',
+        isPilotPage: true,
+        pilotRenderer: 'egypt_excursions_2026' as const,
+      };
+    }
+    if (pg.id === 'page-excursions-turquie-easy2book' && demoTurkeyPage) {
+      return {
+        ...pg,
+        folderGroup: pg.folderGroup || 'Excursions Turquie',
+        isPilotPage: true,
+        pilotRenderer: 'turkey_excursions_2026' as const,
+      };
+    }
+    if (pg.id === 'page-visas-services-easy2book' && demoVisaPage) {
+      return {
+        ...pg,
+        folderGroup: pg.folderGroup || 'Visas & E-Visa',
+        isPilotPage: true,
+        pilotRenderer: 'visa_services_2026' as const,
+      };
+    }
+    return pg;
+  });
+  const existingPageIds = new Set(upgradedPages.map((p) => p.id));
+  const missingDemoPages = DEMO_PAGES.filter((p) => !existingPageIds.has(p.id)).map(
+    (p) => JSON.parse(JSON.stringify(p)) as Page
+  );
+
   return {
     ...raw,
     settings: {
@@ -71,20 +132,7 @@ function upgradeStudioState(raw: CreatorState): CreatorState {
     },
     templates: mergedTemplates,
     media: mergedMedia,
-    pages: raw.pages.map((pg) =>
-      pg.id === 'page-omra-ramadan-2027'
-        ? {
-            ...pg,
-            title:
-              pg.title === 'عمرة رمضان 2027 — العرض الكامل'
-                ? 'Easy2Book — عمرة رمضان كامل'
-                : pg.title,
-            folderGroup: pg.folderGroup || 'Ramadan 2027',
-            isPilotPage: true,
-            pilotRenderer: 'omra_ramadan_2027',
-          }
-        : pg
-    ),
+    pages: [...missingDemoPages, ...upgradedPages],
   };
 }
 
@@ -463,6 +511,12 @@ export default function App() {
                 })}
               </div>
 
+              <PdfBrochureControl
+                variant="toolbar"
+                pageTitle={previewPage.title}
+                slug={snapshot.seo.slug}
+              />
+
               <button
                 type="button"
                 onClick={() => handleOpenEditor(previewPage.id)}
@@ -481,7 +535,7 @@ export default function App() {
             viewport={previewViewport}
             crmConfig={state.settings.crmIntegration}
             defaultVoiceId={state.settings.defaultVoiceId}
-            forcePilotRender={previewPage.pilotRenderer === 'omra_ramadan_2027'}
+            forcePilotRender={Boolean(previewPage.pilotRenderer)}
           />
         </main>
       </div>

@@ -19,6 +19,7 @@ import {
   MapPin,
   Phone,
   Plane,
+  Play,
   RotateCcw,
   Shield,
   ShieldCheck,
@@ -34,9 +35,10 @@ import {
   type CrmIntegrationConfig,
 } from '../../integration-contracts/crmAdapter';
 import {
-  DEFAULT_TUNISIAN_SCRIPT,
+  getReelConfig,
   TOTAL_REEL_DURATION_SEC,
   VOICE_OPTIONS,
+  type ReelPresetId,
 } from '../../data/campaignData';
 import { getHeroImageSrc } from '../../lib/mediaRegistry';
 import {
@@ -68,6 +70,34 @@ function decodeBase64ToUint8Array(base64: string): Uint8Array {
     bytes[i] = binary.charCodeAt(i);
   }
   return bytes;
+}
+
+function extractYouTubeVideoId(rawUrl: string): string | null {
+  const trimmed = rawUrl.trim();
+  if (!trimmed) return null;
+  try {
+    const u = new URL(trimmed);
+    const host = u.hostname.replace(/^www\./, '').toLowerCase();
+    if (host === 'youtu.be') {
+      const seg = u.pathname.split('/').filter(Boolean)[0];
+      return seg && /^[a-zA-Z0-9_-]{6,20}$/.test(seg) ? seg : null;
+    }
+    if (host === 'youtube.com' || host === 'm.youtube.com' || host === 'youtube-nocookie.com') {
+      const vParam = u.searchParams.get('v');
+      if (vParam && /^[a-zA-Z0-9_-]{6,20}$/.test(vParam)) return vParam;
+      const parts = u.pathname.split('/').filter(Boolean);
+      if (
+        (parts[0] === 'embed' || parts[0] === 'shorts' || parts[0] === 'live') &&
+        parts[1] &&
+        /^[a-zA-Z0-9_-]{6,20}$/.test(parts[1])
+      ) {
+        return parts[1];
+      }
+    }
+  } catch {
+    // Not a full URL
+  }
+  return null;
 }
 
 interface BlockRendererProps {
@@ -115,6 +145,18 @@ export function BlockRenderer({
     block.content.items?.[0]?.id ?? null
   );
 
+  const reelPreset: ReelPresetId =
+    pageId.includes('visa') || block.id.includes('-visa-') || universe === 'visa'
+      ? 'visa_services'
+      : pageId.includes('turquie') ||
+          pageId.includes('turkey') ||
+          block.id.includes('-tr-')
+        ? 'turkey_excursions'
+        : pageId.includes('egypt') || block.id.includes('-eg-')
+          ? 'egypt_excursions'
+          : 'omra';
+  const reelConfig = getReelConfig(reelPreset);
+
   // ReelPlayer state for hero_video blocks
   const [reelTime, setReelTime] = useState(0);
   const [reelPlaying, setReelPlaying] = useState(false);
@@ -123,14 +165,18 @@ export function BlockRenderer({
   const [audioActive, setAudioActive] = useState(false);
   const [audioLoading, setAudioLoading] = useState(false);
   const [selectedVoice, setSelectedVoice] = useState(
-    defaultVoiceId || 'Charon'
+    reelPreset !== 'omra'
+      ? reelConfig.defaultVoiceId
+      : defaultVoiceId || reelConfig.defaultVoiceId
   );
 
   useEffect(() => {
-    if (defaultVoiceId) {
+    if (reelPreset !== 'omra') {
+      setSelectedVoice(reelConfig.defaultVoiceId);
+    } else if (defaultVoiceId) {
       setSelectedVoice(defaultVoiceId);
     }
-  }, [defaultVoiceId]);
+  }, [defaultVoiceId, reelConfig.defaultVoiceId, reelPreset]);
   const [videoExporting, setVideoExporting] = useState(false);
   const [videoExportPct, setVideoExportPct] = useState(0);
   const [videoExportStatus, setVideoExportStatus] = useState('');
@@ -180,7 +226,7 @@ export function BlockRenderer({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            script: DEFAULT_TUNISIAN_SCRIPT,
+            script: reelConfig.script,
             voiceName: voice,
             style: voiceMeta?.stylePrompt,
           }),
@@ -254,6 +300,7 @@ export function BlockRenderer({
       const result = await generateVideoDownloadLink({
         voiceName: selectedVoice,
         showCaptions: reelCaptions,
+        preset: reelPreset,
         onProgress: (pct, label) => {
           setVideoExportPct(pct);
           setVideoExportStatus(label);
@@ -679,6 +726,10 @@ export function BlockRenderer({
               showCaptions={reelCaptions}
               isMuted={reelMuted}
               audioActive={audioActive}
+              scenes={reelConfig.scenes}
+              endBadgeText={reelConfig.endBadgeText}
+              secondaryLabelA={reelConfig.secondarySceneLabelA}
+              secondaryLabelB={reelConfig.secondarySceneLabelB}
               onTogglePlay={() => void handleToggleReelPlay()}
               onToggleMute={handleToggleMute}
               onSelectScene={(sec) => {
@@ -1330,6 +1381,167 @@ export function BlockRenderer({
     );
   }
 
+  // Promotional Video Gallery (YouTube / MP4 with Autoplay & Loop)
+  if (block.type === 'video_gallery') {
+    const videos = block.content.videos ?? [];
+    const settings = block.content.videoSettings ?? {
+      autoplay: false,
+      loop: true,
+      muted: true,
+      showControls: true,
+      columns: 2 as const,
+    };
+    const effectiveMuted = settings.autoplay ? true : settings.muted;
+    const gridColsClass =
+      settings.columns === 1
+        ? 'grid-cols-1 max-w-3xl mx-auto'
+        : settings.columns === 3
+          ? 'sm:grid-cols-2 lg:grid-cols-3'
+          : 'md:grid-cols-2';
+
+    return (
+      <section {...wrapperProps}>
+        {sectionTag}
+        <div className="mx-auto max-w-6xl px-6">
+          <div className={`flex flex-col ${alignClass}`}>
+            <p
+              className="text-xs font-bold uppercase tracking-wider"
+              style={{ color: block.style.accentColor }}
+            >
+              {block.content.eyebrow}
+            </p>
+            <h2 style={headingStyle} className={`${titleScaleClass} mt-1 font-bold`}>
+              {block.content.title}
+            </h2>
+            {block.content.description && (
+              <p className="mt-2 max-w-3xl text-sm opacity-80">
+                {block.content.description}
+              </p>
+            )}
+          </div>
+
+          {videos.length === 0 ? (
+            <div className="mt-7 rounded-2xl border border-dashed border-[#102D45]/20 bg-[#F5F7FA] p-8 text-center text-xs text-slate-600">
+              {isAr
+                ? 'أضف رابط فيديو YouTube أو MP4 من لوحة الخصائص لعرضه هنا.'
+                : 'Ajoutez une vidéo YouTube ou MP4 depuis le panneau de configuration à droite.'}
+            </div>
+          ) : (
+            <div className={`mt-7 grid gap-6 ${gridColsClass}`}>
+              {videos.map((video) => {
+                const ytId = extractYouTubeVideoId(video.url);
+                const hasUrl = Boolean(video.url.trim());
+                const posterSrc = getHeroImageSrc(video.posterKey || 'omra_vip_haram');
+                const aspectClass =
+                  video.aspectRatio === '9:16'
+                    ? 'aspect-[9/16] max-w-[320px] mx-auto w-full'
+                    : 'aspect-video w-full';
+
+                const ytEmbedUrl = ytId
+                  ? `https://www.youtube-nocookie.com/embed/${ytId}?autoplay=${
+                      settings.autoplay ? 1 : 0
+                    }&mute=${effectiveMuted ? 1 : 0}&loop=${
+                      settings.loop ? 1 : 0
+                    }${settings.loop ? `&playlist=${ytId}` : ''}&controls=${
+                      settings.showControls ? 1 : 0
+                    }&rel=0&playsinline=1`
+                  : null;
+
+                return (
+                  <article
+                    key={video.id}
+                    className={`overflow-hidden ${cardRadiusClass} border ${
+                      isDarkBg
+                        ? 'border-white/15 bg-white/8'
+                        : 'border-[#102D45]/10 bg-white shadow-2xs'
+                    }`}
+                  >
+                    <div className="bg-[#0B162C]">
+                      <div className={`relative overflow-hidden ${aspectClass}`}>
+                        {ytEmbedUrl ? (
+                          <iframe
+                            src={ytEmbedUrl}
+                            title={video.title}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allowFullScreen
+                            className="h-full w-full border-0"
+                          />
+                        ) : hasUrl ? (
+                          <video
+                            key={`${video.url}-${settings.autoplay}-${settings.loop}-${effectiveMuted}-${settings.showControls}`}
+                            src={video.url.trim()}
+                            poster={posterSrc}
+                            autoPlay={settings.autoplay}
+                            loop={settings.loop}
+                            muted={effectiveMuted}
+                            controls={settings.showControls}
+                            playsInline
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="relative h-full w-full">
+                            <img
+                              src={posterSrc}
+                              alt={video.title}
+                              className="h-full w-full object-cover opacity-85"
+                            />
+                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0B162C]/45 p-4 text-center text-white">
+                              <span
+                                className="flex h-12 w-12 items-center justify-center rounded-full shadow-lg"
+                                style={{
+                                  backgroundColor: block.style.accentColor,
+                                  color: brandIdentity?.ctaTextColor ?? '#102D45',
+                                }}
+                              >
+                                <Play className="h-5 w-5 fill-current ms-0.5" />
+                              </span>
+                              <p className="mt-2.5 text-xs font-bold">
+                                {isAr
+                                  ? 'بانتظار رابط YouTube أو MP4'
+                                  : 'Source YouTube ou MP4 à configurer'}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="p-4 space-y-1.5">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        {video.badge && (
+                          <span
+                            className="inline-block rounded px-2 py-0.5 text-[10px] font-bold"
+                            style={{
+                              backgroundColor: `${block.style.accentColor}28`,
+                              color: isDarkBg ? '#F5D68A' : '#102D45',
+                            }}
+                          >
+                            {video.badge}
+                          </span>
+                        )}
+                        <div className="flex items-center gap-1.5 text-[10px] font-semibold opacity-70">
+                          {ytId ? <span>YouTube</span> : hasUrl ? <span>MP4</span> : null}
+                          {settings.autoplay && <span>· Autoplay</span>}
+                          {settings.loop && <span>· Boucle</span>}
+                        </div>
+                      </div>
+                      <h3 className="text-sm font-bold">{video.title}</h3>
+                      {video.caption && (
+                        <p className="text-xs opacity-80 leading-relaxed">
+                          {video.caption}
+                        </p>
+                      )}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </section>
+    );
+  }
+
   // Universal Travel Commerce Modules (8 pluggable vertical sections)
   if (block.type.startsWith('module_')) {
     const items = block.content.items ?? [];
@@ -1389,16 +1601,37 @@ export function BlockRenderer({
                     {items.map((item) => (
                       <div
                         key={item.id}
-                        className={`${cardRadiusClass} border p-3.5 ${
+                        className={`flex flex-col justify-between ${cardRadiusClass} border p-3.5 ${
                           isDarkBg
                             ? 'border-white/15 bg-white/10'
                             : 'border-[#102D45]/10 bg-white text-[#102D45]'
                         }`}
                       >
-                        <p className="text-xs font-bold">{item.title}</p>
-                        {item.subtitle && (
-                          <p className="mt-1 text-[11px] opacity-75 leading-snug">
-                            {item.subtitle}
+                        <div>
+                          {item.badge && (
+                            <span
+                              className="inline-block rounded px-1.5 py-0.5 text-[10px] font-bold mb-1"
+                              style={{
+                                backgroundColor: `${block.style.accentColor}28`,
+                                color: isDarkBg ? '#F5D68A' : '#102D45',
+                              }}
+                            >
+                              {item.badge}
+                            </span>
+                          )}
+                          <p className="text-xs font-bold">{item.title}</p>
+                          {item.subtitle && (
+                            <p className="mt-1 text-[11px] opacity-75 leading-snug">
+                              {item.subtitle}
+                            </p>
+                          )}
+                        </div>
+                        {item.price && (
+                          <p
+                            className="mt-2.5 border-t border-current/10 pt-2 font-mono-tabular text-sm font-extrabold"
+                            style={{ color: isDarkBg ? '#F5D68A' : '#102D45' }}
+                          >
+                            {item.price}
                           </p>
                         )}
                       </div>
