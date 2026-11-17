@@ -4,6 +4,7 @@ import {
   Copy,
   Edit3,
   Eye,
+  FileDown,
   FilePlus2,
   Globe2,
   Rocket,
@@ -28,6 +29,7 @@ interface PagesListViewProps {
   onCreateNew: () => void;
   onOpenEditor: (pageId: string) => void;
   onPreviewPage: (pageId: string) => void;
+  onDownloadPdf: (pageId: string) => void;
   onPublishPage: (pageId: string) => void;
   onUnpublishPage: (pageId: string) => void;
   onDuplicatePage: (pageId: string) => void;
@@ -42,6 +44,7 @@ export function PagesListView({
   onCreateNew,
   onOpenEditor,
   onPreviewPage,
+  onDownloadPdf,
   onPublishPage,
   onUnpublishPage,
   onDuplicatePage,
@@ -219,6 +222,16 @@ export function PagesListView({
                   >
                     <Eye className="h-3.5 w-3.5" />
                     {t.actions.preview}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => onDownloadPdf(pg.id)}
+                    title="Télécharger toute la page en PDF"
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-[#C8922A]/50 bg-[#FBF9F4] px-3 py-2 text-xs font-semibold text-[#102D45] hover:bg-[#E7B34C]/25"
+                  >
+                    <FileDown className="h-3.5 w-3.5 text-[#C8922A]" />
+                    PDF
                   </button>
 
                   <button

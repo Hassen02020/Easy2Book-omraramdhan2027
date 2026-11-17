@@ -1,6 +1,7 @@
 import type {
   BlockCategory,
   BlockType,
+  BusinessUniverse,
   CreatorLanguage,
   PageBlock,
 } from '../../types/creator';
@@ -600,7 +601,8 @@ export const BLOCK_CATALOG: BlockCatalogEntry[] = [
 
 export function createDefaultBlock(
   type: BlockType,
-  language: CreatorLanguage = 'fr'
+  language: CreatorLanguage = 'fr',
+  universe?: BusinessUniverse
 ): PageBlock {
   const entry =
     BLOCK_CATALOG.find((b) => b.type === type) ?? BLOCK_CATALOG[0];
@@ -645,16 +647,54 @@ export function createDefaultBlock(
       primaryCtaTarget: '#form-block',
       secondaryCtaLabel: '',
     },
-    hero_video: {
-      eyebrow: isAr ? 'عمرة شهر رمضان كامل · مكة المكرمة والمدينة المنورة' : 'Easy2Book · Présentation Vidéo 9:16',
-      title: isAr ? 'عمرة رمضان الكل في مكة المكرمة... بسفر أسهل وقلب مطمئن' : 'Découvrez votre programme en vidéo immersive 9:16',
-      description: isAr
-        ? 'برنامج متكامل من Easy2Book يشمل طيران تونس – جدة – تونس، التأشيرة، التأطير الديني والإداري خطوة بخطوة، إقامة مريحة في فندق ميسان الملتزم، ورحلة روحانية للمدينة المنورة.'
-        : 'Vidéo verticale 9:16 avec narration audio et sous-titres synchronisés.',
-      imageKey: 'makkah_haram',
-      primaryCtaLabel: isAr ? 'احجز مكانك الآن' : 'Réserver maintenant',
-      primaryCtaTarget: '#form-block',
-    },
+    hero_video:
+      universe === 'visa'
+        ? {
+            eyebrow: isAr
+              ? 'Easy2Book · خدمات الفيزا و E-Visa (فيديو 9:16)'
+              : 'Easy2Book · Visas & E-Visa · Vidéo 9:16',
+            title: isAr
+              ? 'ملف الفيزا جاهز خطوة بخطوة مع Easy2Book'
+              : 'Préparez votre dossier Visa & E-Visa en vidéo 9:16',
+            description: isAr
+              ? 'عرض مرئي بتعليق صوتي نسائي تونسي يغطي مصر (4 ساعات)، شنغن، دبي، قطر، عُمان، العمرة و53 وجهة E-Visa.'
+              : 'Reel vertical 9:16 avec voix tunisienne dédiée aux services Visa, RDV Schengen et +53 E-Visa.',
+            imageKey: 'visa_desk',
+            reelPreset: 'visa_services',
+            primaryCtaLabel: isAr ? 'أودع ملفك الآن' : 'Déposer mon dossier',
+            primaryCtaTarget: '#form-block',
+          }
+        : universe === 'voyages' || universe === 'hotels_tunisie'
+          ? {
+              eyebrow: isAr
+                ? 'Easy2Book · رحلات يومية وجولات خاصة (فيديو 9:16)'
+                : 'Easy2Book · Excursions & Circuits · Vidéo 9:16',
+              title: isAr
+                ? 'اكتشف أجمل الرحلات اليومية مع سيارة ومرشد خاص'
+                : 'Découvrez nos excursions quotidiennes & circuits en vidéo 9:16',
+              description: isAr
+                ? 'فيديو ترويجي عمودي 9:16 بتعليق صوتي نسائي تونسي للرحلات اليومية في مصر، تركيا، دبي وتونس.'
+                : 'Reel vertical 9:16 avec voix tunisienne dédiée aux excursions guidées, croisières et transferts VIP.',
+              imageKey: 'egypt_pyramids_museum',
+              reelPreset: 'excursions_general',
+              primaryCtaLabel: isAr ? 'احجز رحلتك الآن' : 'Réserver une excursion',
+              primaryCtaTarget: '#form-block',
+            }
+          : {
+              eyebrow: isAr
+                ? 'عمرة شهر رمضان كامل · مكة المكرمة والمدينة المنورة'
+                : 'Easy2Book · Présentation Vidéo 9:16',
+              title: isAr
+                ? 'عمرة رمضان الكل في مكة المكرمة... بسفر أسهل وقلب مطمئن'
+                : 'Découvrez votre programme en vidéo immersive 9:16',
+              description: isAr
+                ? 'برنامج متكامل من Easy2Book يشمل طيران تونس – جدة – تونس، التأشيرة، التأطير الديني والإداري خطوة بخطوة، إقامة مريحة في فندق ميسان الملتزم، ورحلة روحانية للمدينة المنورة.'
+                : 'Vidéo verticale 9:16 avec narration audio et sous-titres synchronisés.',
+              imageKey: 'makkah_haram',
+              reelPreset: 'omra',
+              primaryCtaLabel: isAr ? 'احجز مكانك الآن' : 'Réserver maintenant',
+              primaryCtaTarget: '#form-block',
+            },
     brand_story: {
       eyebrow: isAr ? 'رؤيتنا ورسالتنا' : isEn ? 'Who We Are' : 'Notre identité & engagement',
       title: isAr ? 'مرافقة احترافية لكل تفاصيل سفرك' : isEn ? 'A Trusted Travel Partner Built Around Clarity' : 'Un partenaire voyage pensé pour la sérénité et la clarté',
@@ -999,6 +1039,8 @@ export function createDefaultBlock(
       title: specific.title ?? entry.labels[language],
       description: specific.description ?? entry.description[language],
       imageKey: specific.imageKey,
+      reelPreset: specific.reelPreset,
+      customReelScript: specific.customReelScript,
       galleryImageKeys: specific.galleryImageKeys,
       videos: specific.videos,
       videoSettings: specific.videoSettings,

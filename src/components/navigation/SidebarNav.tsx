@@ -9,6 +9,7 @@ import {
   FileEdit,
   FilePlus2,
   Files,
+  Film,
   FolderOpen,
   Image as ImageIcon,
   LayoutDashboard,
@@ -18,6 +19,7 @@ import {
   ShieldCheck,
   Star,
 } from 'lucide-react';
+import { REEL_PRESET_CATALOG } from '../../data/campaignData';
 import { STUDIO_I18N } from '../../lib/i18n';
 import type { CreatorLanguage, Page } from '../../types/creator';
 
@@ -26,6 +28,7 @@ export type StudioNavId =
   | 'all_pages'
   | 'create_page'
   | 'templates'
+  | 'videos'
   | 'blocks'
   | 'media'
   | 'drafts'
@@ -103,6 +106,7 @@ export function SidebarNav({
     { id: 'all_pages', label: t.allPages, icon: Files, count: counts.all },
     { id: 'create_page', label: t.createPage, icon: FilePlus2 },
     { id: 'templates', label: t.templates, icon: LayoutTemplate, count: counts.templates },
+    { id: 'videos', label: t.videosStudio, icon: Film, count: REEL_PRESET_CATALOG.length },
     { id: 'blocks', label: t.blockLibrary, icon: Blocks, count: counts.blocks },
     { id: 'media', label: t.mediaLibrary, icon: ImageIcon, count: counts.media },
     { id: 'drafts', label: t.drafts, icon: FileEdit, count: counts.drafts },

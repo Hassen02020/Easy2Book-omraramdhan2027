@@ -15,6 +15,7 @@ export interface StudioStrings {
     templates: string;
     blockLibrary: string;
     mediaLibrary: string;
+    videosStudio: string;
     drafts: string;
     published: string;
     archives: string;
@@ -60,6 +61,7 @@ export const STUDIO_I18N: Record<CreatorLanguage, StudioStrings> = {
       templates: 'Modèles',
       blockLibrary: 'Bibliothèque de blocs',
       mediaLibrary: 'Médias',
+      videosStudio: 'Vidéos & Reels 9:16',
       drafts: 'Brouillons',
       published: 'Pages publiées',
       archives: 'Archives',
@@ -131,6 +133,7 @@ export const STUDIO_I18N: Record<CreatorLanguage, StudioStrings> = {
       templates: 'Templates',
       blockLibrary: 'Block Library',
       mediaLibrary: 'Media Library',
+      videosStudio: 'Videos & 9:16 Reels',
       drafts: 'Drafts',
       published: 'Published Pages',
       archives: 'Archives',
@@ -202,6 +205,7 @@ export const STUDIO_I18N: Record<CreatorLanguage, StudioStrings> = {
       templates: 'القوالب',
       blockLibrary: 'مكتبة الكتل',
       mediaLibrary: 'الوسائط',
+      videosStudio: 'فيديوهات وريلز 9:16',
       drafts: 'المسودات',
       published: 'الصفحات المنشورة',
       archives: 'الأرشيف',

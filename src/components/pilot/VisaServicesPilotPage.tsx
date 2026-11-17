@@ -26,9 +26,11 @@ import {
 } from 'lucide-react';
 import {
   getReelConfig,
+  getSocialCaptionBlocks,
   TOTAL_REEL_DURATION_SEC,
   VOICE_OPTIONS,
 } from '../../data/campaignData';
+import { EVISA_53_COUNTRIES } from '../../data/visaTypesCatalog';
 import { HERO_MEDIA_MAP } from '../../lib/mediaRegistry';
 import {
   formatFileSize,
@@ -91,7 +93,7 @@ const VISA_SERVICES_CATALOG: VisaServiceOffer[] = [
     categoryLabel: 'مصر · ضمان السفر (في 4 ساعات)',
     title: 'ضمان فيزا مصر · انطلاق من تونس',
     subtitle: 'إصدار ضمان / موافقة السفر إلى مصر للمسافرين المنطلقين من تونس في أجل قياسي.',
-    priceDt: 80,
+    priceDt: 90,
     unitLabel: 'للمسافر الواحد',
     delayLabel: '4 ساعات',
     imageSrc: HERO_MEDIA_MAP.egypt_pyramids_museum.src,
@@ -104,7 +106,7 @@ const VISA_SERVICES_CATALOG: VisaServiceOffer[] = [
     categoryLabel: 'مصر · ضمان السفر (انطلاق دولي)',
     title: 'ضمان فيزا مصر · انطلاق من دولة أخرى',
     subtitle: 'خدمة ضمان السفر إلى مصر عند الانطلاق من خارج تونس (تُؤكّد حسب الطلب).',
-    priceDt: 120,
+    priceDt: 150,
     unitLabel: 'للمسافر الواحد',
     delayLabel: 'حسب الطلب · ~4 ساعات',
     imageSrc: HERO_MEDIA_MAP.cairo_nile.src,
@@ -117,7 +119,7 @@ const VISA_SERVICES_CATALOG: VisaServiceOffer[] = [
     categoryLabel: 'مصر · شرم الشيخ / الإسكندرية / الغردقة',
     title: 'نزول شرم الشيخ / الإسكندرية / الغردقة (مسافر واحد)',
     subtitle: 'استقبال وموافقة النزول في مطارات شرم الشيخ أو الإسكندرية أو الغردقة لمسافر فردي.',
-    priceDt: 330,
+    priceDt: 350,
     unitLabel: 'ملف فردي (شخص واحد)',
     delayLabel: '4 ساعات',
     imageSrc: HERO_MEDIA_MAP.egypt_nile_dinner.src,
@@ -130,7 +132,7 @@ const VISA_SERVICES_CATALOG: VisaServiceOffer[] = [
     categoryLabel: 'مصر · شرم الشيخ / الإسكندرية / الغردقة',
     title: 'نزول شرم الشيخ / الإسكندرية / الغردقة (ابتداءً من شخصين)',
     subtitle: 'تعريفة مخفضة للشخص الواحد عند السفر ابتداءً من مسافرين اثنين فأكثر.',
-    priceDt: 280,
+    priceDt: 300,
     unitLabel: 'للشخص (من شخصين فأكثر)',
     delayLabel: '4 ساعات',
     imageSrc: HERO_MEDIA_MAP.egypt_islamic_cairo.src,
@@ -579,68 +581,11 @@ const VISA_SERVICES_CATALOG: VisaServiceOffer[] = [
   },
 ];
 
-/** 53 E-Visa Destinations Sur Demande */
-const EVISA_53_COUNTRIES: { fr: string; ar: string }[] = [
-  { fr: 'Afghanistan', ar: 'أفغانستان' },
-  { fr: 'Albanie', ar: 'ألبانيا' },
-  { fr: 'Angola', ar: 'أنغولا' },
-  { fr: 'Antigua-et-Barbuda', ar: 'أنتيغوا وبربودا' },
-  { fr: 'Arménie', ar: 'أرمينيا' },
-  { fr: 'Bahamas', ar: 'البهاماس' },
-  { fr: 'Bahreïn', ar: 'البحرين' },
-  { fr: 'Bhoutan', ar: 'بوتان' },
-  { fr: 'Bolivie', ar: 'بوليفيا' },
-  { fr: 'Botswana', ar: 'بوتسوانا' },
-  { fr: 'Burkina Faso', ar: 'بوركينا فاسو' },
-  { fr: 'Burundi', ar: 'بوروندي' },
-  { fr: 'Cambodge', ar: 'كمبوديا' },
-  { fr: 'Cameroun', ar: 'الكاميرون' },
-  { fr: 'Tchad', ar: 'تشاد' },
-  { fr: 'Chili', ar: 'تشيلي' },
-  { fr: 'Colombie', ar: 'كولومبيا' },
-  { fr: 'Cuba', ar: 'كوبا' },
-  { fr: 'Djibouti', ar: 'جيبوتي' },
-  { fr: 'El Salvador', ar: 'السلفادور' },
-  { fr: 'Éthiopie', ar: 'إثيوبيا' },
-  { fr: 'Guyana', ar: 'غيانا' },
-  { fr: 'Irak', ar: 'العراق' },
-  { fr: 'Kazakhstan', ar: 'كازاخستان' },
-  { fr: 'Kirghizistan', ar: 'قيرغيزستان' },
-  { fr: 'Laos', ar: 'لاوس' },
-  { fr: 'Libéria', ar: 'ليبيريا' },
-  { fr: 'Madagascar', ar: 'مدغشقر' },
-  { fr: 'Malawi', ar: 'مالاوي' },
-  { fr: 'Moldavie', ar: 'مولدوفا' },
-  { fr: 'Mozambique', ar: 'موزمبيق' },
-  { fr: 'Namibie', ar: 'ناميبيا' },
-  { fr: 'Népal', ar: 'نيبال' },
-  { fr: 'Nicaragua', ar: 'نيكاراغوا' },
-  { fr: 'Nigeria', ar: 'نيجيريا' },
-  { fr: 'Papouasie-Nouvelle-Guinée', ar: 'بابوا غينيا الجديدة' },
-  { fr: 'Saint-Kitts-et-Nevis', ar: 'سانت كيتس ونيفيس' },
-  { fr: 'São Tomé-et-Principe', ar: 'ساو تومي وبرينسيبي' },
-  { fr: 'Serbie', ar: 'صربيا' },
-  { fr: 'Sierra Leone', ar: 'سيراليون' },
-  { fr: 'Singapour', ar: 'سنغافورة' },
-  { fr: 'Soudan du Sud', ar: 'جنوب السودان' },
-  { fr: 'Suriname', ar: 'سورينام' },
-  { fr: 'Tadjikistan', ar: 'طاجيكستان' },
-  { fr: 'Tanzanie', ar: 'تنزانيا' },
-  { fr: 'Thaïlande', ar: 'تايلاند' },
-  { fr: 'Trinité-et-Tobago', ar: 'ترينيداد وتوباغو' },
-  { fr: 'Ouganda', ar: 'أوغندا' },
-  { fr: 'Ouzbékistan', ar: 'أوزبكستان' },
-  { fr: 'Venezuela', ar: 'فنزويلا' },
-  { fr: 'Vietnam', ar: 'فيتنام' },
-  { fr: 'Zambie', ar: 'زامبيا' },
-  { fr: 'Zimbabwe', ar: 'زيمبابوي' },
-];
-
 const GALLERY_PHOTOS = [
   {
     id: 'visa-gal-1',
     src: HERO_MEDIA_MAP.visa_desk.src,
-    badge: 'مصر في 4 ساعات · من 80 د.ت',
+    badge: 'مصر في 4 ساعات · من 90 د.ت',
     title: 'تأشيرة وضمان مصر والملفات القنصلية',
     caption: 'تجهيز فوري لضمان مصر والملفات المعتمدة مع متابعة Easy2Book المباشرة.',
   },
@@ -736,6 +681,8 @@ export function VisaServicesPilotPage({
     useState<VideoExportResult | null>(null);
   const [videoExportError, setVideoExportError] = useState<string | null>(null);
   const [videoLinkCopied, setVideoLinkCopied] = useState(false);
+  const [copiedCaptionId, setCopiedCaptionId] = useState<string | null>(null);
+  const [showSocialCaptions, setShowSocialCaptions] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioUrlMapRef = useRef<Map<string, string>>(new Map());
@@ -920,6 +867,7 @@ export function VisaServicesPilotPage({
         voiceName: selectedVoice,
         showCaptions,
         preset: 'visa_services',
+        autoDownload: true,
         onProgress: (pct, label) => {
           setVideoExportPct(pct);
           setVideoExportStatus(label);
@@ -1166,6 +1114,12 @@ export function VisaServicesPilotPage({
           </nav>
 
           <div className="flex items-center gap-2.5 shrink-0">
+            <PdfBrochureControl
+              variant="pilot_header"
+              pageTitle={page.title}
+              slug={snapshot.seo.slug}
+              revisionKey={page.updatedAt}
+            />
             <a
               href={`https://wa.me/${WHATSAPP_NUMBER}`}
               target="_blank"
@@ -1282,6 +1236,7 @@ export function VisaServicesPilotPage({
                   variant="pilot_inline"
                   pageTitle={page.title}
                   slug={snapshot.seo.slug}
+                  revisionKey={page.updatedAt}
                 />
               </div>
 
@@ -1496,6 +1451,65 @@ export function VisaServicesPilotPage({
                     );
                   })}
                 </div>
+                <div className="pt-1 border-t border-[#0B162C]/10">
+                  <button
+                    type="button"
+                    onClick={() => setShowSocialCaptions((s) => !s)}
+                    className="text-xs font-bold text-[#1C4967] hover:underline"
+                  >
+                    {showSocialCaptions
+                      ? 'إخفاء نصوص السوشيال ميديا والتيك توك ▲'
+                      : 'نصوص السوشيال ميديا والتيك توك (Captions للنسخ) ▼'}
+                  </button>
+                  {showSocialCaptions && (
+                    <div className="mt-2.5 grid gap-2 sm:grid-cols-3">
+                      {getSocialCaptionBlocks('visa_services').map((cap) => (
+                        <div
+                          key={cap.id}
+                          className="rounded-xl border border-[#0B162C]/10 bg-white p-2.5 text-[11px] space-y-1"
+                        >
+                          <div className="flex items-center justify-between gap-1">
+                            <span className="font-bold text-[#C8922A]">
+                              {cap.scene}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                void navigator.clipboard
+                                  ?.writeText(cap.lines.join('\n'))
+                                  .then(() => {
+                                    setCopiedCaptionId(cap.id);
+                                    window.setTimeout(
+                                      () => setCopiedCaptionId(null),
+                                      1500
+                                    );
+                                  });
+                              }}
+                              className="inline-flex items-center gap-1 rounded border border-[#0B162C]/10 bg-[#FAF9F6] px-1.5 py-0.5 text-[10px] font-bold text-[#0B162C]"
+                            >
+                              {copiedCaptionId === cap.id ? (
+                                <Check className="h-3 w-3 text-emerald-600" />
+                              ) : (
+                                <Copy className="h-3 w-3" />
+                              )}
+                              <span>
+                                {copiedCaptionId === cap.id ? 'نُسخ' : 'نسخ'}
+                              </span>
+                            </button>
+                          </div>
+                          {cap.lines.map((line, i) => (
+                            <p
+                              key={i}
+                              className="leading-snug text-[#0B162C]/85"
+                            >
+                              {line}
+                            </p>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -1691,8 +1705,8 @@ export function VisaServicesPilotPage({
                     فيزا مصر · إصدار في 4 ساعات فقط
                   </p>
                   <p className="text-[#475569]">
-                    انطلاق من تونس 80 د.ت · من دولة أخرى 120 د.ت · شرم الشيخ
-                    والإسكندرية والغردقة 330 د.ت (أو 280 د.ت ابتداءً من شخصين).
+                    انطلاق من تونس 90 د.ت · من دولة أخرى 150 د.ت · شرم الشيخ
+                    والإسكندرية والغردقة 350 د.ت (أو 300 د.ت ابتداءً من شخصين).
                   </p>
                 </div>
                 <div className="py-3 space-y-1">

@@ -36,6 +36,8 @@ import {
 } from '../../integration-contracts/crmAdapter';
 import {
   getReelConfig,
+  getSocialCaptionBlocks,
+  getSubtitleCues,
   TOTAL_REEL_DURATION_SEC,
   VOICE_OPTIONS,
   type ReelPresetId,
@@ -146,16 +148,45 @@ export function BlockRenderer({
   );
 
   const reelPreset: ReelPresetId =
-    pageId.includes('visa') || block.id.includes('-visa-') || universe === 'visa'
-      ? 'visa_services'
-      : pageId.includes('turquie') ||
-          pageId.includes('turkey') ||
-          block.id.includes('-tr-')
-        ? 'turkey_excursions'
-        : pageId.includes('egypt') || block.id.includes('-eg-')
-          ? 'egypt_excursions'
-          : 'omra';
+    block.content.reelPreset ||
+    (pageId.includes('visa-egypte') || block.id.includes('-veg-')
+      ? 'visa_egypt'
+      : pageId.includes('visa-dubai') || block.id.includes('-vdxb-')
+        ? 'visa_dubai'
+        : pageId.includes('visa-qatar') || block.id.includes('-vqa-')
+          ? 'visa_qatar'
+          : pageId.includes('visa-oman') || block.id.includes('-vom-')
+            ? 'visa_oman'
+            : pageId.includes('visa-omra') || block.id.includes('-vomr-')
+              ? 'visa_omra'
+              : pageId.includes('visa-international') || block.id.includes('-vint-')
+                ? 'visa_international'
+                : pageId.includes('visa-evisa') || block.id.includes('-vev-')
+                  ? 'visa_evisa'
+                  : pageId.includes('schengen') ||
+                      pageId.includes('etudes') ||
+                      pageId.includes('affaires') ||
+                      pageId.includes('france')
+                    ? 'visa_schengen'
+                    : pageId.includes('visa') || block.id.includes('-visa-') || universe === 'visa'
+                      ? 'visa_services'
+                      : pageId.includes('turquie') ||
+                          pageId.includes('turkey') ||
+                          pageId.includes('istanbul') ||
+                          block.id.includes('-tr-')
+                        ? 'turkey_excursions'
+                        : pageId.includes('egypt') ||
+                            pageId.includes('cairo') ||
+                            block.id.includes('-eg-')
+                          ? 'egypt_excursions'
+                          : universe === 'voyages' || universe === 'hotels_tunisie'
+                            ? 'excursions_general'
+                            : 'omra');
   const reelConfig = getReelConfig(reelPreset);
+  const resolvedReelScript =
+    block.content.customReelScript?.trim() || reelConfig.script;
+  const subtitleCues = getSubtitleCues(reelPreset);
+  const socialCaptionBlocks = getSocialCaptionBlocks(reelPreset);
 
   // ReelPlayer state for hero_video blocks
   const [reelTime, setReelTime] = useState(0);
@@ -184,6 +215,8 @@ export function BlockRenderer({
     useState<VideoExportResult | null>(null);
   const [videoExportError, setVideoExportError] = useState<string | null>(null);
   const [videoLinkCopied, setVideoLinkCopied] = useState(false);
+  const [showSocialCaptions, setShowSocialCaptions] = useState(false);
+  const [copiedCaptionId, setCopiedCaptionId] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioUrlMapRef = useRef<Map<string, string>>(new Map());
 
@@ -217,7 +250,8 @@ export function BlockRenderer({
     }
 
     setReelPlaying(true);
-    let url = audioUrlMapRef.current.get(voice);
+    const cacheKey = `${voice}:${reelPreset}:${resolvedReelScript.length}`;
+    let url = audioUrlMapRef.current.get(cacheKey);
     if (!url && !audioLoading) {
       setAudioLoading(true);
       const voiceMeta = VOICE_OPTIONS.find((v) => v.id === voice);
@@ -226,7 +260,7 @@ export function BlockRenderer({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            script: reelConfig.script,
+            script: resolvedReelScript,
             voiceName: voice,
             style: voiceMeta?.stylePrompt,
           }),
@@ -242,7 +276,7 @@ export function BlockRenderer({
               type: data.mimeType || 'audio/wav',
             });
             url = URL.createObjectURL(blob);
-            audioUrlMapRef.current.set(voice, url);
+            audioUrlMapRef.current.set(cacheKey, url);
           }
         }
       } catch {
@@ -301,6 +335,8 @@ export function BlockRenderer({
         voiceName: selectedVoice,
         showCaptions: reelCaptions,
         preset: reelPreset,
+        customScript: resolvedReelScript,
+        autoDownload: true,
         onProgress: (pct, label) => {
           setVideoExportPct(pct);
           setVideoExportStatus(label);
@@ -446,6 +482,7 @@ export function BlockRenderer({
 
   const sectionTag = interactiveEdit && (
     <div
+      data-pdf-exclude="true"
       className={`pointer-events-none absolute top-2 z-30 ${
         isAr ? 'left-3' : 'right-3'
       } flex items-center gap-1.5 rounded bg-[#102D45]/85 px-2 py-0.5 text-[10px] font-medium text-white transition-opacity ${
@@ -713,6 +750,106 @@ export function BlockRenderer({
                 </div>
               </div>
             )}
+
+            {/* Active Subtitle & Collapsible Social Captions */}
+            {(() => {
+              const totalDur =
+                audioRef.current?.duration &&
+                Number.isFinite(audioRef.current.duration)
+                  ? audioRef.current.duration
+                  : TOTAL_REEL_DURATION_SEC;
+              const scaledTime =
+                totalDur > 0
+                  ? (reelTime / totalDur) * TOTAL_REEL_DURATION_SEC
+                  : 0;
+              const activeCue =
+                subtitleCues.find(
+                  (c) => scaledTime >= c.startSec && scaledTime < c.endSec
+                ) ?? subtitleCues[0];
+              return (
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  className="rounded-xl border border-[#102D45]/10 bg-white/85 p-3 space-y-2 text-[#102D45]"
+                >
+                  {activeCue && (
+                    <p
+                      dir="rtl"
+                      className="text-xs font-semibold leading-relaxed text-[#102D45]"
+                    >
+                      <span className="ml-1.5 font-mono text-[10px] font-bold text-[#C8922A]">
+                        ●
+                      </span>
+                      {activeCue.text}
+                    </p>
+                  )}
+                  <div className="flex items-center justify-between gap-2 pt-0.5">
+                    <button
+                      type="button"
+                      onClick={() => setShowSocialCaptions((s) => !s)}
+                      className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#1C4967] hover:underline"
+                    >
+                      {showSocialCaptions ? (
+                        <ChevronUp className="h-3.5 w-3.5" />
+                      ) : (
+                        <ChevronDown className="h-3.5 w-3.5" />
+                      )}
+                      {isAr
+                        ? 'نصوص السوشيال ميديا والتيك توك (Captions)'
+                        : 'Textes & Captions Reels / TikTok à copier'}
+                    </button>
+                    <span className="font-mono text-[10px] text-slate-500">
+                      {reelPreset}
+                    </span>
+                  </div>
+                  {showSocialCaptions && (
+                    <div className="grid gap-2 pt-1 sm:grid-cols-3" dir="rtl">
+                      {socialCaptionBlocks.map((cap) => (
+                        <div
+                          key={cap.id}
+                          className="rounded-lg border border-[#102D45]/10 bg-[#F5F7FA] p-2 text-[11px]"
+                        >
+                          <div className="flex items-center justify-between gap-1 mb-1">
+                            <span className="font-bold text-[#C8922A]">
+                              {cap.scene}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                void navigator.clipboard
+                                  ?.writeText(cap.lines.join('\n'))
+                                  .then(() => {
+                                    setCopiedCaptionId(cap.id);
+                                    window.setTimeout(
+                                      () => setCopiedCaptionId(null),
+                                      1500
+                                    );
+                                  });
+                              }}
+                              className="inline-flex items-center gap-1 rounded bg-white px-1.5 py-0.5 text-[10px] font-bold text-[#102D45] border border-[#102D45]/10"
+                            >
+                              {copiedCaptionId === cap.id ? (
+                                <Check className="h-3 w-3 text-emerald-600" />
+                              ) : (
+                                <Copy className="h-3 w-3" />
+                              )}
+                              <span>{copiedCaptionId === cap.id ? 'نُسخ' : 'نسخ'}</span>
+                            </button>
+                          </div>
+                          {cap.lines.map((line, i) => (
+                            <p
+                              key={i}
+                              className="leading-snug text-[#102D45]/85"
+                            >
+                              {line}
+                            </p>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </div>
           <div className="lg:col-span-5">
             <ReelPlayer

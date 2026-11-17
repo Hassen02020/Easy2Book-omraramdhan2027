@@ -13,10 +13,12 @@ import {
   PagePreviewCanvas,
   type PreviewViewport,
 } from './components/preview-renderer/PagePreviewCanvas';
+import { createDefaultBlock } from './components/block-library/blockCatalog';
 import { CreatorSettingsView } from './components/settings/CreatorSettingsView';
 import { PdfBrochureControl } from './components/shared-components/PdfBrochureControl';
 import { StatusBadge } from './components/shared-components/StatusBadge';
 import { TemplatesGallery } from './components/templates/TemplatesGallery';
+import { VideosStudioView } from './components/videos-studio/VideosStudioView';
 import {
   createInitialCreatorState,
   DEMO_MEDIA_ASSETS,
@@ -74,6 +76,12 @@ function upgradeStudioState(raw: CreatorState): CreatorState {
   const demoVisaPage = DEMO_PAGES.find(
     (p) => p.id === 'page-visas-services-easy2book'
   );
+  const demoSchengenPage = DEMO_PAGES.find(
+    (p) => p.id === 'page-visa-schengen-france'
+  );
+  const demoVisaEgyptPage = DEMO_PAGES.find(
+    (p) => p.id === 'page-visa-egypte-easy2book'
+  );
   const upgradedPages = raw.pages.map((pg) => {
     if (pg.id === 'page-omra-ramadan-2027') {
       return {
@@ -110,11 +118,36 @@ function upgradeStudioState(raw: CreatorState): CreatorState {
       };
     }
     if (pg.id === 'page-visas-services-easy2book' && demoVisaPage) {
+      if (pg.updatedAt === '2026-11-14T15:05:00Z') {
+        return JSON.parse(JSON.stringify(demoVisaPage)) as Page;
+      }
       return {
         ...pg,
         folderGroup: pg.folderGroup || 'Visas & E-Visa',
         isPilotPage: true,
         pilotRenderer: 'visa_services_2026' as const,
+      };
+    }
+    if (pg.id === 'page-visa-schengen-france' && demoSchengenPage) {
+      if (pg.updatedAt === '2026-11-11T17:20:00Z') {
+        return JSON.parse(JSON.stringify(demoSchengenPage)) as Page;
+      }
+      return {
+        ...pg,
+        folderGroup: pg.folderGroup || 'Visas par Type',
+        isPilotPage: true,
+        pilotRenderer: 'visa_category_2026' as const,
+      };
+    }
+    if (pg.id === 'page-visa-egypte-easy2book' && demoVisaEgyptPage) {
+      if (pg.updatedAt === '2026-11-15T09:10:00Z') {
+        return JSON.parse(JSON.stringify(demoVisaEgyptPage)) as Page;
+      }
+      return {
+        ...pg,
+        folderGroup: pg.folderGroup || 'Visas par Type',
+        isPilotPage: true,
+        pilotRenderer: 'visa_category_2026' as const,
       };
     }
     return pg;
@@ -161,6 +194,7 @@ export default function App() {
 
   const [editingPageId, setEditingPageId] = useState<string | null>(null);
   const [previewPageId, setPreviewPageId] = useState<string | null>(null);
+  const [pendingPdfExport, setPendingPdfExport] = useState(false);
   const [previewViewport, setPreviewViewport] =
     useState<PreviewViewport>('desktop');
   const [previewSnapshotKind, setPreviewSnapshotKind] = useState<
@@ -297,6 +331,15 @@ export default function App() {
     const pg = state.pages.find((p) => p.id === pageId);
     setPreviewSnapshotKind(pg?.publishedVersion ? 'published' : 'draft');
     setPreviewViewport('desktop');
+    setPendingPdfExport(false);
+    setPreviewPageId(pageId);
+  };
+
+  const handleDownloadPagePdf = (pageId: string) => {
+    const pg = state.pages.find((p) => p.id === pageId);
+    setPreviewSnapshotKind(pg?.publishedVersion ? 'published' : 'draft');
+    setPreviewViewport('desktop');
+    setPendingPdfExport(true);
     setPreviewPageId(pageId);
   };
 
@@ -384,6 +427,55 @@ export default function App() {
     showToast('Média ajouté à la médiathèque.');
   };
 
+  const handleAttachVideoToPageGallery = (
+    pageId: string,
+    video: {
+      title: string;
+      caption: string;
+      url: string;
+      badge: string;
+      posterKey: string;
+    }
+  ) => {
+    updatePageById(pageId, (pg) => {
+      const existingIdx = pg.blocks.findIndex((b) => b.type === 'video_gallery');
+      const newItem = {
+        id: `vid-reel-${Date.now().toString(36)}`,
+        badge: video.badge,
+        title: video.title,
+        caption: video.caption,
+        url: video.url,
+        posterKey: video.posterKey,
+        aspectRatio: '9:16' as const,
+      };
+      if (existingIdx >= 0) {
+        const nextBlocks = pg.blocks.map((b, i) =>
+          i === existingIdx
+            ? {
+                ...b,
+                content: {
+                  ...b.content,
+                  videos: [newItem, ...(b.content.videos ?? [])],
+                },
+              }
+            : b
+        );
+        return { ...pg, blocks: nextBlocks, updatedAt: new Date().toISOString() };
+      }
+      const galleryBlock = createDefaultBlock('video_gallery', pg.language, pg.universe);
+      galleryBlock.content.videos = [newItem];
+      const withGallery = addBlockToPage(pg, 'video_gallery');
+      const addedIdx = withGallery.blocks.findIndex(
+        (b) => b.type === 'video_gallery'
+      );
+      if (addedIdx >= 0) {
+        withGallery.blocks[addedIdx] = galleryBlock;
+      }
+      return withGallery;
+    });
+    showToast('Reel MP4 intégré à la médiathèque et à la page sélectionnée.');
+  };
+
   const handleUpdateSettings = (nextSettings: CreatorSettings) => {
     setState((prev) => ({ ...prev, settings: nextSettings }));
     showToast('Paramètres enregistrés.');
@@ -434,7 +526,10 @@ export default function App() {
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                onClick={() => setPreviewPageId(null)}
+                onClick={() => {
+                  setPendingPdfExport(false);
+                  setPreviewPageId(null);
+                }}
                 className="inline-flex items-center gap-1.5 rounded-xl border border-[#102D45]/15 px-3 py-1.5 text-xs font-bold text-[#102D45] hover:bg-[#F5F7FA]"
               >
                 <ArrowLeft className="h-3.5 w-3.5" />
@@ -515,6 +610,9 @@ export default function App() {
                 variant="toolbar"
                 pageTitle={previewPage.title}
                 slug={snapshot.seo.slug}
+                revisionKey={previewPage.updatedAt}
+                autoTrigger={pendingPdfExport}
+                onAutoTriggered={() => setPendingPdfExport(false)}
               />
 
               <button
@@ -627,6 +725,7 @@ export default function App() {
           }}
           onOpenEditor={handleOpenEditor}
           onPreviewPage={handleOpenFullPreview}
+          onDownloadPdf={handleDownloadPagePdf}
           onSelectTemplate={(tpl) => {
             setTemplateUniverseFilter(tpl.universe);
             setActiveNav('create_page');
@@ -652,6 +751,7 @@ export default function App() {
           onCreateNew={() => setCreateWizardOpen(true)}
           onOpenEditor={handleOpenEditor}
           onPreviewPage={handleOpenFullPreview}
+          onDownloadPdf={handleDownloadPagePdf}
           onPublishPage={handlePublishPage}
           onUnpublishPage={handleUnpublishPage}
           onDuplicatePage={handleDuplicatePage}
@@ -667,6 +767,14 @@ export default function App() {
           createFlowActive={activeNav === 'create_page'}
           onCreatePageFromTemplate={handleCreatePageFromTemplate}
           onDuplicateTemplate={handleDuplicateTemplate}
+        />
+      ) : activeNav === 'videos' ? (
+        <VideosStudioView
+          language={studioLanguage}
+          pages={state.pages}
+          onOpenPagePreview={handleOpenFullPreview}
+          onAttachVideoToPageGallery={handleAttachVideoToPageGallery}
+          onAddMediaAsset={handleAddMediaAsset}
         />
       ) : activeNav === 'blocks' ? (
         <BlockLibraryView

@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import {
   getReelConfig,
+  getSocialCaptionBlocks,
   TOTAL_REEL_DURATION_SEC,
   VOICE_OPTIONS,
 } from '../../data/campaignData';
@@ -480,6 +481,8 @@ export function TurkeyExcursionsPilotPage({
     useState<VideoExportResult | null>(null);
   const [videoExportError, setVideoExportError] = useState<string | null>(null);
   const [videoLinkCopied, setVideoLinkCopied] = useState(false);
+  const [copiedCaptionId, setCopiedCaptionId] = useState<string | null>(null);
+  const [showSocialCaptions, setShowSocialCaptions] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioUrlMapRef = useRef<Map<string, string>>(new Map());
@@ -660,6 +663,7 @@ export function TurkeyExcursionsPilotPage({
         voiceName: selectedVoice,
         showCaptions,
         preset: 'turkey_excursions',
+        autoDownload: true,
         onProgress: (pct, label) => {
           setVideoExportPct(pct);
           setVideoExportStatus(label);
@@ -858,6 +862,12 @@ export function TurkeyExcursionsPilotPage({
           </nav>
 
           <div className="flex items-center gap-2.5 shrink-0">
+            <PdfBrochureControl
+              variant="pilot_header"
+              pageTitle={page.title}
+              slug={snapshot.seo.slug}
+              revisionKey={page.updatedAt}
+            />
             <a
               href={`https://wa.me/${WHATSAPP_NUMBER}`}
               target="_blank"
@@ -973,6 +983,7 @@ export function TurkeyExcursionsPilotPage({
                   variant="pilot_inline"
                   pageTitle={page.title}
                   slug={snapshot.seo.slug}
+                  revisionKey={page.updatedAt}
                 />
               </div>
 
@@ -1186,6 +1197,65 @@ export function TurkeyExcursionsPilotPage({
                       </button>
                     );
                   })}
+                </div>
+                <div className="pt-1 border-t border-[#0B162C]/10">
+                  <button
+                    type="button"
+                    onClick={() => setShowSocialCaptions((s) => !s)}
+                    className="text-xs font-bold text-[#1C4967] hover:underline"
+                  >
+                    {showSocialCaptions
+                      ? 'إخفاء نصوص السوشيال ميديا والتيك توك ▲'
+                      : 'نصوص السوشيال ميديا والتيك توك (Captions للنسخ) ▼'}
+                  </button>
+                  {showSocialCaptions && (
+                    <div className="mt-2.5 grid gap-2 sm:grid-cols-3">
+                      {getSocialCaptionBlocks('turkey_excursions').map((cap) => (
+                        <div
+                          key={cap.id}
+                          className="rounded-xl border border-[#0B162C]/10 bg-white p-2.5 text-[11px] space-y-1"
+                        >
+                          <div className="flex items-center justify-between gap-1">
+                            <span className="font-bold text-[#C8922A]">
+                              {cap.scene}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                void navigator.clipboard
+                                  ?.writeText(cap.lines.join('\n'))
+                                  .then(() => {
+                                    setCopiedCaptionId(cap.id);
+                                    window.setTimeout(
+                                      () => setCopiedCaptionId(null),
+                                      1500
+                                    );
+                                  });
+                              }}
+                              className="inline-flex items-center gap-1 rounded border border-[#0B162C]/10 bg-[#FAF9F6] px-1.5 py-0.5 text-[10px] font-bold text-[#0B162C]"
+                            >
+                              {copiedCaptionId === cap.id ? (
+                                <Check className="h-3 w-3 text-emerald-600" />
+                              ) : (
+                                <Copy className="h-3 w-3" />
+                              )}
+                              <span>
+                                {copiedCaptionId === cap.id ? 'نُسخ' : 'نسخ'}
+                              </span>
+                            </button>
+                          </div>
+                          {cap.lines.map((line, i) => (
+                            <p
+                              key={i}
+                              className="leading-snug text-[#0B162C]/85"
+                            >
+                              {line}
+                            </p>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

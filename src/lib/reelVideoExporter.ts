@@ -76,10 +76,13 @@ function renderOverlayToCanvas(
 ) {
   ctx.clearRect(0, 0, WIDTH, HEIGHT);
 
-  const isStudioScene = seg.scene.id === 'scene-4';
+  const isStudioScene = Boolean(
+    seg.scene.isStudioLockup ?? seg.scene.id === 'scene-4'
+  );
+  const isLtr = seg.scene.overlayDir === 'ltr';
   const midTime = (seg.startSec + seg.endSec) / 2;
 
-  // 1. Subtle editorial gradient scrim for photographic scenes (1-3)
+  // 1. Subtle editorial gradient scrim for photographic scenes
   if (!isStudioScene) {
     const grad = ctx.createLinearGradient(0, 0, 0, HEIGHT);
     grad.addColorStop(0, 'rgba(7, 14, 28, 0.50)');
@@ -99,14 +102,19 @@ function renderOverlayToCanvas(
 
   scenes.forEach((sc, idx) => {
     const bx = sidePad + idx * (barW + barGap);
-    ctx.fillStyle = isStudioScene ? 'rgba(11, 22, 44, 0.16)' : 'rgba(255, 255, 255, 0.32)';
+    ctx.fillStyle = isStudioScene
+      ? 'rgba(11, 22, 44, 0.16)'
+      : 'rgba(255, 255, 255, 0.32)';
     drawRoundedRect(ctx, bx, barY, barW, 8, 4);
     ctx.fill();
 
     let pct = 0;
     if (midTime >= sc.endSec) pct = 1;
     else if (midTime > sc.startSec) {
-      pct = Math.min(1, (midTime - sc.startSec) / (sc.endSec - sc.startSec));
+      pct = Math.min(
+        1,
+        (midTime - sc.startSec) / Math.max(0.5, sc.endSec - sc.startSec)
+      );
     }
     if (pct > 0) {
       ctx.fillStyle = '#C8922A';
@@ -124,7 +132,7 @@ function renderOverlayToCanvas(
   ctx.fillText('Easy2Book', WIDTH - 28, 76);
   ctx.restore();
 
-  // 4. Scene 4 Centered Brand Lockup
+  // 4. Studio Scene Centered Brand Lockup
   if (isStudioScene) {
     const centerX = WIDTH / 2;
     if (logoImg) {
@@ -135,54 +143,96 @@ function renderOverlayToCanvas(
     }
 
     ctx.save();
-    ctx.direction = 'rtl';
-    ctx.textAlign = 'center';
-    ctx.font = '800 32px Cairo, sans-serif';
-    ctx.fillStyle = '#0B162C';
-    ctx.fillText('سفرتك أسهل', centerX, 540);
+    if (isLtr) {
+      ctx.direction = 'ltr';
+      ctx.textAlign = 'center';
+      ctx.font = '800 30px "Plus Jakarta Sans", Inter, sans-serif';
+      ctx.fillStyle = '#0B162C';
+      ctx.fillText('The easiest way to travel', centerX, 536, WIDTH - 64);
+    } else {
+      ctx.direction = 'rtl';
+      ctx.textAlign = 'center';
+      ctx.font = '800 32px Cairo, sans-serif';
+      ctx.fillStyle = '#0B162C';
+      ctx.fillText('سفرتك أسهل', centerX, 540);
+    }
 
     ctx.fillStyle = 'rgba(200, 146, 42, 0.65)';
     ctx.fillRect(centerX - 64, 566, 128, 2);
 
     if (showCaptions) {
-      ctx.font = '700 24px Cairo, sans-serif';
-      ctx.fillStyle = '#9A6E1B';
-      ctx.fillText(endBadgeText, centerX, 616);
+      if (isLtr && seg.scene.overlayHeadline) {
+        ctx.direction = 'ltr';
+        ctx.font = '800 30px "Plus Jakarta Sans", Inter, sans-serif';
+        ctx.fillStyle = '#102D45';
+        ctx.fillText(seg.scene.overlayHeadline, centerX, 608, WIDTH - 64);
 
-      ctx.direction = 'ltr';
-      ctx.font = '800 36px "JetBrains Mono", monospace';
-      ctx.fillStyle = '#0B162C';
-      ctx.fillText('98 140 514', centerX, 674);
+        ctx.font = '700 21px "Plus Jakarta Sans", Inter, sans-serif';
+        ctx.fillStyle = '#9A6E1B';
+        ctx.fillText(endBadgeText, centerX, 646, WIDTH - 64);
 
-      ctx.font = '700 24px "Plus Jakarta Sans", sans-serif';
-      ctx.fillStyle = '#C8922A';
-      ctx.fillText('www.easy2book.tn', centerX, 718);
+        ctx.font = '800 34px "JetBrains Mono", monospace';
+        ctx.fillStyle = '#0B162C';
+        ctx.fillText('98 140 514', centerX, 700);
+
+        ctx.font = '700 24px "Plus Jakarta Sans", sans-serif';
+        ctx.fillStyle = '#C8922A';
+        ctx.fillText('www.easy2book.tn', centerX, 742);
+      } else {
+        ctx.font = '700 24px Cairo, sans-serif';
+        ctx.fillStyle = '#9A6E1B';
+        ctx.fillText(endBadgeText, centerX, 616, WIDTH - 64);
+
+        ctx.direction = 'ltr';
+        ctx.font = '800 36px "JetBrains Mono", monospace';
+        ctx.fillStyle = '#0B162C';
+        ctx.fillText('98 140 514', centerX, 674);
+
+        ctx.font = '700 24px "Plus Jakarta Sans", sans-serif';
+        ctx.fillStyle = '#C8922A';
+        ctx.fillText('www.easy2book.tn', centerX, 718);
+      }
     }
     ctx.restore();
   }
 
-  // 5. On-Screen Commercial Typography (Scenes 1-3)
+  // 5. On-Screen Commercial Typography
   if (showCaptions && !isStudioScene) {
     ctx.save();
-    ctx.direction = 'rtl';
-    ctx.textAlign = 'right';
     ctx.shadowColor = 'rgba(0, 0, 0, 0.65)';
     ctx.shadowBlur = 12;
 
     const lines = seg.scene.overlayLines;
     const baseBottom = HEIGHT - 96;
-    const lineHeight = 40;
+    const lineHeight = 38;
     const linesStartY = baseBottom - (lines.length - 1) * lineHeight;
+    const maxWidth = WIDTH - 76;
 
-    ctx.font = '800 42px Cairo, sans-serif';
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillText(seg.scene.overlayHeadline, WIDTH - 38, linesStartY - 48);
+    if (isLtr) {
+      ctx.direction = 'ltr';
+      ctx.textAlign = 'left';
+      ctx.font = '800 36px "Plus Jakarta Sans", Inter, sans-serif';
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillText(seg.scene.overlayHeadline, 38, linesStartY - 46, maxWidth);
 
-    ctx.font = '700 26px Cairo, sans-serif';
-    ctx.fillStyle = '#F8E7C2';
-    lines.forEach((line, idx) => {
-      ctx.fillText(line, WIDTH - 38, linesStartY + idx * lineHeight);
-    });
+      ctx.font = '700 24px "Plus Jakarta Sans", Inter, sans-serif';
+      ctx.fillStyle = '#F8E7C2';
+      lines.forEach((line, idx) => {
+        ctx.fillText(line, 38, linesStartY + idx * lineHeight, maxWidth);
+      });
+    } else {
+      ctx.direction = 'rtl';
+      ctx.textAlign = 'right';
+      ctx.font = '800 42px Cairo, sans-serif';
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillText(seg.scene.overlayHeadline, WIDTH - 38, linesStartY - 48, maxWidth);
+
+      ctx.font = '700 26px Cairo, sans-serif';
+      ctx.fillStyle = '#F8E7C2';
+      lines.forEach((line, idx) => {
+        ctx.fillText(line, WIDTH - 38, linesStartY + idx * lineHeight, maxWidth);
+      });
+    }
     ctx.restore();
   }
 }
@@ -191,11 +241,17 @@ async function renderBrowserWebmFallback(params: {
   voiceName: string;
   showCaptions: boolean;
   preset?: ReelPresetId;
+  customScript?: string;
+  autoDownload?: boolean;
   onProgress?: (pct: number, label: string) => void;
 }): Promise<VideoExportResult> {
   const { voiceName, showCaptions, preset = 'omra', onProgress } = params;
   const config = getReelConfig(preset);
   const scenes = config.scenes;
+  const baseTotalSec = Math.max(
+    1,
+    config.totalDurationSec || TOTAL_REEL_DURATION_SEC
+  );
   onProgress?.(10, 'Préparation du rendu navigateur...');
 
   const canvas = document.createElement('canvas');
@@ -229,9 +285,9 @@ async function renderBrowserWebmFallback(params: {
   const mimeType =
     mimeCandidates.find((m) => MediaRecorder.isTypeSupported(m)) || 'video/webm';
 
-  // Quick 16s condensed browser capture so fallback completes promptly if server ffmpeg is unavailable
-  const fallbackDuration = 16;
-  const scale = fallbackDuration / TOTAL_REEL_DURATION_SEC;
+  // Quick condensed browser capture so fallback completes promptly if server ffmpeg is unavailable
+  const fallbackDuration = Math.min(16, baseTotalSec);
+  const scale = fallbackDuration / baseTotalSec;
 
   const stream = canvas.captureStream(24);
   const recorder = new MediaRecorder(stream, {
@@ -257,10 +313,7 @@ async function renderBrowserWebmFallback(params: {
       const pct = Math.min(99, Math.round((elapsed / fallbackDuration) * 90) + 10);
       onProgress?.(pct, 'Encodage vidéo WebM...');
 
-      const virtualSec = Math.min(
-        TOTAL_REEL_DURATION_SEC - 0.01,
-        elapsed / scale
-      );
+      const virtualSec = Math.min(baseTotalSec - 0.01, elapsed / scale);
       const seg =
         timeline.find(
           (s) => virtualSec >= s.startSec && virtualSec < s.endSec
@@ -268,10 +321,9 @@ async function renderBrowserWebmFallback(params: {
 
       const elapsedInScene = virtualSec - seg.scene.startSec;
       const useSec =
-        seg.scene.id === 'scene-2' &&
+        Boolean(seg.scene.secondaryImage) &&
         typeof seg.scene.matchCutOffsetSec === 'number' &&
-        elapsedInScene >= seg.scene.matchCutOffsetSec &&
-        seg.scene.secondaryImage;
+        elapsedInScene >= seg.scene.matchCutOffsetSec;
 
       const bgImg = imgMap.get(
         useSec ? (seg.scene.secondaryImage as string) : seg.scene.primaryImage
@@ -337,11 +389,21 @@ export async function generateVideoDownloadLink(params: {
   voiceName: string;
   showCaptions: boolean;
   preset?: ReelPresetId;
+  customScript?: string;
+  autoDownload?: boolean;
   onProgress?: (pct: number, label: string) => void;
 }): Promise<VideoExportResult> {
-  const { voiceName, showCaptions, preset = 'omra', onProgress } = params;
+  const {
+    voiceName,
+    showCaptions,
+    preset = 'omra',
+    customScript,
+    autoDownload = false,
+    onProgress,
+  } = params;
   const config = getReelConfig(preset);
   const scenes = config.scenes;
+  const resolvedScript = customScript?.trim() || config.script;
 
   try {
     onProgress?.(15, 'Préparation des calques HD 9:16...');
@@ -377,7 +439,7 @@ export async function generateVideoDownloadLink(params: {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         preset,
-        script: config.script,
+        script: resolvedScript,
         voiceName,
         voiceStyle,
         showCaptions,
@@ -411,7 +473,7 @@ export async function generateVideoDownloadLink(params: {
     onProgress?.(100, 'Vidéo MP4 prête au téléchargement');
     const absoluteUrl = `${window.location.origin}${data.downloadPath}`;
 
-    return {
+    const result: VideoExportResult = {
       blobUrl,
       downloadUrl: absoluteUrl,
       downloadPath: data.downloadPath,
@@ -422,9 +484,17 @@ export async function generateVideoDownloadLink(params: {
       format: 'mp4',
       source: 'server_mp4',
     };
+    if (autoDownload) {
+      triggerVideoBlobDownload(result);
+    }
+    return result;
   } catch (err) {
     console.warn('Server MP4 export failed, switching to browser WebM fallback:', err);
-    return renderBrowserWebmFallback(params);
+    const fallbackResult = await renderBrowserWebmFallback(params);
+    if (autoDownload) {
+      triggerVideoBlobDownload(fallbackResult);
+    }
+    return fallbackResult;
   }
 }
 

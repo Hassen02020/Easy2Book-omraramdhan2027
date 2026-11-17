@@ -22,24 +22,36 @@ interface ReelPlayerProps {
   onSelectScene: (targetSec: number) => void;
 }
 
-function getScaledTime(timeSec: number, totalDuration: number): number {
-  if (totalDuration <= 0) return 0;
-  return (timeSec / totalDuration) * TOTAL_REEL_DURATION_SEC;
+function getScaledTime(
+  timeSec: number,
+  totalDuration: number,
+  baseTotalSec: number
+): number {
+  if (totalDuration <= 0 || baseTotalSec <= 0) return 0;
+  return (timeSec / totalDuration) * baseTotalSec;
 }
 
 function getSceneAtTime(
   timeSec: number,
   totalDuration: number,
-  sceneList: ReelScene[]
+  sceneList: ReelScene[],
+  baseTotalSec: number
 ): ReelScene {
   const scaled = Math.max(
     0,
-    Math.min(TOTAL_REEL_DURATION_SEC - 0.01, getScaledTime(timeSec, totalDuration))
+    Math.min(
+      baseTotalSec - 0.01,
+      getScaledTime(timeSec, totalDuration, baseTotalSec)
+    )
   );
   return (
     sceneList.find((s) => scaled >= s.startSec && scaled < s.endSec) ||
     sceneList[0]
   );
+}
+
+function isStudioSceneItem(scene: ReelScene): boolean {
+  return Boolean(scene.isStudioLockup ?? scene.id === 'scene-4');
 }
 
 function formatTimecode(sec: number): string {
@@ -64,17 +76,27 @@ export function ReelPlayer({
   onSelectScene,
 }: ReelPlayerProps) {
   const activeScenes = scenes && scenes.length > 0 ? scenes : REEL_SCENES;
+  const baseTotalSec = Math.max(
+    1,
+    activeScenes[activeScenes.length - 1]?.endSec || TOTAL_REEL_DURATION_SEC
+  );
   const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
-  const scaledTime = getScaledTime(currentTime, totalDuration);
-  const activeScene = getSceneAtTime(currentTime, totalDuration, activeScenes);
+  const scaledTime = getScaledTime(currentTime, totalDuration, baseTotalSec);
+  const activeScene = getSceneAtTime(
+    currentTime,
+    totalDuration,
+    activeScenes,
+    baseTotalSec
+  );
   const elapsedInScene = scaledTime - activeScene.startSec;
 
-  const isScene2Secondary =
-    activeScene.id === 'scene-2' &&
+  const isSecondaryActive =
+    Boolean(activeScene.secondaryImage) &&
     typeof activeScene.matchCutOffsetSec === 'number' &&
     elapsedInScene >= activeScene.matchCutOffsetSec;
 
-  const isStudioScene = activeScene.id === 'scene-4';
+  const isStudioScene = isStudioSceneItem(activeScene);
+  const isLtrScene = activeScene.overlayDir === 'ltr';
 
   const handleImageError = (src: string) => {
     setFailedImages((prev) => ({ ...prev, [src]: true }));
@@ -86,7 +108,7 @@ export function ReelPlayer({
       <div
         className="relative aspect-[9/16] w-full overflow-hidden rounded-2xl bg-[#0B162C] border border-[#0B162C]/15 shadow-[0_24px_60px_-15px_rgba(11,22,44,0.28)]"
         role="region"
-        aria-label="فيديو الإعلان العمودي 9:16"
+        aria-label={isLtrScene ? 'Vidéo promotionnelle verticale 9:16' : 'فيديو الإعلان العمودي 9:16'}
       >
         {/* Top Progress Bars (Reels / Stories style) */}
         <div
@@ -95,7 +117,7 @@ export function ReelPlayer({
           aria-label="مؤشر المشاهد"
         >
           {activeScenes.map((scene) => {
-            const duration = scene.endSec - scene.startSec;
+            const duration = Math.max(0.5, scene.endSec - scene.startSec);
             let fillPercent = 0;
             if (scaledTime >= scene.endSec) {
               fillPercent = 100;
@@ -103,14 +125,14 @@ export function ReelPlayer({
               fillPercent = ((scaledTime - scene.startSec) / duration) * 100;
             }
             const targetRealTime =
-              (scene.startSec / TOTAL_REEL_DURATION_SEC) * totalDuration;
+              (scene.startSec / baseTotalSec) * totalDuration;
             return (
               <button
                 key={scene.id}
                 type="button"
                 onClick={() => onSelectScene(targetRealTime)}
                 className="group h-1.5 flex-1 overflow-hidden rounded-full bg-white/30 transition-opacity hover:bg-white/45 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C8922A]"
-                aria-label={`الانتقال إلى ${scene.arabicTitle}`}
+                aria-label={`Aller à ${scene.arabicTitle}`}
               >
                 <div
                   className="h-full bg-[#C8922A] transition-[width] duration-100 ease-linear"
@@ -127,7 +149,7 @@ export function ReelPlayer({
             type="button"
             onClick={onToggleMute}
             className="flex h-10 w-10 items-center justify-center rounded-full bg-[#0B162C]/55 text-white backdrop-blur-sm transition-colors hover:bg-[#0B162C]/80 focus-visible:outline-2 focus-visible:outline-[#C8922A]"
-            aria-label={isMuted ? 'إلغاء كتم الصوت' : 'كتم الصوت'}
+            aria-label={isMuted ? 'Activer le son' : 'Couper le son'}
           >
             {isMuted ? (
               <VolumeX className="h-4 w-4" aria-hidden="true" />
@@ -136,7 +158,11 @@ export function ReelPlayer({
             )}
           </button>
 
-          <div className="flex items-center gap-2 text-xs font-medium text-white/95 drop-shadow">
+          <div
+            className={`flex items-center gap-2 text-xs font-medium drop-shadow ${
+              isStudioScene ? 'text-[#0B162C]' : 'text-white/95'
+            }`}
+          >
             <span className="font-mono-tabular">
               {formatTimecode(currentTime)} / {formatTimecode(totalDuration)}
             </span>
@@ -149,6 +175,7 @@ export function ReelPlayer({
         <div className="absolute inset-0">
           {activeScenes.map((scene) => {
             const isActive = scene.id === activeScene.id;
+            const sceneIsStudio = isStudioSceneItem(scene);
             const animationName =
               scene.id === 'scene-1'
                 ? 'reelDroneGlide 10s ease-out forwards'
@@ -159,6 +186,7 @@ export function ReelPlayer({
                     : 'reelStudioDrift 10s ease-in-out infinite';
 
             const primaryBroken = failedImages[scene.primaryImage];
+            const showSecondaryOnScene = isActive && isSecondaryActive;
 
             return (
               <div
@@ -190,11 +218,11 @@ export function ReelPlayer({
                   </div>
                 )}
 
-                {/* Secondary Match-Cut Image for Scene 2 */}
+                {/* Secondary Match-Cut Image */}
                 {scene.secondaryImage && (
                   <div
                     className={`absolute inset-0 transition-all duration-700 ease-out ${
-                      isScene2Secondary
+                      showSecondaryOnScene
                         ? 'opacity-100 scale-100'
                         : 'opacity-0 scale-110 pointer-events-none'
                     }`}
@@ -208,12 +236,12 @@ export function ReelPlayer({
                           handleImageError(scene.secondaryImage as string)
                         }
                         className={`h-full w-full object-cover ${
-                          isActive && isPlaying && isScene2Secondary
+                          isActive && isPlaying && showSecondaryOnScene
                             ? 'reel-motion-active'
                             : ''
                         }`}
                         style={
-                          isActive && isPlaying && isScene2Secondary
+                          isActive && isPlaying && showSecondaryOnScene
                             ? { animation: 'reelSuitePush 7.5s ease-out forwards' }
                             : undefined
                         }
@@ -221,14 +249,16 @@ export function ReelPlayer({
                     ) : (
                       <div className="flex h-full w-full flex-col items-center justify-center bg-gradient-to-b from-[#0B162C] to-[#1E335A] p-6 text-center text-white">
                         <Building2 className="mb-3 h-10 w-10 text-[#C8922A]" />
-                        <p className="text-base font-semibold">فندق ميسان الملتزم · مكة المكرمة</p>
+                        <p className="text-base font-semibold">
+                          {secondaryLabelB || 'Easy2Book · سفرتك أسهل'}
+                        </p>
                       </div>
                     )}
                   </div>
                 )}
 
-                {/* Scene 4 Floating Gold Particles Overlay */}
-                {scene.id === 'scene-4' && (
+                {/* Studio Scene Floating Gold Particles Overlay */}
+                {sceneIsStudio && (
                   <div className="pointer-events-none absolute inset-0 overflow-hidden">
                     {[
                       { top: '18%', left: '22%', delay: '0s' },
@@ -256,7 +286,7 @@ export function ReelPlayer({
           })}
         </div>
 
-        {/* Contrast Scrim for Photographic Scenes (1-3) */}
+        {/* Contrast Scrim for Photographic Scenes */}
         {!isStudioScene && (
           <div className="pointer-events-none absolute inset-0 z-20 bg-gradient-to-t from-[#070E1C]/90 via-[#070E1C]/25 to-[#070E1C]/45" />
         )}
@@ -266,7 +296,7 @@ export function ReelPlayer({
           type="button"
           onClick={onTogglePlay}
           className="group absolute inset-0 z-20 flex items-center justify-center focus-visible:outline-none"
-          aria-label={isPlaying ? 'إيقاف الإعلان مؤقتاً' : 'تشغيل الإعلان'}
+          aria-label={isPlaying ? 'Mettre en pause' : 'Lire la vidéo'}
         >
           <span
             className={`flex h-14 w-14 items-center justify-center rounded-full border border-white/30 bg-[#0B162C]/60 text-white backdrop-blur-md transition-all duration-200 ${
@@ -283,9 +313,12 @@ export function ReelPlayer({
           </span>
         </button>
 
-        {/* Scene 4 Centered Brand Lockup (Placed inside the designed negative space) */}
+        {/* Studio Scene Centered Brand Lockup */}
         {isStudioScene && (
-          <div className="pointer-events-none absolute inset-0 z-20 flex flex-col items-center justify-center px-6 pt-12 pb-14 text-center">
+          <div
+            dir={isLtrScene ? 'ltr' : 'rtl'}
+            className="pointer-events-none absolute inset-0 z-20 flex flex-col items-center justify-center px-6 pt-12 pb-14 text-center"
+          >
             <img
               src="/assets/aistudio/logo_transparent_e9918557.png"
               alt="Easy2Book Centrale de Réservation"
@@ -293,18 +326,29 @@ export function ReelPlayer({
               className="h-24 w-auto object-contain"
             />
             <p className="mt-1.5 text-base font-bold text-[#0B162C]">
-              سفرتك أسهل
+              {isLtrScene ? 'The easiest way to travel' : 'سفرتك أسهل'}
             </p>
             <div className="mt-3 h-px w-16 bg-[#C8922A]/60" />
             {showCaptions && (
               <div className="mt-3 space-y-1 text-[#0B162C]">
+                {isLtrScene && activeScene.overlayHeadline && (
+                  <p className="text-base font-extrabold text-[#102D45]">
+                    {activeScene.overlayHeadline}
+                  </p>
+                )}
                 <p className="text-xs font-bold text-[#9A6E1B]">
                   {endBadgeText}
                 </p>
-                <p className="font-mono-tabular text-lg font-extrabold text-[#0B162C]" dir="ltr">
+                <p
+                  className="font-mono-tabular text-lg font-extrabold text-[#0B162C]"
+                  dir="ltr"
+                >
                   📞 98 140 514
                 </p>
-                <p className="font-latin text-xs font-semibold text-[#C8922A]" dir="ltr">
+                <p
+                  className="font-latin text-xs font-semibold text-[#C8922A]"
+                  dir="ltr"
+                >
                   www.easy2book.tn
                 </p>
               </div>
@@ -312,9 +356,14 @@ export function ReelPlayer({
           </div>
         )}
 
-        {/* On-Screen Commercial Typography Overlays for Scenes 1-3 */}
+        {/* On-Screen Commercial Typography Overlays for Photographic Scenes */}
         {showCaptions && !isStudioScene && (
-          <div className="pointer-events-none absolute inset-x-5 bottom-8 z-20 text-right">
+          <div
+            dir={isLtrScene ? 'ltr' : 'rtl'}
+            className={`pointer-events-none absolute inset-x-5 bottom-8 z-20 ${
+              isLtrScene ? 'text-left' : 'text-right'
+            }`}
+          >
             <h3 className="text-2xl font-extrabold leading-snug text-white drop-shadow-md">
               {activeScene.overlayHeadline}
             </h3>
@@ -328,11 +377,14 @@ export function ReelPlayer({
                 </p>
               ))}
             </div>
-            {activeScene.id === 'scene-2' && (
+            {Boolean(
+              activeScene.secondaryImage &&
+                typeof activeScene.matchCutOffsetSec === 'number'
+            ) && (
               <div className="mt-3 flex items-center gap-2 text-xs font-medium text-white/80">
                 <Plane className="h-3.5 w-3.5 text-[#C8922A]" aria-hidden="true" />
                 <span>
-                  {isScene2Secondary ? secondaryLabelB : secondaryLabelA}
+                  {isSecondaryActive ? secondaryLabelB : secondaryLabelA}
                 </span>
               </div>
             )}

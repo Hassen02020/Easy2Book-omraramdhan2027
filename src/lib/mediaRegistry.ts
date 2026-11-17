@@ -34,6 +34,10 @@ import turkeyAntalyaCoast16x9 from '../assets/images/turkey_antalya_coast_16x9_1
 import turkeyIstanbulReel9x16 from '../assets/images/turkey_istanbul_reel_9x16_1794695568829.jpg';
 import turkeyBosphorusReel9x16 from '../assets/images/turkey_bosphorus_reel_9x16_1794695569156.jpg';
 import turkeySapancaReel9x16 from '../assets/images/turkey_sapanca_reel_9x16_1794695570077.jpg';
+import flightsTabsStress9x16 from '../assets/images/flights_ferries_tabs_stress_1794942092639.jpg';
+import flightsRelaxedSuitcase9x16 from '../assets/images/flights_ferries_relaxed_suitcase_1794942092319.jpg';
+import flightsMedShip9x16 from '../assets/images/flights_ferries_mediterranean_ship_1794942095727.jpg';
+import flightsMobileEticket9x16 from '../assets/images/flights_ferries_mobile_eticket_1794942092613.jpg';
 
 export type HeroImageKey =
   | 'makkah_haram'
@@ -71,7 +75,11 @@ export type HeroImageKey =
   | 'vip_airport_transfer'
   | 'visa_desk'
   | 'visa_europe'
-  | 'visa_canada';
+  | 'visa_canada'
+  | 'flights_tabs_stress'
+  | 'flights_relaxed_suitcase'
+  | 'flights_mediterranean_ship'
+  | 'flights_mobile_eticket';
 
 export const HERO_MEDIA_MAP: Record<
   HeroImageKey,
@@ -220,6 +228,22 @@ export const HERO_MEDIA_MAP: Record<
   visa_canada: {
     src: visaCanadaImg,
     label: 'Visa Canada & Amérique du Nord — Toronto',
+  },
+  flights_tabs_stress: {
+    src: flightsTabsStress9x16,
+    label: 'Billetterie Reel 9:16 — 15 onglets ouverts (Avion & Bateau)',
+  },
+  flights_relaxed_suitcase: {
+    src: flightsRelaxedSuitcase9x16,
+    label: 'Billetterie Reel 9:16 — Départ serein valise prête & soleil',
+  },
+  flights_mediterranean_ship: {
+    src: flightsMedShip9x16,
+    label: 'Billetterie Reel 9:16 — Avion & Ferry Méditerranée (Tunisie–France/Italie)',
+  },
+  flights_mobile_eticket: {
+    src: flightsMobileEticket9x16,
+    label: 'Billetterie Reel 9:16 — E-billet instantané sur téléphone en 3 clics',
   },
 };
 

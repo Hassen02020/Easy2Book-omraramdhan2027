@@ -5,7 +5,9 @@ import {
   CalendarClock,
   Edit3,
   Eye,
+  FileDown,
   FilePlus2,
+  Film,
   Globe2,
   Layers,
   MoonStar,
@@ -33,6 +35,7 @@ interface StudioDashboardProps {
   onStartUniversePage: (universe: BusinessUniverse) => void;
   onOpenEditor: (pageId: string) => void;
   onPreviewPage: (pageId: string) => void;
+  onDownloadPdf: (pageId: string) => void;
   onSelectTemplate: (template: PageTemplate) => void;
 }
 
@@ -56,6 +59,7 @@ export function StudioDashboard({
   onStartUniversePage,
   onOpenEditor,
   onPreviewPage,
+  onDownloadPdf,
   onSelectTemplate,
 }: StudioDashboardProps) {
   const t = STUDIO_I18N[language];
@@ -121,6 +125,14 @@ export function StudioDashboard({
             >
               <FilePlus2 className="h-4 w-4" />
               {t.actions.newPage}
+            </button>
+            <button
+              type="button"
+              onClick={() => onNavigate('videos')}
+              className="inline-flex items-center gap-2 rounded-xl border border-[#E7B34C]/40 bg-white/10 px-4 py-2.5 text-xs font-bold text-white transition-colors hover:bg-white/15 whitespace-nowrap shrink-0"
+            >
+              <Film className="h-4 w-4 text-[#E7B34C]" />
+              {t.nav.videosStudio}
             </button>
             <button
               type="button"
@@ -224,79 +236,170 @@ export function StudioDashboard({
         </div>
       </section>
 
-      {/* Pages Pilotes Easy2Book (Omra, Excursions Égypte, Excursions Turquie & Services Visa) */}
+      {/* Pages Pilotes Easy2Book + Landing Pages Visa dédiées par type */}
       {(() => {
+        const flagshipIds = new Set([
+          'page-omra-ramadan-2027',
+          'page-excursions-egypte-easy2book',
+          'page-excursions-turquie-easy2book',
+          'page-visas-services-easy2book',
+        ]);
         const pilotPages = pages.filter(
-          (p) =>
-            p.isPilotPage ||
-            p.id === 'page-omra-ramadan-2027' ||
-            p.id === 'page-excursions-egypte-easy2book' ||
-            p.id === 'page-excursions-turquie-easy2book' ||
-            p.id === 'page-visas-services-easy2book'
+          (p) => flagshipIds.has(p.id) || (p.isPilotPage && p.pilotRenderer !== 'visa_category_2026')
         );
-        if (pilotPages.length === 0) return null;
+        const visaCategoryPages = pages.filter(
+          (p) => p.pilotRenderer === 'visa_category_2026'
+        );
         return (
-          <section className="grid gap-4 md:grid-cols-2">
-            {pilotPages.map((pilotPage) => {
-              const isEgypt =
-                pilotPage.pilotRenderer === 'egypt_excursions_2026' ||
-                pilotPage.id === 'page-excursions-egypte-easy2book';
-              const isTurkey =
-                pilotPage.pilotRenderer === 'turkey_excursions_2026' ||
-                pilotPage.id === 'page-excursions-turquie-easy2book';
-              const isVisa =
-                pilotPage.pilotRenderer === 'visa_services_2026' ||
-                pilotPage.id === 'page-visas-services-easy2book';
-              return (
-                <div
-                  key={pilotPage.id}
-                  className="flex flex-col justify-between gap-4 rounded-2xl border border-[#E7B34C]/60 bg-white p-5 shadow-2xs"
-                >
-                  <div className="space-y-1">
+          <>
+            {pilotPages.length > 0 && (
+              <section className="grid gap-4 md:grid-cols-2">
+                {pilotPages.map((pilotPage) => {
+                  const isEgypt =
+                    pilotPage.pilotRenderer === 'egypt_excursions_2026' ||
+                    pilotPage.id === 'page-excursions-egypte-easy2book';
+                  const isTurkey =
+                    pilotPage.pilotRenderer === 'turkey_excursions_2026' ||
+                    pilotPage.id === 'page-excursions-turquie-easy2book';
+                  const isVisa =
+                    pilotPage.pilotRenderer === 'visa_services_2026' ||
+                    pilotPage.id === 'page-visas-services-easy2book';
+                  return (
+                    <div
+                      key={pilotPage.id}
+                      className="flex flex-col justify-between gap-4 rounded-2xl border border-[#E7B34C]/60 bg-white p-5 shadow-2xs"
+                    >
+                      <div className="space-y-1">
+                        <p className="text-[11px] font-bold text-[#C8922A]">
+                          {isVisa
+                            ? `Arborescence Module Visa › ${pilotPage.folderGroup || 'Visas & E-Visa'} · Page Pilote`
+                            : isTurkey
+                              ? `Arborescence Module Turquie › ${pilotPage.folderGroup || 'Excursions Turquie'} · Page Pilote`
+                              : isEgypt
+                                ? `Arborescence Module Égypte › ${pilotPage.folderGroup || 'Excursions Égypte'} · Page Pilote`
+                                : `Arborescence Module Omra › Groupe ${pilotPage.folderGroup || 'Ramadan 2027'} · Page Pilote`}
+                        </p>
+                        <h2 className="text-lg font-extrabold text-[#102D45]">
+                          {pilotPage.title}
+                        </h2>
+                        <p className="text-xs text-slate-600">
+                          {isVisa
+                            ? 'Page pilote arabe RTL avec vidéo 9:16 voix féminine (Layla), export MP4/PDF, 33 formules Visa (+30 DT : Égypte dès 90 DT, Schengen, Dubaï, Qatar, Oman, Omra, Chine, Albanie, Thaïlande, Canada/USA/UK/AU), 53 E-Visa et WhatsApp 98140514.'
+                            : isTurkey
+                              ? 'Page pilote arabe RTL avec vidéo 9:16 voix féminine (Layla), export MP4/PDF, 22 excursions/croisières (+25 DT), Vialand, Pack Antalya, transferts IST/SAW et WhatsApp 98140514.'
+                              : isEgypt
+                                ? 'Page pilote arabe RTL avec vidéo 9:16 voix féminine tunisienne (Layla), export MP4, galerie photos pro, simulateur multi-excursions (175 à 2,425 د.ت) et WhatsApp 98140514.'
+                                : 'Page pilote conservée intégralement avec vidéo 9:16, voix tunisienne Gemini TTS, tarifs 5,900 / 6,400 / 6,900 د.ت, remise famille 200 د.ت, compte à rebours, témoignages et WhatsApp Business 98140514.'}
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => onPreviewPage(pilotPage.id)}
+                          className="inline-flex items-center gap-1.5 rounded-xl bg-[#E7B34C] px-4 py-2.5 text-xs font-bold text-[#102D45] hover:bg-[#f0c264]"
+                        >
+                          <Eye className="h-3.5 w-3.5" />
+                          Ouvrir la Page Pilote
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onOpenEditor(pilotPage.id)}
+                          className="inline-flex items-center gap-1.5 rounded-xl bg-[#102D45] px-4 py-2.5 text-xs font-bold text-white hover:bg-[#1C4967]"
+                        >
+                          <Edit3 className="h-3.5 w-3.5 text-[#E7B34C]" />
+                          Ouvrir dans l’éditeur
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onDownloadPdf(pilotPage.id)}
+                          title="Télécharger toute la page en PDF"
+                          className="inline-flex items-center gap-1.5 rounded-xl border border-[#102D45]/15 bg-[#F5F7FA] px-3.5 py-2.5 text-xs font-bold text-[#102D45] hover:border-[#C8922A] hover:bg-[#FBF9F4]"
+                        >
+                          <FileDown className="h-3.5 w-3.5 text-[#C8922A]" />
+                          Télécharger PDF
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </section>
+            )}
+
+            {visaCategoryPages.length > 0 && (
+              <section className="rounded-2xl border border-[#102D45]/12 bg-white p-5 space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#102D45]/10 pb-3">
+                  <div>
                     <p className="text-[11px] font-bold text-[#C8922A]">
-                      {isVisa
-                        ? `Arborescence Module Visa › ${pilotPage.folderGroup || 'Visas & E-Visa'} · Page Pilote`
-                        : isTurkey
-                          ? `Arborescence Module Turquie › ${pilotPage.folderGroup || 'Excursions Turquie'} · Page Pilote`
-                          : isEgypt
-                            ? `Arborescence Module Égypte › ${pilotPage.folderGroup || 'Excursions Égypte'} · Page Pilote`
-                            : `Arborescence Module Omra › Groupe ${pilotPage.folderGroup || 'Ramadan 2027'} · Page Pilote`}
+                      Même principe que Omra · Vidéo 9:16 + Tarifs + Documents à fournir
                     </p>
-                    <h2 className="text-lg font-extrabold text-[#102D45]">
-                      {pilotPage.title}
+                    <h2 className="text-base font-extrabold text-[#102D45]">
+                      Landing Pages Visa dédiées par type ({visaCategoryPages.length} destinations)
                     </h2>
-                    <p className="text-xs text-slate-600">
-                      {isVisa
-                        ? 'Page pilote arabe RTL avec vidéo 9:16 voix féminine (Layla), export MP4/PDF, 33 formules Visa (+30 DT : Égypte, Schengen, Dubaï, Qatar, Oman, Omra, Chine, Albanie, Thaïlande, Canada/USA/UK/AU), 53 E-Visa et WhatsApp 98140514.'
-                        : isTurkey
-                          ? 'Page pilote arabe RTL avec vidéo 9:16 voix féminine (Layla), export MP4/PDF, 22 excursions/croisières (+25 DT), Vialand, Pack Antalya, transferts IST/SAW et WhatsApp 98140514.'
-                          : isEgypt
-                            ? 'Page pilote arabe RTL avec vidéo 9:16 voix féminine tunisienne (Layla), export MP4, galerie photos pro, simulateur multi-excursions (175 à 2,425 د.ت) et WhatsApp 98140514.'
-                            : 'Page pilote conservée intégralement avec vidéo 9:16, voix tunisienne Gemini TTS, tarifs 5,900 / 6,400 / 6,900 د.ت, remise famille 200 د.ت, compte à rebours, témoignages et WhatsApp Business 98140514.'}
-                    </p>
                   </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => onPreviewPage(pilotPage.id)}
-                      className="inline-flex items-center gap-1.5 rounded-xl bg-[#E7B34C] px-4 py-2.5 text-xs font-bold text-[#102D45] hover:bg-[#f0c264]"
-                    >
-                      <Eye className="h-3.5 w-3.5" />
-                      Ouvrir la Page Pilote
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onOpenEditor(pilotPage.id)}
-                      className="inline-flex items-center gap-1.5 rounded-xl bg-[#102D45] px-4 py-2.5 text-xs font-bold text-white hover:bg-[#1C4967]"
-                    >
-                      <Edit3 className="h-3.5 w-3.5 text-[#E7B34C]" />
-                      Ouvrir dans l’éditeur
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => onNavigate('videos')}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-[#102D45]/15 bg-[#F5F7FA] px-3 py-1.5 text-xs font-bold text-[#102D45] hover:border-[#C8922A]"
+                  >
+                    <Film className="h-3.5 w-3.5 text-[#C8922A]" />
+                    Studio Vidéo 9:16
+                  </button>
                 </div>
-              );
-            })}
-          </section>
+
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  {visaCategoryPages.map((vpg) => (
+                    <div
+                      key={vpg.id}
+                      className={`flex flex-col justify-between gap-3 rounded-xl border p-3.5 transition-colors ${
+                        vpg.id === 'page-visa-egypte-easy2book'
+                          ? 'border-[#C8922A] bg-[#FFFDF7]'
+                          : 'border-[#102D45]/10 bg-[#F5F7FA]/60 hover:border-[#C8922A]/60'
+                      }`}
+                    >
+                      <div className="space-y-1">
+                        <p className="font-mono-tabular text-[10px] font-bold text-[#C8922A]">
+                          {vpg.offerRef.offerCode}
+                        </p>
+                        <h3 className="text-xs font-extrabold text-[#102D45] leading-snug line-clamp-2">
+                          {vpg.title.replace('Easy2Book — ', '')}
+                        </h3>
+                        <p className="text-[11px] font-semibold text-[#1C4967] line-clamp-1">
+                          {vpg.offerRef.cachedSummary.startingPriceLabel}
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => onPreviewPage(vpg.id)}
+                          className="inline-flex items-center gap-1 rounded-lg bg-[#E7B34C] px-2.5 py-1.5 text-[11px] font-bold text-[#102D45] hover:bg-[#f0c264]"
+                        >
+                          <Eye className="h-3 w-3" />
+                          Ouvrir
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onOpenEditor(vpg.id)}
+                          className="inline-flex items-center gap-1 rounded-lg bg-[#102D45] px-2.5 py-1.5 text-[11px] font-bold text-white hover:bg-[#1C4967]"
+                        >
+                          <Edit3 className="h-3 w-3 text-[#E7B34C]" />
+                          Éditer
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onDownloadPdf(vpg.id)}
+                          title="Télécharger PDF"
+                          className="inline-flex items-center gap-1 rounded-lg border border-[#102D45]/15 bg-white px-2 py-1.5 text-[11px] font-bold text-[#102D45] hover:border-[#C8922A]"
+                        >
+                          <FileDown className="h-3 w-3 text-[#C8922A]" />
+                          PDF
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+          </>
         );
       })()}
 
@@ -358,6 +461,15 @@ export function StudioDashboard({
                   </button>
                   <button
                     type="button"
+                    onClick={() => onDownloadPdf(pg.id)}
+                    title="Télécharger la page en PDF"
+                    className="inline-flex items-center gap-1 rounded-lg border border-[#C8922A]/45 bg-[#FBF9F4] px-2.5 py-1.5 text-xs font-semibold text-[#102D45] hover:bg-[#E7B34C]/25"
+                  >
+                    <FileDown className="h-3.5 w-3.5 text-[#C8922A]" />
+                    PDF
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => onOpenEditor(pg.id)}
                     className="inline-flex items-center gap-1 rounded-lg bg-[#102D45] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#1C4967]"
                   >
@@ -385,6 +497,18 @@ export function StudioDashboard({
                 <p className="text-xs font-bold text-[#102D45]">Nouvelle page</p>
                 <p className="mt-0.5 text-[11px] text-slate-500">
                   Page complète ou modules
+                </p>
+              </button>
+              <button
+                type="button"
+                onClick={() => onNavigate('videos')}
+                className="rounded-xl border border-[#E7B34C]/50 bg-[#FFFDF7] p-3 text-start hover:border-[#E7B34C]"
+              >
+                <p className="text-xs font-bold text-[#102D45]">
+                  Vidéos Visas & Excursions
+                </p>
+                <p className="mt-0.5 text-[11px] text-slate-500">
+                  Reels 9:16 + Voix tunisienne
                 </p>
               </button>
               <button

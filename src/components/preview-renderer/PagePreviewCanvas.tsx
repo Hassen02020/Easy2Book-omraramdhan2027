@@ -4,6 +4,7 @@ import type { Page, PageVersionSnapshot } from '../../types/creator';
 import { EgyptExcursionsPilotPage } from '../pilot/EgyptExcursionsPilotPage';
 import { OmraRamadanPilotPage } from '../pilot/OmraRamadanPilotPage';
 import { TurkeyExcursionsPilotPage } from '../pilot/TurkeyExcursionsPilotPage';
+import { VisaCategoryPilotPage } from '../pilot/VisaCategoryPilotPage';
 import { VisaServicesPilotPage } from '../pilot/VisaServicesPilotPage';
 import { BlockRenderer } from './BlockRenderer';
 import { SiteFooter } from './SiteFooter';
@@ -51,7 +52,8 @@ export function PagePreviewCanvas({
     (page.pilotRenderer === 'omra_ramadan_2027' ||
       page.pilotRenderer === 'egypt_excursions_2026' ||
       page.pilotRenderer === 'turkey_excursions_2026' ||
-      page.pilotRenderer === 'visa_services_2026') &&
+      page.pilotRenderer === 'visa_services_2026' ||
+      page.pilotRenderer === 'visa_category_2026') &&
     (forcePilotRender ?? !interactiveEdit);
 
   if (shouldRenderFullPilot) {
@@ -60,7 +62,14 @@ export function PagePreviewCanvas({
         data-brochure-root="true"
         className={`mx-auto ${frameWidthClass} overflow-hidden rounded-2xl border border-[#102D45]/12 bg-white shadow-[0_18px_48px_-12px_rgba(16,45,69,0.16)] transition-all duration-300`}
       >
-        {page.pilotRenderer === 'visa_services_2026' ? (
+        {page.pilotRenderer === 'visa_category_2026' ? (
+          <VisaCategoryPilotPage
+            page={page}
+            snapshot={snapshot}
+            crmConfig={crmConfig}
+            defaultVoiceId={defaultVoiceId}
+          />
+        ) : page.pilotRenderer === 'visa_services_2026' ? (
           <VisaServicesPilotPage
             page={page}
             snapshot={snapshot}

@@ -133,11 +133,16 @@ async function synthesizeVoiceoverWav(params: {
   const persona = VOICE_PERSONA_MAP[voiceName];
   const apiPrebuiltVoice = persona?.prebuiltVoice ?? voiceName;
 
-  const style =
+  const hasArabic = /[\u0600-\u06FF]/.test(script);
+  const rawStyle =
     typeof params.style === "string" && params.style.trim()
       ? params.style.trim().slice(0, 200)
       : persona?.defaultStyle ??
         "Warm, reassuring, inspiring Tunisian Arabic commercial narrator with dignified pacing and clear pronunciation.";
+  const style =
+    !hasArabic && rawStyle.toLowerCase().includes("arabic")
+      ? "Dynamic, energetic, confident French commercial reel narrator with crisp jump-cut pacing, natural pronunciation, and engaging warmth."
+      : rawStyle;
 
   const cacheKey = `${voiceName}::${style}::${script}`;
   const cached = voiceoverCache.get(cacheKey);
@@ -398,48 +403,128 @@ async function startServer() {
           }>)
         : [];
 
-      const preset =
-        req.body?.preset === "egypt_excursions"
-          ? "egypt_excursions"
-          : req.body?.preset === "turkey_excursions"
-            ? "turkey_excursions"
-            : req.body?.preset === "visa_services"
-              ? "visa_services"
-              : "omra";
+      const ALLOWED_PRESETS = new Set([
+        "omra",
+        "flights_ferries",
+        "egypt_excursions",
+        "turkey_excursions",
+        "excursions_general",
+        "visa_services",
+        "visa_schengen",
+        "visa_egypt",
+        "visa_dubai",
+        "visa_qatar",
+        "visa_oman",
+        "visa_omra",
+        "visa_international",
+        "visa_evisa",
+      ]);
+      const preset = ALLOWED_PRESETS.has(req.body?.preset)
+        ? String(req.body.preset)
+        : "omra";
 
       // Resolve scene images (supporting src/assets/images)
-      const imageNames =
-        preset === "visa_services"
-          ? [
-              "visa_travel_desk_1794651030778.jpg",
-              "visa_europe_paris_1794652721585.jpg",
-              "dubai_skyline_luxury_1794652718471.jpg",
-              "visa_canada_toronto_1794678796674.jpg",
-              "easy2book_studio_backdrop_1794604286505.jpg",
-            ]
-          : preset === "turkey_excursions"
-            ? [
-                "turkey_istanbul_reel_9x16_1794695568829.jpg",
-                "turkey_sapanca_reel_9x16_1794695570077.jpg",
-                "egypt_vip_transfer_9x16_1794694254172.jpg",
-                "turkey_bosphorus_reel_9x16_1794695569156.jpg",
-                "easy2book_studio_backdrop_1794604286505.jpg",
-              ]
-            : preset === "egypt_excursions"
-              ? [
-                  "egypt_pyramids_gem_9x16_1794694253332.jpg",
-                  "egypt_nile_cruise_9x16_1794694254619.jpg",
-                  "egypt_vip_transfer_9x16_1794694254172.jpg",
-                  "egypt_islamic_cairo_9x16_1794694254977.jpg",
-                  "easy2book_studio_backdrop_1794604286505.jpg",
-                ]
-              : [
-                  "makkah_haram_sunrise_1794604285606.jpg",
-                  "tunis_jeddah_flight_1794604285597.jpg",
-                  "makkah_maysan_suite_1794604285710.jpg",
-                  "madinah_umbrellas_twilight_1794604286691.jpg",
-                  "easy2book_studio_backdrop_1794604286505.jpg",
-                ];
+      const PRESET_IMAGES_MAP: Record<string, string[]> = {
+        flights_ferries: [
+          "flights_ferries_tabs_stress_1794942092639.jpg",
+          "flights_ferries_relaxed_suitcase_1794942092319.jpg",
+          "flights_ferries_mediterranean_ship_1794942095727.jpg",
+          "flights_ferries_mobile_eticket_1794942092613.jpg",
+          "easy2book_studio_backdrop_1794604286505.jpg",
+        ],
+        visa_egypt: [
+          "egypt_pyramids_gem_9x16_1794694253332.jpg",
+          "egypt_nile_cruise_9x16_1794694254619.jpg",
+          "visa_travel_desk_1794651030778.jpg",
+          "egypt_islamic_cairo_9x16_1794694254977.jpg",
+          "easy2book_studio_backdrop_1794604286505.jpg",
+        ],
+        visa_dubai: [
+          "dubai_skyline_luxury_1794652718471.jpg",
+          "visa_travel_desk_1794651030778.jpg",
+          "airline_business_cabin_1794678794936.jpg",
+          "dubai_skyline_luxury_1794652718471.jpg",
+          "easy2book_studio_backdrop_1794604286505.jpg",
+        ],
+        visa_qatar: [
+          "dubai_skyline_luxury_1794652718471.jpg",
+          "visa_travel_desk_1794651030778.jpg",
+          "airline_business_cabin_1794678794936.jpg",
+          "dubai_skyline_luxury_1794652718471.jpg",
+          "easy2book_studio_backdrop_1794604286505.jpg",
+        ],
+        visa_oman: [
+          "airline_business_cabin_1794678794936.jpg",
+          "visa_travel_desk_1794651030778.jpg",
+          "dubai_skyline_luxury_1794652718471.jpg",
+          "visa_travel_desk_1794651030778.jpg",
+          "easy2book_studio_backdrop_1794604286505.jpg",
+        ],
+        visa_omra: [
+          "makkah_haram_sunrise_1794604285606.jpg",
+          "tunis_jeddah_flight_1794604285597.jpg",
+          "madinah_umbrellas_twilight_1794604286691.jpg",
+          "makkah_maysan_suite_1794604285710.jpg",
+          "easy2book_studio_backdrop_1794604286505.jpg",
+        ],
+        visa_international: [
+          "visa_canada_toronto_1794678796674.jpg",
+          "visa_europe_paris_1794652721585.jpg",
+          "airline_business_cabin_1794678794936.jpg",
+          "visa_travel_desk_1794651030778.jpg",
+          "easy2book_studio_backdrop_1794604286505.jpg",
+        ],
+        visa_evisa: [
+          "visa_travel_desk_1794651030778.jpg",
+          "visa_europe_paris_1794652721585.jpg",
+          "turkey_bosphorus_reel_9x16_1794695569156.jpg",
+          "dubai_skyline_luxury_1794652718471.jpg",
+          "easy2book_studio_backdrop_1794604286505.jpg",
+        ],
+        visa_services: [
+          "visa_travel_desk_1794651030778.jpg",
+          "visa_europe_paris_1794652721585.jpg",
+          "dubai_skyline_luxury_1794652718471.jpg",
+          "visa_canada_toronto_1794678796674.jpg",
+          "easy2book_studio_backdrop_1794604286505.jpg",
+        ],
+        visa_schengen: [
+          "visa_europe_paris_1794652721585.jpg",
+          "visa_travel_desk_1794651030778.jpg",
+          "airline_business_cabin_1794678794936.jpg",
+          "visa_canada_toronto_1794678796674.jpg",
+          "easy2book_studio_backdrop_1794604286505.jpg",
+        ],
+        turkey_excursions: [
+          "turkey_istanbul_reel_9x16_1794695568829.jpg",
+          "turkey_sapanca_reel_9x16_1794695570077.jpg",
+          "egypt_vip_transfer_9x16_1794694254172.jpg",
+          "turkey_bosphorus_reel_9x16_1794695569156.jpg",
+          "easy2book_studio_backdrop_1794604286505.jpg",
+        ],
+        egypt_excursions: [
+          "egypt_pyramids_gem_9x16_1794694253332.jpg",
+          "egypt_nile_cruise_9x16_1794694254619.jpg",
+          "egypt_vip_transfer_9x16_1794694254172.jpg",
+          "egypt_islamic_cairo_9x16_1794694254977.jpg",
+          "easy2book_studio_backdrop_1794604286505.jpg",
+        ],
+        excursions_general: [
+          "egypt_pyramids_gem_9x16_1794694253332.jpg",
+          "turkey_bosphorus_reel_9x16_1794695569156.jpg",
+          "sidi_bou_said_tunisia_1794678794613.jpg",
+          "dubai_skyline_luxury_1794652718471.jpg",
+          "easy2book_studio_backdrop_1794604286505.jpg",
+        ],
+        omra: [
+          "makkah_haram_sunrise_1794604285606.jpg",
+          "tunis_jeddah_flight_1794604285597.jpg",
+          "makkah_maysan_suite_1794604285710.jpg",
+          "madinah_umbrellas_twilight_1794604286691.jpg",
+          "easy2book_studio_backdrop_1794604286505.jpg",
+        ],
+      };
+      const imageNames = PRESET_IMAGES_MAP[preset] || PRESET_IMAGES_MAP.omra;
       const imagePaths = imageNames.map((name) =>
         path.join(__dirname, "src", "assets", "images", name)
       );
@@ -453,8 +538,9 @@ async function startServer() {
       }
 
       // 1. Optional Gemini TTS audio synthesis
+      const baseTotalDuration = preset === "flights_ferries" ? 30 : 48;
       let wavPath: string | null = null;
-      let totalDuration = 48;
+      let totalDuration = baseTotalDuration;
       let hasAudio = false;
 
       if (process.env.GEMINI_API_KEY) {
@@ -505,7 +591,7 @@ async function startServer() {
         startSec: number;
         endSec: number;
       }[] = [];
-      const scale = totalDuration / 48;
+      const scale = totalDuration / baseTotalDuration;
       for (let i = 0; i < Math.min(rawOverlays.length, 10); i++) {
         const ov = rawOverlays[i];
         if (
@@ -525,10 +611,13 @@ async function startServer() {
       }
 
       // 3. Build 5-clip 9:16 timeline with smooth Ken Burns zoom & crossfades
-      const fadeDur = 0.5;
-      const baseSegments = [10, 6.5, 8.5, 11, 12];
+      const fadeDur = preset === "flights_ferries" ? 0.3 : 0.5;
+      const baseSegments =
+        preset === "flights_ferries"
+          ? [3, 5, 10, 7, 5]
+          : [10, 6.5, 8.5, 11, 12];
       const clipDurations = baseSegments.map((s, idx) =>
-        Math.max(2, s * scale + (idx < baseSegments.length - 1 ? fadeDur : 0))
+        Math.max(1.2, s * scale + (idx < baseSegments.length - 1 ? fadeDur : 0))
       );
 
       const fps = 24;
@@ -562,7 +651,7 @@ async function startServer() {
       let timelineCursor = 0;
       for (let i = 1; i < imagePaths.length; i++) {
         timelineCursor += baseSegments[i - 1] * scale;
-        const offset = Math.max(0.5, timelineCursor);
+        const offset = Math.max(0.3, timelineCursor);
         const outLabel = i === imagePaths.length - 1 ? "vbase" : `xf${i}`;
         filters.push(
           `[${prevLabel}][v${i}]xfade=transition=fade:duration=${fadeDur}:offset=${offset.toFixed(3)}[${outLabel}]`
@@ -581,14 +670,27 @@ async function startServer() {
         finalVideoLabel = outLabel;
       });
 
-      const outputFileName =
-        preset === "visa_services"
-          ? `easy2book-visa-${jobId}.mp4`
-          : preset === "turkey_excursions"
-            ? `easy2book-turkey-${jobId}.mp4`
-            : preset === "egypt_excursions"
-              ? `easy2book-egypt-${jobId}.mp4`
-              : `easy2book-omra-2027-${jobId}.mp4`;
+      const PRESET_FILE_SLUGS: Record<string, { prefix: string; label: string }> = {
+        flights_ferries: {
+          prefix: "flights-ferries",
+          label: "Easy2Book-Avion-Bateau-30s-9x16.mp4",
+        },
+        visa_egypt: { prefix: "visa-egypt", label: "Easy2Book-Visa-Egypte-9x16.mp4" },
+        visa_dubai: { prefix: "visa-dubai", label: "Easy2Book-Visa-Dubai-9x16.mp4" },
+        visa_qatar: { prefix: "visa-qatar", label: "Easy2Book-Visa-Qatar-9x16.mp4" },
+        visa_oman: { prefix: "visa-oman", label: "Easy2Book-Visa-Oman-9x16.mp4" },
+        visa_omra: { prefix: "visa-omra", label: "Easy2Book-Visa-Omra-9x16.mp4" },
+        visa_international: { prefix: "visa-intl", label: "Easy2Book-Visa-International-9x16.mp4" },
+        visa_evisa: { prefix: "visa-evisa", label: "Easy2Book-Visa-EVisa-9x16.mp4" },
+        visa_schengen: { prefix: "visa-schengen", label: "Easy2Book-Visa-Schengen-Mobilite-9x16.mp4" },
+        visa_services: { prefix: "visa", label: "Easy2Book-Visas-Services-9x16.mp4" },
+        turkey_excursions: { prefix: "turkey", label: "Easy2Book-Excursions-Turquie-9x16.mp4" },
+        egypt_excursions: { prefix: "egypt", label: "Easy2Book-Excursions-Egypte-9x16.mp4" },
+        excursions_general: { prefix: "excursions", label: "Easy2Book-Excursions-Circuits-9x16.mp4" },
+        omra: { prefix: "omra-2027", label: "Easy2Book-Omra-Ramadan-2027-9x16.mp4" },
+      };
+      const fileSlugMeta = PRESET_FILE_SLUGS[preset] || PRESET_FILE_SLUGS.omra;
+      const outputFileName = `easy2book-${fileSlugMeta.prefix}-${jobId}.mp4`;
       const outputPath = path.join(VIDEOS_DIR, outputFileName);
 
       ffmpegArgs.push(
@@ -634,14 +736,7 @@ async function startServer() {
       return res.json({
         videoId: jobId,
         downloadPath: `/api/video/download/${outputFileName}`,
-        fileName:
-          preset === "visa_services"
-            ? "Easy2Book-Visas-Services-9x16.mp4"
-            : preset === "turkey_excursions"
-              ? "Easy2Book-Excursions-Turquie-9x16.mp4"
-              : preset === "egypt_excursions"
-                ? "Easy2Book-Excursions-Egypte-9x16.mp4"
-                : "Easy2Book-Omra-Ramadan-2027-9x16.mp4",
+        fileName: fileSlugMeta.label,
         sizeBytes: stat.size,
         durationSec: Number(totalDuration.toFixed(1)),
         hasAudio,
@@ -667,7 +762,11 @@ async function startServer() {
   app.get("/api/video/download/:filename", (req, res) => {
     const raw = req.params.filename || "";
     const safeName = path.basename(raw);
-    if (!/^easy2book-(omra-2027|egypt|turkey|visa)-[a-f0-9]+\.mp4$/i.test(safeName)) {
+    if (
+      !/^easy2book-(omra-2027|flights-ferries|egypt|turkey|excursions|visa-egypt|visa-dubai|visa-qatar|visa-oman|visa-omra|visa-intl|visa-evisa|visa-schengen|visa)-[a-f0-9]+\.mp4$/i.test(
+        safeName
+      )
+    ) {
       return res.status(400).json({ error: "Nom de fichier invalide." });
     }
     const targetPath = path.join(VIDEOS_DIR, safeName);
@@ -676,13 +775,29 @@ async function startServer() {
         error: "Vidéo expirée ou introuvable. Veuillez régénérer le lien.",
       });
     }
-    const downloadLabel = safeName.toLowerCase().startsWith("easy2book-visa-")
-      ? "Easy2Book-Visas-Services-9x16.mp4"
-      : safeName.toLowerCase().startsWith("easy2book-turkey-")
-        ? "Easy2Book-Excursions-Turquie-9x16.mp4"
-        : safeName.toLowerCase().startsWith("easy2book-egypt-")
-          ? "Easy2Book-Excursions-Egypte-9x16.mp4"
-          : "Easy2Book-Omra-Ramadan-2027-9x16.mp4";
+    const lowerName = safeName.toLowerCase();
+    const DOWNLOAD_LABELS: [string, string][] = [
+      ["easy2book-flights-ferries-", "Easy2Book-Avion-Bateau-30s-9x16.mp4"],
+      ["easy2book-visa-schengen-", "Easy2Book-Visa-Schengen-Mobilite-9x16.mp4"],
+      ["easy2book-visa-egypt-", "Easy2Book-Visa-Egypte-9x16.mp4"],
+      ["easy2book-visa-dubai-", "Easy2Book-Visa-Dubai-9x16.mp4"],
+      ["easy2book-visa-qatar-", "Easy2Book-Visa-Qatar-9x16.mp4"],
+      ["easy2book-visa-oman-", "Easy2Book-Visa-Oman-9x16.mp4"],
+      ["easy2book-visa-omra-", "Easy2Book-Visa-Omra-9x16.mp4"],
+      ["easy2book-visa-intl-", "Easy2Book-Visa-International-9x16.mp4"],
+      ["easy2book-visa-evisa-", "Easy2Book-Visa-EVisa-9x16.mp4"],
+      ["easy2book-visa-", "Easy2Book-Visas-Services-9x16.mp4"],
+      ["easy2book-turkey-", "Easy2Book-Excursions-Turquie-9x16.mp4"],
+      ["easy2book-egypt-", "Easy2Book-Excursions-Egypte-9x16.mp4"],
+      ["easy2book-excursions-", "Easy2Book-Excursions-Circuits-9x16.mp4"],
+      ["easy2book-omra-2027-", "Easy2Book-Omra-Ramadan-2027-9x16.mp4"],
+    ];
+    const matchedLabel = DOWNLOAD_LABELS.find(([prefix]) =>
+      lowerName.startsWith(prefix)
+    );
+    const downloadLabel = matchedLabel
+      ? matchedLabel[1]
+      : "Easy2Book-Omra-Ramadan-2027-9x16.mp4";
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Cache-Control", "no-store");
     res.setHeader("Content-Type", "video/mp4");

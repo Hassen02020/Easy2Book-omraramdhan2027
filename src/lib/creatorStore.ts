@@ -325,7 +325,7 @@ export function createVersionSnapshot(
 }
 
 export function addBlockToPage(page: Page, type: BlockType): Page {
-  const block = createDefaultBlock(type, page.language);
+  const block = createDefaultBlock(type, page.language, page.universe);
   const formIdx = page.blocks.findIndex((b) => b.type === 'lead_form');
   const footerIdx = page.blocks.findIndex((b) => b.type === 'footer');
   const insertAt =
@@ -446,7 +446,7 @@ export function removeBlockFromPage(page: Page, blockId: string): Page {
 export function resetBlockInPage(page: Page, blockId: string): Page {
   const target = page.blocks.find((b) => b.id === blockId);
   if (!target) return page;
-  const fresh = createDefaultBlock(target.type, page.language);
+  const fresh = createDefaultBlock(target.type, page.language, page.universe);
   fresh.id = target.id;
   return {
     ...page,

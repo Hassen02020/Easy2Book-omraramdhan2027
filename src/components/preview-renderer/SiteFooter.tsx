@@ -88,6 +88,7 @@ export function SiteFooter({
     >
       {interactiveEdit && (
         <div
+          data-pdf-exclude="true"
           className={`pointer-events-none absolute top-2 z-30 ${
             isAr ? 'left-3' : 'right-3'
           } rounded bg-black/60 px-2 py-0.5 text-[10px] font-semibold text-white transition-opacity ${

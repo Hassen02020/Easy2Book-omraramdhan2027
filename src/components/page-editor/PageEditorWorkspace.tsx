@@ -7,18 +7,28 @@ import {
   Copy,
   Eye,
   EyeOff,
+  Film,
   Laptop,
+  Loader2,
   Plus,
   Redo2,
   Rocket,
   RotateCcw,
   Save,
   Smartphone,
+  Sparkles,
   Tablet,
   Trash2,
   Undo2,
   Upload,
 } from 'lucide-react';
+import {
+  getReelConfig,
+  REEL_PRESET_CATALOG,
+  VOICE_OPTIONS,
+  type ReelPresetId,
+} from '../../data/campaignData';
+import { generateVideoDownloadLink } from '../../lib/reelVideoExporter';
 import type { CrmIntegrationConfig } from '../../integration-contracts/crmAdapter';
 import {
   createDefaultBrandIdentity,
@@ -100,6 +110,28 @@ const FONT_OPTIONS = [
   'Cairo',
 ];
 
+function inferDefaultReelPresetForPage(page: Page): ReelPresetId {
+  if (page.universe === 'visa') {
+    if (page.id.includes('visa-egypte')) return 'visa_egypt';
+    if (page.id.includes('visa-dubai')) return 'visa_dubai';
+    if (page.id.includes('visa-qatar')) return 'visa_qatar';
+    if (page.id.includes('visa-oman')) return 'visa_oman';
+    if (page.id.includes('visa-omra')) return 'visa_omra';
+    if (page.id.includes('visa-international')) return 'visa_international';
+    if (page.id.includes('visa-evisa')) return 'visa_evisa';
+    if (page.id.includes('schengen') || page.id.includes('france') || page.id.includes('etudes') || page.id.includes('affaires')) {
+      return 'visa_schengen';
+    }
+    return 'visa_services';
+  }
+  if (page.universe === 'voyages' || page.universe === 'hotels_tunisie') {
+    if (page.id.includes('turquie') || page.id.includes('turkey')) return 'turkey_excursions';
+    if (page.id.includes('egypt')) return 'egypt_excursions';
+    return 'excursions_general';
+  }
+  return 'omra';
+}
+
 export function PageEditorWorkspace({
   page,
   studioLanguage,
@@ -131,6 +163,20 @@ export function PageEditorWorkspace({
     page.blocks[0]?.id ?? null
   );
   const [draggedBlockId, setDraggedBlockId] = useState<string | null>(null);
+  const [galleryGenPreset, setGalleryGenPreset] = useState<ReelPresetId>(() =>
+    inferDefaultReelPresetForPage(page)
+  );
+  const [galleryGenVoice, setGalleryGenVoice] = useState<string>(
+    page.universe === 'visa' ||
+      page.universe === 'voyages' ||
+      page.universe === 'hotels_tunisie'
+      ? 'Layla'
+      : defaultVoiceId || 'Charon'
+  );
+  const [galleryGenerating, setGalleryGenerating] = useState(false);
+  const [galleryGenPct, setGalleryGenPct] = useState(0);
+  const [galleryGenStatus, setGalleryGenStatus] = useState('');
+  const [galleryGenError, setGalleryGenError] = useState<string | null>(null);
 
   // Undo / Redo history stack scoped per active page
   const [undoStack, setUndoStack] = useState<Page[]>([]);
@@ -139,6 +185,16 @@ export function PageEditorWorkspace({
   useEffect(() => {
     setUndoStack([]);
     setRedoStack([]);
+    setPilotRenderMode(page.pilotRenderer ? 'pilot' : 'blocks');
+    setSelectedBlockId(page.blocks[0]?.id ?? null);
+    setGalleryGenPreset(inferDefaultReelPresetForPage(page));
+    setGalleryGenVoice(
+      page.universe === 'visa' ||
+        page.universe === 'voyages' ||
+        page.universe === 'hotels_tunisie'
+        ? 'Layla'
+        : defaultVoiceId || 'Charon'
+    );
   }, [page.id]);
 
   const commitPageChange = useCallback(
@@ -454,6 +510,7 @@ export function PageEditorWorkspace({
             variant="toolbar"
             pageTitle={page.title}
             slug={page.seo.slug}
+            revisionKey={page.updatedAt}
           />
           <button
             type="button"
@@ -765,26 +822,31 @@ export function PageEditorWorkspace({
           {(page.pilotRenderer === 'omra_ramadan_2027' ||
             page.pilotRenderer === 'egypt_excursions_2026' ||
             page.pilotRenderer === 'turkey_excursions_2026' ||
-            page.pilotRenderer === 'visa_services_2026') && (
+            page.pilotRenderer === 'visa_services_2026' ||
+            page.pilotRenderer === 'visa_category_2026') && (
             <div className="mx-auto mb-3 flex max-w-5xl flex-wrap items-center justify-between gap-2 rounded-xl border border-[#E7B34C]/60 bg-white px-4 py-2 text-xs">
               <div className="flex items-center gap-2">
                 <span className="rounded bg-[#E7B34C]/20 px-2 py-0.5 text-[10px] font-bold text-[#102D45]">
-                  {page.pilotRenderer === 'visa_services_2026'
-                    ? `Page Pilote · Visa / ${page.folderGroup || 'Visas & E-Visa'}`
-                    : page.pilotRenderer === 'turkey_excursions_2026'
-                      ? `Page Pilote · Voyages / ${page.folderGroup || 'Excursions Turquie'}`
-                      : page.pilotRenderer === 'egypt_excursions_2026'
-                        ? `Page Pilote · Voyages / ${page.folderGroup || 'Excursions Égypte'}`
-                        : `Page Pilote · Omra / ${page.folderGroup || 'Ramadan 2027'}`}
+                  {page.pilotRenderer === 'visa_category_2026'
+                    ? `Landing Page Visa · ${page.folderGroup || 'Visas par Type'}`
+                    : page.pilotRenderer === 'visa_services_2026'
+                      ? `Page Pilote · Visa / ${page.folderGroup || 'Visas & E-Visa'}`
+                      : page.pilotRenderer === 'turkey_excursions_2026'
+                        ? `Page Pilote · Voyages / ${page.folderGroup || 'Excursions Turquie'}`
+                        : page.pilotRenderer === 'egypt_excursions_2026'
+                          ? `Page Pilote · Voyages / ${page.folderGroup || 'Excursions Égypte'}`
+                          : `Page Pilote · Omra / ${page.folderGroup || 'Ramadan 2027'}`}
                 </span>
                 <span className="font-semibold text-[#102D45]">
-                  {page.pilotRenderer === 'visa_services_2026'
-                    ? 'Easy2Book — خدمات الفيزا و E-Visa'
-                    : page.pilotRenderer === 'turkey_excursions_2026'
-                      ? 'Easy2Book — رحلات تركيا اليومية'
-                      : page.pilotRenderer === 'egypt_excursions_2026'
-                        ? 'Easy2Book — رحلات يومية مصر'
-                        : 'Easy2Book — عمرة رمضان كامل'}
+                  {page.pilotRenderer === 'visa_category_2026'
+                    ? page.title
+                    : page.pilotRenderer === 'visa_services_2026'
+                      ? 'Easy2Book — خدمات الفيزا و E-Visa'
+                      : page.pilotRenderer === 'turkey_excursions_2026'
+                        ? 'Easy2Book — رحلات تركيا اليومية'
+                        : page.pilotRenderer === 'egypt_excursions_2026'
+                          ? 'Easy2Book — رحلات يومية مصر'
+                          : 'Easy2Book — عمرة رمضان كامل'}
                 </span>
               </div>
               <div className="flex items-center rounded-lg border border-[#102D45]/12 bg-[#F5F7FA] p-0.5">
@@ -1791,6 +1853,102 @@ export function PageEditorWorkspace({
                     </div>
                   )}
 
+                  {/* Hero Video 9:16 Preset & Tunisian Script Configurator */}
+                  {selectedBlock.type === 'hero_video' && (() => {
+                    const currentPreset: ReelPresetId =
+                      selectedBlock.content.reelPreset ||
+                      (page.universe === 'visa'
+                        ? 'visa_services'
+                        : page.universe === 'voyages' ||
+                            page.universe === 'hotels_tunisie'
+                          ? 'excursions_general'
+                          : 'omra');
+                    const presetMeta =
+                      REEL_PRESET_CATALOG.find((p) => p.id === currentPreset) ??
+                      REEL_PRESET_CATALOG[0];
+                    const defaultScript = getReelConfig(currentPreset).script;
+                    return (
+                      <div className="rounded-xl border border-[#E7B34C]/40 bg-[#FFFDF7] p-3 space-y-2.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#102D45]">
+                            <Film className="h-3.5 w-3.5 text-[#C8922A]" />
+                            Scénario Reel 9:16 & Voix Tunisienne
+                          </span>
+                          <span className="rounded bg-[#102D45] px-1.5 py-0.5 font-mono text-[9px] font-bold text-[#E7B34C]">
+                            {presetMeta.defaultVoiceId}
+                          </span>
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-semibold text-slate-600 mb-1">
+                            Thème / Preset Vidéo 9:16
+                          </label>
+                          <select
+                            value={currentPreset}
+                            onChange={(e) => {
+                              const nextPreset = e.target.value as ReelPresetId;
+                              updateSelectedBlock((b) => ({
+                                ...b,
+                                content: {
+                                  ...b.content,
+                                  reelPreset: nextPreset,
+                                },
+                              }));
+                            }}
+                            className="w-full rounded-lg border border-[#102D45]/15 bg-white px-2.5 py-1.5 text-xs font-bold text-[#102D45]"
+                          >
+                            {REEL_PRESET_CATALOG.map((p) => (
+                              <option key={p.id} value={p.id}>
+                                {p.titleFr}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <div className="flex items-center justify-between mb-1">
+                            <label className="text-[10px] font-semibold text-slate-600">
+                              Script voix off tunisienne (optionnel)
+                            </label>
+                            {selectedBlock.content.customReelScript && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  updateSelectedBlock((b) => ({
+                                    ...b,
+                                    content: {
+                                      ...b.content,
+                                      customReelScript: undefined,
+                                    },
+                                  }))
+                                }
+                                className="text-[10px] font-bold text-[#1C4967] hover:underline"
+                              >
+                                Réinitialiser
+                              </button>
+                            )}
+                          </div>
+                          <textarea
+                            rows={4}
+                            dir="rtl"
+                            value={
+                              selectedBlock.content.customReelScript ??
+                              defaultScript
+                            }
+                            onChange={(e) =>
+                              updateSelectedBlock((b) => ({
+                                ...b,
+                                content: {
+                                  ...b.content,
+                                  customReelScript: e.target.value,
+                                },
+                              }))
+                            }
+                            className="w-full rounded-lg border border-[#102D45]/15 bg-white px-2.5 py-1.5 text-xs leading-relaxed"
+                          />
+                        </div>
+                      </div>
+                    );
+                  })()}
+
                   {/* Video Gallery Configurator (YouTube / MP4, Autoplay, Loop) */}
                   {selectedBlock.type === 'video_gallery' && (() => {
                     const vs = selectedBlock.content.videoSettings ?? {
@@ -1902,6 +2060,137 @@ export function PageEditorWorkspace({
                           </div>
                         </div>
 
+                        {/* 1-Click Server MP4 Reel Generator & Gallery Attach */}
+                        <div className="rounded-xl border border-[#E7B34C]/50 bg-[#FFFDF7] p-3 space-y-2">
+                          <div className="flex items-center justify-between gap-1.5">
+                            <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#102D45]">
+                              <Sparkles className="h-3.5 w-3.5 text-[#C8922A]" />
+                              Générer & intégrer un Reel MP4
+                            </span>
+                            <span className="text-[9px] font-bold text-[#9A6E1B]">
+                              Visas / Excursions / Omra
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-1 gap-1.5">
+                            <select
+                              value={galleryGenPreset}
+                              onChange={(e) => {
+                                const next = e.target.value as ReelPresetId;
+                                setGalleryGenPreset(next);
+                                const cfg = getReelConfig(next);
+                                setGalleryGenVoice(cfg.defaultVoiceId);
+                              }}
+                              className="w-full rounded-lg border border-[#102D45]/15 bg-white px-2 py-1.5 text-[11px] font-semibold text-[#102D45]"
+                            >
+                              {REEL_PRESET_CATALOG.map((p) => (
+                                <option key={p.id} value={p.id}>
+                                  {p.titleFr}
+                                </option>
+                              ))}
+                            </select>
+                            <select
+                              value={galleryGenVoice}
+                              onChange={(e) => setGalleryGenVoice(e.target.value)}
+                              className="w-full rounded-lg border border-[#102D45]/15 bg-white px-2 py-1.5 text-[11px] text-[#102D45]"
+                            >
+                              {VOICE_OPTIONS.map((v) => (
+                                <option key={v.id} value={v.id}>
+                                  {v.id} · {v.descriptionFr}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <button
+                            type="button"
+                            disabled={galleryGenerating}
+                            onClick={() => {
+                              if (galleryGenerating) return;
+                              setGalleryGenError(null);
+                              setGalleryGenerating(true);
+                              setGalleryGenPct(10);
+                              setGalleryGenStatus('Génération MP4...');
+                              const presetEntry =
+                                REEL_PRESET_CATALOG.find(
+                                  (p) => p.id === galleryGenPreset
+                                ) ?? REEL_PRESET_CATALOG[0];
+                              void generateVideoDownloadLink({
+                                preset: galleryGenPreset,
+                                voiceName: galleryGenVoice,
+                                showCaptions: true,
+                                autoDownload: false,
+                                onProgress: (pct, label) => {
+                                  setGalleryGenPct(pct);
+                                  setGalleryGenStatus(label);
+                                },
+                              })
+                                .then((res) => {
+                                  const inlineUrl = res.downloadPath.startsWith('/')
+                                    ? `${res.downloadPath}?inline=1`
+                                    : res.downloadPath;
+                                  const posterKey =
+                                    galleryGenPreset === 'visa_services' ||
+                                    galleryGenPreset === 'visa_schengen'
+                                      ? 'visa_desk'
+                                      : galleryGenPreset === 'turkey_excursions'
+                                        ? 'turkey_istanbul_reel'
+                                        : galleryGenPreset === 'egypt_excursions'
+                                          ? 'egypt_pyramids_reel'
+                                          : galleryGenPreset === 'excursions_general'
+                                            ? 'dubai_skyline'
+                                            : 'omra_vip_haram';
+                                  updateSelectedBlock((b) => ({
+                                    ...b,
+                                    content: {
+                                      ...b.content,
+                                      videos: [
+                                        ...(b.content.videos ?? []),
+                                        {
+                                          id: `vid-reel-${Date.now().toString(36)}`,
+                                          badge: `Reel 9:16 · ${galleryGenVoice}`,
+                                          title: presetEntry.titleAr,
+                                          caption: `${presetEntry.summaryFr} · MP4 HD (${res.durationSec}s)`,
+                                          url: inlineUrl,
+                                          posterKey,
+                                          aspectRatio: '9:16',
+                                        },
+                                      ],
+                                    },
+                                  }));
+                                })
+                                .catch((err) => {
+                                  setGalleryGenError(
+                                    err instanceof Error
+                                      ? err.message
+                                      : 'Échec de génération MP4.'
+                                  );
+                                })
+                                .finally(() => {
+                                  setGalleryGenerating(false);
+                                });
+                            }}
+                            className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#102D45] px-3 py-2 text-[11px] font-bold text-white hover:bg-[#1C4967] disabled:opacity-60"
+                          >
+                            {galleryGenerating ? (
+                              <>
+                                <Loader2 className="h-3.5 w-3.5 animate-spin text-[#E7B34C]" />
+                                <span>
+                                  {galleryGenStatus} ({galleryGenPct}%)
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                <Film className="h-3.5 w-3.5 text-[#E7B34C]" />
+                                <span>Générer MP4 & ajouter à la galerie</span>
+                              </>
+                            )}
+                          </button>
+                          {galleryGenError && (
+                            <p className="text-[10px] font-semibold text-rose-700">
+                              {galleryGenError}
+                            </p>
+                          )}
+                        </div>
+
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
                             <span className="text-[11px] font-bold text-[#102D45]">
@@ -1918,11 +2207,21 @@ export function PageEditorWorkspace({
                                       ...(b.content.videos ?? []),
                                       {
                                         id: `vid-${Date.now().toString(36)}`,
-                                        badge: 'Omra · Promo',
+                                        badge:
+                                          page.universe === 'visa'
+                                            ? 'Visa · Promo'
+                                            : page.universe === 'voyages'
+                                              ? 'Excursions · Promo'
+                                              : 'Omra · Promo',
                                         title: 'Nouvelle vidéo promotionnelle',
                                         caption: 'Description de la vidéo',
                                         url: '',
-                                        posterKey: 'makkah_haram',
+                                        posterKey:
+                                          page.universe === 'visa'
+                                            ? 'visa_desk'
+                                            : page.universe === 'voyages'
+                                              ? 'egypt_pyramids_museum'
+                                              : 'makkah_haram',
                                         aspectRatio: '16:9',
                                       },
                                     ],

@@ -251,6 +251,22 @@ export interface PageBlock {
     galleryImageKeys?: string[];
     videos?: VideoGalleryItem[];
     videoSettings?: VideoGallerySettings;
+    reelPreset?:
+      | 'omra'
+      | 'visa_services'
+      | 'visa_schengen'
+      | 'visa_egypt'
+      | 'visa_dubai'
+      | 'visa_qatar'
+      | 'visa_oman'
+      | 'visa_omra'
+      | 'visa_international'
+      | 'visa_evisa'
+      | 'egypt_excursions'
+      | 'turkey_excursions'
+      | 'excursions_general'
+      | 'flights_ferries';
+    customReelScript?: string;
     primaryCtaLabel?: string;
     primaryCtaTarget?: string;
     secondaryCtaLabel?: string;
@@ -368,7 +384,9 @@ export interface Page {
     | 'omra_ramadan_2027'
     | 'egypt_excursions_2026'
     | 'turkey_excursions_2026'
-    | 'visa_services_2026';
+    | 'visa_services_2026'
+    | 'visa_category_2026'
+    | 'flights_ferries_2026';
   creationMode?: CreationMode;
   brandIdentity?: BrandIdentity;
   header?: PageHeaderConfig;

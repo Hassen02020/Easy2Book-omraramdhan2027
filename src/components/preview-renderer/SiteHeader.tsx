@@ -183,6 +183,7 @@ export function SiteHeader({
     >
       {interactiveEdit && (
         <div
+          data-pdf-exclude="true"
           className={`pointer-events-none absolute top-1.5 z-40 ${
             isAr ? 'left-3' : 'right-3'
           } rounded bg-[#102D45]/90 px-2 py-0.5 text-[10px] font-semibold text-white transition-opacity ${
