@@ -29,7 +29,15 @@ import {
 import {
   getReelConfig,
   getSocialCaptionBlocks,
-  TOTAL_REEL_DURATION_SEC,
+  VISA_EGYPT_STORYBOARD_ROWS,
+  VISA_EGYPT_TUNISIAN_SCRIPT_DISPLAY,
+  VISA_EVISA_HOOK_ANGLES,
+  VISA_EVISA_LEGAL_DISCLAIMER_AR,
+  VISA_EVISA_LEGAL_DISCLAIMER_FR,
+  VISA_EVISA_MARKETING_ADVICE,
+  VISA_EVISA_RETENTION_TIPS,
+  VISA_EVISA_STORYBOARD_ROWS,
+  VISA_EVISA_TUNISIAN_SCRIPT_DISPLAY,
   VOICE_OPTIONS,
 } from '../../data/campaignData';
 import {
@@ -44,6 +52,11 @@ import {
   type CrmIntegrationConfig,
 } from '../../integration-contracts/crmAdapter';
 import { HERO_MEDIA_MAP, type HeroImageKey } from '../../lib/mediaRegistry';
+import {
+  EVISA_FLAG_CATALOG,
+  RealFlagSvg,
+  type CountryFlagCode,
+} from '../../lib/realCountryFlags';
 import {
   formatFileSize,
   generateVideoDownloadLink,
@@ -73,6 +86,10 @@ const ARABIC_GALLERY_LABELS: Partial<Record<HeroImageKey, string>> = {
   tunis_flight: 'رحلات جوية مباشرة تونس – جدة',
   turkey_antalya_coast: 'أنطاليا والساحل التركي — وجهات السياحة و E-Visa',
   maldives_honeymoon: 'جزر المالديف والوجهات السياحية العالمية',
+  evisa_passport_globe: 'جواز السفر التونسي والكرة الأرضية (0–4 ثوانٍ)',
+  evisa_world_map: 'خريطة العالم ومسارات الوجهات المتاحة إلكترونياً (4–10 ثوانٍ)',
+  evisa_destinations_collage: 'وجهات E-Visa في إفريقيا وآسيا وأوروبا والأمريكيتين (10–23 ثانية)',
+  evisa_mobile_companion: 'مرافقة Easy2Book وتحضير ملف التأشيرة الإلكترونية (23–33 ثانية)',
 };
 
 function decodeBase64ToUint8Array(base64: string): Uint8Array {
@@ -132,8 +149,9 @@ export function VisaCategoryPilotPage({
       ? defaultVoiceId
       : reelConfig.defaultVoiceId;
 
+  const baseReelDuration = Math.max(1, reelConfig.totalDurationSec);
   const [currentTime, setCurrentTime] = useState(0);
-  const [totalDuration, setTotalDuration] = useState(TOTAL_REEL_DURATION_SEC);
+  const [totalDuration, setTotalDuration] = useState(baseReelDuration);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showCaptions, setShowCaptions] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
@@ -151,6 +169,11 @@ export function VisaCategoryPilotPage({
   const [videoLinkCopied, setVideoLinkCopied] = useState(false);
   const [showSocialCaptions, setShowSocialCaptions] = useState(false);
   const [copiedCaptionId, setCopiedCaptionId] = useState<string | null>(null);
+  const [copiedFullScript, setCopiedFullScript] = useState(false);
+  const [selectedEvisaHookId, setSelectedEvisaHookId] = useState<string | null>(
+    null
+  );
+  const [copiedHookId, setCopiedHookId] = useState<string | null>(null);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioUrlMapRef = useRef<Map<string, string>>(new Map());
@@ -164,10 +187,10 @@ export function VisaCategoryPilotPage({
     setAudioActive(false);
     setAudioError(null);
     setCurrentTime(0);
-    setTotalDuration(TOTAL_REEL_DURATION_SEC);
+    setTotalDuration(baseReelDuration);
     setVideoExportResult(null);
     setVideoExportError(null);
-  }, [spec.pageId]);
+  }, [baseReelDuration, spec.pageId]);
 
   useEffect(() => {
     if (defaultVoiceId && defaultVoiceId !== 'Charon') {
@@ -231,16 +254,37 @@ export function VisaCategoryPilotPage({
     };
   }, []);
 
+  const effectiveReelScenes = useMemo(() => {
+    if (spec.presetId !== 'visa_evisa' || !selectedEvisaHookId) {
+      return reelConfig.scenes;
+    }
+    const chosenHook = VISA_EVISA_HOOK_ANGLES.find(
+      (h) => h.id === selectedEvisaHookId
+    );
+    if (!chosenHook) return reelConfig.scenes;
+    return reelConfig.scenes.map((scene, idx) =>
+      idx === 0
+        ? {
+            ...scene,
+            overlayHeadline: chosenHook.screenHeadline,
+            overlayLines: [chosenHook.screenSubline],
+            overlayPosition: 'center' as const,
+          }
+        : scene
+    );
+  }, [reelConfig.scenes, selectedEvisaHookId, spec.presetId]);
+
   const activeScene = useMemo(() => {
     const scaled =
       totalDuration > 0
-        ? (currentTime / totalDuration) * TOTAL_REEL_DURATION_SEC
+        ? (currentTime / totalDuration) * baseReelDuration
         : 0;
     return (
-      reelConfig.scenes.find((s) => scaled >= s.startSec && scaled < s.endSec) ??
-      reelConfig.scenes[0]
+      effectiveReelScenes.find(
+        (s) => scaled >= s.startSec && scaled < s.endSec
+      ) ?? effectiveReelScenes[0]
     );
-  }, [currentTime, reelConfig.scenes, totalDuration]);
+  }, [baseReelDuration, currentTime, effectiveReelScenes, totalDuration]);
 
   const startOrToggleVoiceover = async (forceVoice?: string) => {
     const voice = forceVoice || selectedVoice;
@@ -358,6 +402,7 @@ export function VisaCategoryPilotPage({
         voiceName: selectedVoice,
         showCaptions,
         preset: spec.presetId,
+        scenesOverride: effectiveReelScenes,
         autoDownload: true,
         onProgress: (pct, label) => {
           setVideoExportPct(pct);
@@ -1011,7 +1056,7 @@ export function VisaCategoryPilotPage({
               showCaptions={showCaptions}
               isMuted={isMuted}
               audioActive={audioActive}
-              scenes={reelConfig.scenes}
+              scenes={effectiveReelScenes}
               endBadgeText={reelConfig.endBadgeText}
               secondaryLabelA={reelConfig.secondarySceneLabelA}
               secondaryLabelB={reelConfig.secondarySceneLabelB}
@@ -1022,6 +1067,562 @@ export function VisaCategoryPilotPage({
           </div>
         </div>
       </section>
+
+      {/* DEDICATED VISA EGYPT 24s TUNISIAN VOICEOVER & 5-SCENE MONTAGE */}
+      {spec.presetId === 'visa_egypt' && (
+        <section
+          id="egypt-storyboard"
+          className="border-b border-[#102D45]/10 bg-white py-12"
+        >
+          <div className="mx-auto max-w-[1200px] px-5 space-y-6">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#C8922A]">
+                  <RealFlagSvg code="EG" className="h-3.5 w-5 rounded-[2px] border border-[#102D45]/15" />
+                  <RealFlagSvg code="TN" className="h-3.5 w-5 rounded-[2px] border border-[#102D45]/15" />
+                  <span>
+                    {isAr
+                      ? 'سيناريو الفيديو الإشهاري بالدارجة التونسية (24 ثانية · 5 مشاهد)'
+                      : 'Script Vidéo Promotionnel Dialecte Tunisien (24 s · 5 séquences)'}
+                  </span>
+                </div>
+                <h2 className="mt-1 text-2xl font-extrabold text-[#102D45]">
+                  {isAr
+                    ? 'خطاب الضمان والتصريح الأمني لمصر في 4 ساعات — بدون تعقيد'
+                    : 'Lettre de garantie & autorisation sécuritaire Égypte en 4 heures'}
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(
+                      VISA_EGYPT_TUNISIAN_SCRIPT_DISPLAY
+                    );
+                    setCopiedFullScript(true);
+                    window.setTimeout(() => setCopiedFullScript(false), 1800);
+                  } catch {
+                    // Ignore clipboard error
+                  }
+                }}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-[#102D45]/15 bg-[#FAF9F6] px-3.5 py-2 text-xs font-bold text-[#102D45] transition-colors hover:border-[#C8922A] whitespace-nowrap shrink-0"
+              >
+                {copiedFullScript ? (
+                  <Check className="h-3.5 w-3.5 text-emerald-600" />
+                ) : (
+                  <Copy className="h-3.5 w-3.5 text-[#C8922A]" />
+                )}
+                <span>
+                  {copiedFullScript
+                    ? isAr
+                      ? 'تم نسخ النص'
+                      : 'Script copié'
+                    : isAr
+                      ? 'نسخ نص الفيديو التونسي'
+                      : 'Copier la voix off'}
+                </span>
+              </button>
+            </div>
+
+            <div className="grid gap-6 lg:grid-cols-12 items-start">
+              {/* Interactive 5-Scene Table */}
+              <div className="lg:col-span-7 overflow-hidden rounded-2xl border border-[#102D45]/12 bg-white">
+                <div className="border-b border-[#102D45]/10 bg-[#FAF9F6] px-5 py-3 flex items-center justify-between gap-2">
+                  <span className="text-xs font-extrabold text-[#102D45]">
+                    {isAr
+                      ? 'تقطيع المشاهد الـ 5 (اضغط على أي سطر للانتقال مباشرة إليه في الفيديو)'
+                      : 'Découpage des 5 séquences (cliquez pour aller au timecode)'}
+                  </span>
+                  <span
+                    dir="ltr"
+                    className="font-mono-tabular text-[11px] font-bold text-[#1C4967]"
+                  >
+                    0–24 s
+                  </span>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-start border-collapse text-xs">
+                    <thead>
+                      <tr className="border-b border-[#102D45]/10 bg-white text-[11px] font-bold text-[#1C4967]">
+                        <th className="px-4 py-3 text-start whitespace-nowrap">
+                          {isAr ? 'الوقت' : 'Temps'}
+                        </th>
+                        <th className="px-4 py-3 text-start">
+                          {isAr ? 'المشهد والتعليق الصوتي' : 'Visuel & Voix off'}
+                        </th>
+                        <th className="px-4 py-3 text-start">
+                          {isAr ? 'النص على الشاشة' : "Texte à l'écran"}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#102D45]/8">
+                      {VISA_EGYPT_STORYBOARD_ROWS.map((row) => {
+                        const targetReal =
+                          (row.startSec / baseReelDuration) * totalDuration;
+                        const isRowActive =
+                          activeScene.startSec === row.startSec;
+                        return (
+                          <tr
+                            key={row.id}
+                            onClick={() => handleSelectScene(targetReal)}
+                            className={`cursor-pointer transition-colors ${
+                              isRowActive
+                                ? 'bg-[#FFF9EB]'
+                                : 'hover:bg-[#FAF9F6]'
+                            }`}
+                          >
+                            <td
+                              dir="ltr"
+                              className="px-4 py-3.5 font-mono-tabular font-extrabold text-[#C8922A] whitespace-nowrap align-top"
+                            >
+                              {row.timeRange}
+                            </td>
+                            <td className="px-4 py-3.5 align-top">
+                              <p className="font-bold text-[#102D45]">
+                                {isAr ? row.visualAr : row.visualFr}
+                              </p>
+                              <p
+                                dir="rtl"
+                                className="mt-1 font-arabic text-[11px] leading-relaxed text-slate-600"
+                              >
+                                {row.voiceoverExcerpt}
+                              </p>
+                            </td>
+                            <td
+                              dir="rtl"
+                              className="px-4 py-3.5 font-arabic font-extrabold text-[#102D45] align-top"
+                            >
+                              {row.onScreenText}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Right Column: Full Tunisian Voiceover Script Card */}
+              <div className="lg:col-span-5">
+                <div
+                  dir="rtl"
+                  className="rounded-2xl border border-[#102D45]/12 bg-[#FAF9F6] p-5 space-y-3"
+                >
+                  <p className="text-xs font-extrabold text-[#C8922A]">
+                    🎙️ النص الكامل — خطاب الضمان والتصريح الأمني لمصر
+                  </p>
+                  <p className="font-arabic text-sm leading-loose text-[#102D45] font-semibold whitespace-pre-line">
+                    {VISA_EGYPT_TUNISIAN_SCRIPT_DISPLAY}
+                  </p>
+                  <div className="border-t border-[#102D45]/10 pt-3 flex flex-wrap items-center justify-between gap-2 text-[11px] font-bold text-[#1C4967]">
+                    <span>الوثائق: نسخة الجواز + تذكرة الطائرة</span>
+                    <span dir="ltr" className="font-mono-tabular">
+                      4h · 98 140 514
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* DEDICATED E-VISA 42s TUNISIAN VOICEOVER, MONTAGE STORYBOARD & MARKETING COMPLIANCE */}
+      {spec.presetId === 'visa_evisa' && (
+        <section
+          id="evisa-storyboard"
+          className="border-b border-[#102D45]/10 bg-white py-12"
+        >
+          <div className="mx-auto max-w-[1200px] px-5 space-y-8">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-[#C8922A]">
+                  {isAr
+                    ? 'التعليق الصوتي بالدارجة التونسية · التقطيع المقترح للمونتاج (42 ثانية)'
+                    : 'Voix off — Dialecte tunisien · Découpage conseillé pour le montage (42 s)'}
+                </p>
+                <h2 className="mt-1 text-2xl font-extrabold text-[#102D45]">
+                  {isAr
+                    ? 'سيناريو فيديو E-Visa للجواز التونسي (5 مشاهد متزامنة)'
+                    : 'Scénario vidéo Passeport Tunisien & E-Visa (5 séquences · 42 s)'}
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(
+                      `${reelConfig.script}\n\n${VISA_EVISA_LEGAL_DISCLAIMER_AR}`
+                    );
+                    setCopiedFullScript(true);
+                    window.setTimeout(() => setCopiedFullScript(false), 1800);
+                  } catch {
+                    // Ignore clipboard error
+                  }
+                }}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-[#102D45]/15 bg-[#FAF9F6] px-3.5 py-2 text-xs font-bold text-[#102D45] transition-colors hover:border-[#C8922A] whitespace-nowrap shrink-0"
+              >
+                {copiedFullScript ? (
+                  <Check className="h-3.5 w-3.5 text-emerald-600" />
+                ) : (
+                  <Copy className="h-3.5 w-3.5 text-[#C8922A]" />
+                )}
+                <span>
+                  {copiedFullScript
+                    ? isAr
+                      ? 'تم نسخ النص بالكامل'
+                      : 'Script copié'
+                    : isAr
+                      ? 'نسخ نص التعليق الصوتي التونسي'
+                      : 'Copier la voix off complète'}
+                </span>
+              </button>
+            </div>
+
+            <div className="grid gap-6 lg:grid-cols-12 items-start">
+              {/* Interactive 5-row Montage Table */}
+              <div className="lg:col-span-7 overflow-hidden rounded-2xl border border-[#102D45]/12 bg-white">
+                <div className="border-b border-[#102D45]/10 bg-[#FAF9F6] px-5 py-3 flex items-center justify-between gap-2">
+                  <span className="text-xs font-extrabold text-[#102D45]">
+                    {isAr
+                      ? 'التقطيع المقترح للمونتاج (اضغط على أي مشهد للانتقال إليه في الفيديو)'
+                      : 'Découpage conseillé pour le montage (cliquez sur une ligne pour aller au timecode)'}
+                  </span>
+                  <span
+                    dir="ltr"
+                    className="font-mono-tabular text-[11px] font-bold text-[#1C4967]"
+                  >
+                    0–42 s
+                  </span>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-start border-collapse text-xs">
+                    <thead>
+                      <tr className="border-b border-[#102D45]/10 bg-white text-[11px] font-bold text-[#1C4967]">
+                        <th className="px-4 py-3 text-start whitespace-nowrap">
+                          {isAr ? 'الوقت' : 'Temps'}
+                        </th>
+                        <th className="px-4 py-3 text-start">
+                          {isAr ? 'الصورة المعروضة' : 'Image à afficher'}
+                        </th>
+                        <th className="px-4 py-3 text-start">
+                          {isAr ? 'النص على الشاشة' : "Texte à l'écran"}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#102D45]/8">
+                      {VISA_EVISA_STORYBOARD_ROWS.map((row) => {
+                        const targetReal =
+                          (row.startSec / baseReelDuration) * totalDuration;
+                        const isRowActive =
+                          activeScene.startSec === row.startSec;
+                        return (
+                          <tr
+                            key={row.id}
+                            onClick={() => handleSelectScene(targetReal)}
+                            className={`cursor-pointer transition-colors ${
+                              isRowActive
+                                ? 'bg-[#FFF9EB]'
+                                : 'hover:bg-[#FAF9F6]'
+                            }`}
+                          >
+                            <td
+                              dir="ltr"
+                              className="px-4 py-3.5 font-mono-tabular font-extrabold text-[#C8922A] whitespace-nowrap align-top"
+                            >
+                              {row.timeRange}
+                            </td>
+                            <td className="px-4 py-3.5 align-top">
+                              <p className="font-bold text-[#102D45]">
+                                {isAr ? row.visualAr : row.visualFr}
+                              </p>
+                              {row.id === 'ev-sb-1' && (
+                                <div className="mt-1.5 inline-flex items-center gap-1.5 rounded-md border border-[#102D45]/10 bg-[#FAF9F6] px-2 py-0.5 text-[10px] font-bold text-[#102D45]">
+                                  <RealFlagSvg code="TN" className="h-3 w-4.5 rounded-[2px]" />
+                                  <span>
+                                    {isAr
+                                      ? 'جواز سفر تونسي أخضر أصلي'
+                                      : 'Passeport tunisien vert authentique'}
+                                  </span>
+                                </div>
+                              )}
+                              {row.id === 'ev-sb-3' && (
+                                <div dir="ltr" className="mt-2 flex flex-wrap gap-1.5">
+                                  {(
+                                    [
+                                      'RW',
+                                      'TZ',
+                                      'CM',
+                                      'QA',
+                                      'BH',
+                                      'VN',
+                                      'UZ',
+                                      'AL',
+                                      'CO',
+                                      'BS',
+                                    ] as CountryFlagCode[]
+                                  ).map((code) => (
+                                    <span
+                                      key={code}
+                                      className="inline-flex items-center gap-1 rounded border border-[#102D45]/10 bg-[#FAF9F6] px-1.5 py-0.5 text-[10px] font-semibold text-[#102D45]"
+                                    >
+                                      <RealFlagSvg code={code} className="h-3 w-4.5 rounded-[1px]" />
+                                      <span>{EVISA_FLAG_CATALOG[code].nameFr}</span>
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                              <p
+                                dir="rtl"
+                                className="mt-1.5 font-arabic text-[11px] leading-relaxed text-slate-600"
+                              >
+                                {row.voiceoverExcerpt}
+                              </p>
+                            </td>
+                            <td
+                              dir="ltr"
+                              className="px-4 py-3.5 font-extrabold text-[#102D45] whitespace-nowrap align-top"
+                            >
+                              {row.onScreenText}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Right Column: Full Finalized Tunisian Script + Mandatory Disclaimer + Marketing Advice */}
+              <div className="lg:col-span-5 space-y-4">
+                <div
+                  dir="rtl"
+                  className="rounded-2xl border border-[#102D45]/12 bg-[#FAF9F6] p-5 space-y-3"
+                >
+                  <p className="text-xs font-extrabold text-[#C8922A]">
+                    🎙️ النص النهائي — Voice Over باللهجة التونسية
+                  </p>
+                  <p className="font-arabic text-xs leading-relaxed text-[#102D45] font-medium whitespace-pre-line">
+                    {VISA_EVISA_TUNISIAN_SCRIPT_DISPLAY}
+                  </p>
+                  <div className="border-t border-[#102D45]/10 pt-3 space-y-1">
+                    <p className="font-arabic text-[11px] font-bold leading-relaxed text-[#1C4967]">
+                      {VISA_EVISA_LEGAL_DISCLAIMER_AR}
+                    </p>
+                    <p
+                      dir="ltr"
+                      className="text-[11px] leading-relaxed text-slate-600"
+                    >
+                      {VISA_EVISA_LEGAL_DISCLAIMER_FR}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-[#C8922A]/35 bg-[#FFFDF7] p-5 space-y-2.5">
+                  <div className="flex items-center gap-2 text-xs font-extrabold text-[#102D45]">
+                    <ShieldCheck className="h-4 w-4 text-[#C8922A] shrink-0" />
+                    <span>
+                      {isAr
+                        ? VISA_EVISA_MARKETING_ADVICE.titleAr
+                        : VISA_EVISA_MARKETING_ADVICE.titleFr}
+                    </span>
+                  </div>
+                  <p className="text-xs leading-relaxed text-[#102D45]/90">
+                    {isAr
+                      ? VISA_EVISA_MARKETING_ADVICE.detailAr
+                      : VISA_EVISA_MARKETING_ADVICE.detailFr}
+                  </p>
+                  <p className="text-[11px] font-bold text-[#1C4967]">
+                    {isAr
+                      ? 'الصياغة المعتمدة: « وجهات متاحة بإجراءات تأشيرة إلكترونية »'
+                      : `Formulation retenue : « ${VISA_EVISA_MARKETING_ADVICE.recommendedFr} »`}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* 4 Opening Hook Angles (0–3 s) + 3-Second Retention Playbook */}
+            <div className="space-y-5 border-t border-[#102D45]/10 pt-8">
+              <div className="flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-[#C8922A]">
+                    {isAr
+                      ? '4 زوايا افتتاحية (أول 3 ثوانٍ) لرفع المشاهدة والتفاعل'
+                      : '4 angles d’accroche (0–3 s) à tester pour maximiser la rétention'}
+                  </p>
+                  <h3 className="mt-1 text-xl font-extrabold text-[#102D45]">
+                    {isAr
+                      ? 'اختر زاوية Hook لمعاينتها فوراً في الفيديو 9:16'
+                      : 'Choisissez un angle de Hook pour le prévisualiser sur le Reel 9:16'}
+                  </h3>
+                </div>
+                {selectedEvisaHookId && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedEvisaHookId(null);
+                      handleSelectScene(0);
+                    }}
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-[#102D45]/15 bg-[#FAF9F6] px-3 py-1.5 text-xs font-bold text-[#102D45] hover:border-[#C8922A] whitespace-nowrap shrink-0"
+                  >
+                    <RotateCcw className="h-3.5 w-3.5 text-[#C8922A]" />
+                    <span>
+                      {isAr
+                        ? 'العودة للافتتاحية الافتراضية'
+                        : 'Revenir à l’accroche par défaut'}
+                    </span>
+                  </button>
+                )}
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                {VISA_EVISA_HOOK_ANGLES.map((angle) => {
+                  const isSelected = selectedEvisaHookId === angle.id;
+                  return (
+                    <article
+                      key={angle.id}
+                      className={`rounded-2xl border p-5 transition-colors space-y-3 ${
+                        isSelected
+                          ? 'border-[#C8922A] bg-[#FFFDF7]'
+                          : 'border-[#102D45]/12 bg-white hover:border-[#C8922A]/60'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <div className="flex items-center gap-2 text-[11px] font-bold text-[#C8922A]">
+                            <span className="font-mono-tabular">
+                              HOOK {angle.numberLabel}
+                            </span>
+                            <span aria-hidden="true">·</span>
+                            <span>{angle.tagFr}</span>
+                          </div>
+                          <h4 className="mt-1 text-sm font-extrabold text-[#102D45]">
+                            {isAr ? angle.titleAr : angle.titleFr}
+                          </h4>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            try {
+                              await navigator.clipboard.writeText(
+                                angle.hookVoiceoverFr
+                              );
+                              setCopiedHookId(angle.id);
+                              window.setTimeout(
+                                () => setCopiedHookId(null),
+                                1600
+                              );
+                            } catch {
+                              // Ignore clipboard error
+                            }
+                          }}
+                          className="inline-flex items-center gap-1 rounded-lg border border-[#102D45]/12 bg-[#FAF9F6] px-2.5 py-1 text-[11px] font-bold text-[#102D45] hover:border-[#C8922A] shrink-0"
+                        >
+                          {copiedHookId === angle.id ? (
+                            <Check className="h-3 w-3 text-emerald-600" />
+                          ) : (
+                            <Copy className="h-3 w-3 text-[#C8922A]" />
+                          )}
+                          <span>
+                            {copiedHookId === angle.id
+                              ? isAr
+                                ? 'نُسخ'
+                                : 'Copié'
+                              : isAr
+                                ? 'نسخ'
+                                : 'Copier'}
+                          </span>
+                        </button>
+                      </div>
+
+                      <div className="space-y-2 text-xs leading-relaxed">
+                        <p className="text-slate-700">
+                          <span className="font-bold text-[#102D45]">
+                            {isAr ? 'الصورة / المشهد : ' : 'Visuel : '}
+                          </span>
+                          {isAr ? angle.visualAr : angle.visualFr}
+                        </p>
+                        <p
+                          dir="ltr"
+                          className="rounded-xl border border-[#102D45]/10 bg-[#FAF9F6] px-3.5 py-2.5 font-bold text-[#102D45]"
+                        >
+                          {angle.hookVoiceoverFr}
+                        </p>
+                        <p className="text-slate-600">
+                          <span className="font-bold text-[#1C4967]">
+                            {isAr ? 'لماذا ينجح : ' : 'Pourquoi ça marche : '}
+                          </span>
+                          {isAr ? angle.whyItWorksAr : angle.whyItWorksFr}
+                        </p>
+                      </div>
+
+                      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#102D45]/10 pt-3">
+                        <span
+                          dir="ltr"
+                          className="text-[11px] font-semibold text-[#1C4967]"
+                        >
+                          {angle.sfxCueFr}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedEvisaHookId(angle.id);
+                            handleSelectScene(0);
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                          }}
+                          className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-extrabold transition-colors whitespace-nowrap ${
+                            isSelected
+                              ? 'bg-[#102D45] text-[#F6D365]'
+                              : 'bg-[#E7B34C] text-[#102D45] hover:bg-[#f0c264]'
+                          }`}
+                        >
+                          <Play className="h-3.5 w-3.5" />
+                          <span>
+                            {isSelected
+                              ? isAr
+                                ? 'مُطبّق في الفيديو (0–4 ث)'
+                                : 'Actif sur le Reel (0–4 s)'
+                              : isAr
+                                ? 'معاينة هذا الـ Hook'
+                                : 'Tester sur le Reel'}
+                          </span>
+                        </button>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+
+              {/* Retention Playbook for the First 3 Seconds */}
+              <div className="rounded-2xl border border-[#102D45]/15 bg-[#102D45] p-5 text-white space-y-3">
+                <div className="flex items-center gap-2 text-sm font-extrabold text-[#F6D365]">
+                  <Sparkles className="h-4 w-4 shrink-0" />
+                  <span>
+                    {isAr
+                      ? '💡 نصيحة لمضاعفة الاحتفاظ بالمشاهد في أول 3 ثوانٍ'
+                      : '💡 Astuce pour maximiser la rétention sur les 3 premières secondes'}
+                  </span>
+                </div>
+                <div className="grid gap-3 md:grid-cols-2">
+                  {VISA_EVISA_RETENTION_TIPS.map((tip) => (
+                    <div
+                      key={tip.id}
+                      className="rounded-xl border border-white/15 bg-white/8 p-4 space-y-1.5"
+                    >
+                      <p className="text-xs font-extrabold text-[#F6D365]">
+                        {isAr ? tip.titleAr : tip.titleFr}
+                      </p>
+                      <p className="text-xs leading-relaxed text-slate-200">
+                        {isAr ? tip.detailAr : tip.detailFr}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* OFFICIAL TARIFFS TABLE & REQUIRED DOCUMENTS */}
       <section

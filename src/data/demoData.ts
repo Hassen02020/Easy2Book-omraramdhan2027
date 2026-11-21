@@ -1,3 +1,4 @@
+import { createDefaultBrandIdentity } from '../lib/commerceModulesCatalog';
 import { HERO_MEDIA_MAP } from '../lib/mediaRegistry';
 import studioBackdropImg from '../assets/images/easy2book_studio_backdrop_1794604286505.jpg';
 import type {
@@ -510,6 +511,78 @@ export const DEMO_MEDIA_ASSETS: MediaAsset[] = [
     src: HERO_MEDIA_MAP.dubai_skyline.src,
     aspectRatio: '9:16',
     tags: ['excursions', 'reel', '9:16', 'dubai', 'circuits'],
+    isDemoAsset: true,
+  },
+  {
+    id: 'media-flights-tabs-stress',
+    title: 'Reel Avion & Bateau 9:16 — Scène 1 : STOP aux 15 onglets ouverts',
+    universe: 'voyages',
+    src: HERO_MEDIA_MAP.flights_tabs_stress.src,
+    aspectRatio: '9:16',
+    tags: ['avion', 'bateau', 'reel', '9:16', 'billetterie'],
+    isDemoAsset: true,
+  },
+  {
+    id: 'media-flights-relaxed-suitcase',
+    title: 'Reel Avion & Bateau 9:16 — Scène 2 : Clap détendu, valise prête',
+    universe: 'voyages',
+    src: HERO_MEDIA_MAP.flights_relaxed_suitcase.src,
+    aspectRatio: '9:16',
+    tags: ['avion', 'bateau', 'reel', '9:16', 'voyage'],
+    isDemoAsset: true,
+  },
+  {
+    id: 'media-flights-med-ship',
+    title: 'Reel Avion & Bateau 9:16 — Scène 3 : Traversées Méditerranée & Ferries',
+    universe: 'voyages',
+    src: HERO_MEDIA_MAP.flights_mediterranean_ship.src,
+    aspectRatio: '9:16',
+    tags: ['bateau', 'ferry', 'mediterranee', '9:16'],
+    isDemoAsset: true,
+  },
+  {
+    id: 'media-flights-mobile-eticket',
+    title: 'Reel Avion & Bateau 9:16 — Scène 4 : E-billet en 3 clics sur mobile',
+    universe: 'voyages',
+    src: HERO_MEDIA_MAP.flights_mobile_eticket.src,
+    aspectRatio: '9:16',
+    tags: ['ebillet', 'mobile', 'avion', 'bateau', '9:16'],
+    isDemoAsset: true,
+  },
+  {
+    id: 'media-evisa-passport-globe',
+    title: 'Reel E-Visa 9:16 — 0–4 s : Passeport tunisien + globe',
+    universe: 'visa',
+    src: HERO_MEDIA_MAP.evisa_passport_globe.src,
+    aspectRatio: '9:16',
+    tags: ['e-visa', 'passeport', 'tunisie', 'reel', '9:16'],
+    isDemoAsset: true,
+  },
+  {
+    id: 'media-evisa-world-map',
+    title: 'Reel E-Visa 9:16 — 4–10 s : Carte du monde & connexions',
+    universe: 'visa',
+    src: HERO_MEDIA_MAP.evisa_world_map.src,
+    aspectRatio: '9:16',
+    tags: ['e-visa', 'carte', 'monde', 'reel', '9:16'],
+    isDemoAsset: true,
+  },
+  {
+    id: 'media-evisa-destinations-collage',
+    title: 'Reel E-Visa 9:16 — 10–23 s : Destinations E-Visa (Afrique, Asie, Europe, Amériques)',
+    universe: 'visa',
+    src: HERO_MEDIA_MAP.evisa_destinations_collage.src,
+    aspectRatio: '9:16',
+    tags: ['e-visa', 'destinations', 'rwanda', 'vietnam', 'albanie', '9:16'],
+    isDemoAsset: true,
+  },
+  {
+    id: 'media-evisa-mobile-companion',
+    title: 'Reel E-Visa 9:16 — 23–33 s : Accompagnement Easy2Book & téléphone',
+    universe: 'visa',
+    src: HERO_MEDIA_MAP.evisa_mobile_companion.src,
+    aspectRatio: '9:16',
+    tags: ['e-visa', 'accompagnement', 'easy2book', '9:16'],
     isDemoAsset: true,
   },
 ];
@@ -2889,14 +2962,15 @@ const VISA_EVISA_BLOCKS: PageBlock[] = [
     'blk-vev-hero-vid',
     'hero_video',
     'visa',
-    'Vidéo 9:16 · Albanie, Thaïlande & 53 E-Visa',
+    'Vidéo 9:16 (42s) · Passeport Tunisien & Formalités E-Visa',
     {
-      eyebrow: 'EASY2BOOK · NOUVELLES DESTINATIONS & 53 E-VISA',
-      title: 'Albanie (380 DT), Thaïlande (130 DT) & 53 Destinations E-Visa',
-      description: 'Albanie avec traduction anglaise Easy2Book incluse (380 DT), Thaïlande (130 DT) et 53 E-Visa sur demande.',
-      imageKey: 'visa_desk',
+      eyebrow: 'EASY2BOOK · PASSEPORT TUNISIEN · FORMALITÉS ÉLECTRONIQUES (E-VISA)',
+      title: 'Des destinations accessibles avec des formalités électroniques (E-Visa)',
+      description:
+        'Rwanda, Tanzanie, Cameroun, Qatar, Bahreïn, Vietnam, Ouzbékistan, Albanie (380 DT), Colombie, Bahamas, Thaïlande (130 DT) et +50 destinations E-Visa. Un E-Visa reste une demande officielle soumise aux autorités du pays concerné.',
+      imageKey: 'evisa_passport_globe',
       reelPreset: 'visa_evisa',
-      primaryCtaLabel: 'Demander mon E-Visa',
+      primaryCtaLabel: 'Demander mon accompagnement E-Visa',
       primaryCtaTarget: '#form-block',
       secondaryCtaLabel: '98 140 514',
     },
@@ -2907,15 +2981,16 @@ const VISA_EVISA_BLOCKS: PageBlock[] = [
       'blk-vev-tariffs',
       'voyage_pricing',
       'visa',
-      'Tarifs Albanie, Thaïlande & 53 E-Visa',
+      'Tarifs E-Visa & Formalités Électroniques',
       {
-        eyebrow: 'ALBANIE · THAÏLANDE · 53 E-VISA',
-        title: 'E-Visas & Nouvelles Destinations',
-        description: 'Traduction officielle vers l’anglais assurée par Easy2Book pour l’Albanie.',
+        eyebrow: 'E-VISA • VISA EN LIGNE',
+        title: 'Des destinations accessibles avec des formalités électroniques',
+        description:
+          'Easy2Book vous accompagne pour comprendre les procédures, vérifier les pièces et préparer votre demande E-Visa.',
         items: [
           { id: 'vev-1', badge: 'Traduction incluse', title: 'Visa Albanie (frais + traduction en anglais par Easy2Book)', subtitle: 'Passeport, relevé 12 mois, dossier salarié/commerçant', price: '380 DT' },
           { id: 'vev-2', badge: 'Touristique', title: 'Visa Thaïlande', subtitle: 'Passeport, relevé 6 mois, photo, billet, réservation hôtel', price: '130 DT' },
-          { id: 'vev-3', badge: '53 Pays', title: '53 Destinations E-Visa sur demande', subtitle: 'Singapour, Vietnam, Tanzanie, Colombie, Kazakhstan, etc.', price: 'Sur demande' },
+          { id: 'vev-3', badge: 'Formalités électroniques', title: 'Destinations E-Visa sur demande (Afrique, Asie, Europe, Amériques)', subtitle: 'Rwanda, Tanzanie, Cameroun, Qatar, Bahreïn, Vietnam, Ouzbékistan, Colombie, Bahamas…', price: 'Sur demande' },
         ],
       },
       { backgroundColor: '#FFFFFF' }
@@ -2926,11 +3001,11 @@ const VISA_EVISA_BLOCKS: PageBlock[] = [
     'blk-vev-docs',
     'visa_documents',
     'visa',
-    'DOCUMENTS À FOURNIR · Albanie & Thaïlande',
+    'DOCUMENTS À FOURNIR · E-Visa',
     {
       eyebrow: 'DOCUMENTS À FOURNIR',
       title: 'Pièces par destination E-Visa',
-      description: 'Envoyez vos pièces pour devis ou dépôt immédiat.',
+      description: 'Les conditions varient selon le pays, la nationalité et la durée du séjour.',
       items: [
         { id: 'vev-d1', title: 'Albanie (380 DT)', subtitle: 'Passeport, relevé bancaire 12 mois + attestation de travail/CNSS ou patente/RNE/quittance', badge: 'Traduction incluse' },
         { id: 'vev-d2', title: 'Thaïlande (130 DT)', subtitle: 'Passeport, relevé bancaire 6 mois, photo, billet d’avion & réservation hôtel', badge: 'Touristique' },
@@ -2944,9 +3019,131 @@ const VISA_EVISA_BLOCKS: PageBlock[] = [
     'common',
     'Formulaire E-Visa',
     {
-      eyebrow: 'Easy2Book · 98 140 514',
-      title: 'Demandez votre E-Visa (Albanie, Thaïlande ou 53 pays)',
-      description: 'Indiquez la destination souhaitée.',
+      eyebrow: 'Easy2Book · خطوتك الأولى نحو العالم · 98 140 514',
+      title: 'Demandez votre accompagnement E-Visa',
+      description: 'Indiquez votre destination : la décision finale appartient toujours aux autorités du pays concerné.',
+    }
+  ),
+];
+
+const FLIGHTS_FERRIES_BLOCKS: PageBlock[] = [
+  blockBase(
+    'blk-ff-hero-vid',
+    'hero_video',
+    'voyages',
+    'Vidéo Promo 30s · Billet d’Avion & Bateau',
+    {
+      eyebrow: 'RUBRIQUE BILLET D’AVION & BATEAUX · VIDÉO 30s (9:16)',
+      title: '15 onglets ouverts juste pour réserver un billet d’avion ou de bateau ? Arrête tout de suite.',
+      description:
+        'Sur Easy2Book, toutes les compagnies aériennes et maritimes sont au même endroit. Pas de frais surprises à la fin : ton e-billet en 3 clics.',
+      imageKey: 'flights_tabs_stress',
+      reelPreset: 'flights_ferries',
+      primaryCtaLabel: 'Réserve sur Easy2Book 👇',
+      primaryCtaTarget: '#form-block',
+      secondaryCtaLabel: '98 140 514',
+    },
+    { backgroundColor: '#FAF9F6', paddingY: 'spacious' }
+  ),
+  {
+    ...blockBase(
+      'blk-ff-flights-module',
+      'module_flights',
+      'voyages',
+      'Billetterie Aérienne · Vols Express & Internationaux',
+      {
+        eyebrow: 'AVION ✈️ · COMPARATEUR MULTI-COMPAGNIES',
+        title: 'Vols express, directs et correspondances en 3 clics',
+        description:
+          'Comparez toutes les compagnies aériennes (Tunisair, Nouvelair, Air France, Transavia, Emirates, Turkish Airlines...) au même endroit sans frais surprises.',
+        items: [
+          {
+            id: 'ff-v1',
+            badge: 'Vol express',
+            title: 'Tunis / Monastir / Djerba ↔ Paris, Lyon, Marseille, Nice',
+            subtitle: 'Comparatif temps réel · bagage cabine ou soute inclus selon choix',
+            price: 'Sur devis',
+          },
+          {
+            id: 'ff-v2',
+            badge: 'Europe & Italie',
+            title: 'Tunisie ↔ Rome, Milan, Francfort, Madrid & Londres',
+            subtitle: 'Émission e-billet immédiate sans frais cachés',
+            price: 'Sur devis',
+          },
+          {
+            id: 'ff-v3',
+            badge: 'Moyen-Orient',
+            title: 'Tunis ↔ Istanbul, Le Caire, Dubaï, Djeddah & Doha',
+            subtitle: 'Idéal vacances, affaires, visas et Omra',
+            price: 'Sur devis',
+          },
+        ],
+      },
+      { backgroundColor: '#FFFFFF' }
+    ),
+    anchorId: 'module-vols',
+  },
+  {
+    ...blockBase(
+      'blk-ff-ferries-module',
+      'module_ferries',
+      'voyages',
+      'Bateaux & Ferries · Traversées Méditerranée',
+      {
+        eyebrow: 'BATEAU ⛴️ · TRAVERSÉES MÉDITERRANÉE & ÎLES',
+        title: 'Tunisie ↔ France / Italie & traversées d’été',
+        description:
+          'Réservez CTN, Corsica Linea, GNV et Grimaldi Lines (La Goulette ↔ Marseille, Gênes, Civitavecchia, Palerme, Salerne) avec cabine ou fauteuil et véhicule.',
+        items: [
+          {
+            id: 'ff-b1',
+            badge: 'Tunisie–France',
+            title: 'La Goulette ↔ Marseille (CTN · Corsica Linea)',
+            subtitle: 'Passagers, cabine familiale ou véhicule embarqué',
+            price: 'Sur devis',
+          },
+          {
+            id: 'ff-b2',
+            badge: 'Tunisie–Italie',
+            title: 'La Goulette ↔ Gênes / Civitavecchia / Palerme',
+            subtitle: 'Traversées d’été et liaisons régulières GNV & Grimaldi',
+            price: 'Sur devis',
+          },
+          {
+            id: 'ff-b3',
+            badge: 'Îles & Combiné',
+            title: 'Traversées îles & combinés Vol + Bateau',
+            subtitle: 'E-billet embarquement immédiat directement sur téléphone',
+            price: 'Sur devis',
+          },
+        ],
+      },
+      { backgroundColor: '#F5F7FA' }
+    ),
+    anchorId: 'module-bateaux',
+  },
+  blockBase(
+    'blk-ff-whatsapp',
+    'whatsapp_button',
+    'common',
+    'Assistance WhatsApp Billetterie 98 140 514',
+    {
+      eyebrow: 'WHATSAPP DIRECT · 98 140 514',
+      title: 'Émission express Avion ou Bateau sur WhatsApp',
+      description: 'Recevez votre e-billet sans frais surprises sur votre téléphone.',
+      primaryCtaLabel: 'Réserver sur WhatsApp · 98 140 514',
+    }
+  ),
+  blockBase(
+    'blk-ff-form',
+    'lead_form',
+    'common',
+    'Formulaire Billetterie Avion & Bateau',
+    {
+      eyebrow: 'Easy2Book · The easiest way to travel',
+      title: 'Réserve ton prochain départ Avion ou Bateau en 3 clics',
+      description: 'Indiquez votre trajet (Avion, Bateau ou Combiné), vos dates et le nombre de passagers.',
     }
   ),
 ];
@@ -3343,19 +3540,36 @@ export const DEMO_TEMPLATES: PageTemplate[] = [
   },
   {
     id: 'tpl-visa-evisa-easy2book',
-    name: 'Albanie (380 DT), Thaïlande (130 DT) & 53 E-Visa · Vidéo 9:16',
+    name: 'Passeport Tunisien · Destinations E-Visa & Vidéo 42s (9:16)',
     universe: 'visa',
     description:
-      'Landing page dédiée Albanie (traduction Easy2Book incluse), Thaïlande et explorateur interactif des 53 pays E-Visa + vidéo 9:16.',
-    styleTag: 'E-Visa 53 Pays · Vidéo 9:16',
+      'Landing page dédiée aux destinations accessibles avec des formalités électroniques (E-Visa), voix off dialecte tunisien 42s, découpage 5 séquences et explorateur interactif.',
+    styleTag: 'E-Visa 42s · Vidéo 9:16',
     trendSegment: 'Conversion Vidéo',
-    targetAudience: 'Voyageurs Nouvelles Destinations & E-Visa',
+    targetAudience: 'Voyageurs Passeport Tunisien & Formalités Électroniques',
     recommendedGroup: 'Visas par Type',
     supportedLanguages: ['fr', 'ar', 'en'],
     defaultLanguage: 'fr',
-    previewImageKey: 'visa_desk',
+    previewImageKey: 'evisa_passport_globe',
     defaultBlocks: VISA_EVISA_BLOCKS,
     defaultForm: makeForm('fr', 'visa-evisa'),
+  },
+  // === UNIVERS BILLETTERIE AVION & BATEAU ===
+  {
+    id: 'tpl-billetterie-avion-bateau-easy2book',
+    name: "Billetterie Avion & Bateau · Vidéo Promo 30s (9:16)",
+    universe: 'voyages',
+    description:
+      "Landing page dédiée Rubrique Billet d'Avion & Bateaux avec scénario vidéo 30s (STOP 15 onglets → Avion/Bateau → 3 clics), comparateur vols & traversées Méditerranée.",
+    styleTag: 'Avion & Bateau · Vidéo 30s',
+    trendSegment: 'Conversion Vidéo',
+    targetAudience: 'Voyageurs Vols Express, Traversées Méditerranée & Familles',
+    recommendedGroup: 'Billetterie Avion & Bateau',
+    supportedLanguages: ['fr', 'ar', 'en'],
+    defaultLanguage: 'fr',
+    previewImageKey: 'flights_mediterranean_ship',
+    defaultBlocks: FLIGHTS_FERRIES_BLOCKS,
+    defaultForm: makeForm('fr', 'billetterie-avion-bateau'),
   },
 ];
 
@@ -4829,7 +5043,7 @@ export const DEMO_PAGES: Page[] = [
 
   buildDemoPage({
     id: 'page-visa-evisa-easy2book',
-    title: 'Easy2Book — Albanie (380 DT), Thaïlande (130 DT) & 53 Destinations E-Visa · Vidéo 9:16',
+    title: 'Easy2Book — Passeport Tunisien · E-Visa & Formalités Électroniques (Vidéo 42s)',
     universe: 'visa',
     folderGroup: 'Visas par Type',
     isPilotPage: true,
@@ -4837,7 +5051,7 @@ export const DEMO_PAGES: Page[] = [
     creationMode: 'full_page',
     brandIdentity: {
       brandName: 'Easy2Book',
-      tagline: 'Centrale Visas & Réservations',
+      tagline: 'Centrale Visas & Formalités Électroniques',
       logoSrc: '/assets/aistudio/logo_transparent_e9918557.png',
       isProvisionalLogo: false,
       primaryColor: '#102D45',
@@ -4862,8 +5076,8 @@ export const DEMO_PAGES: Page[] = [
       showLogo: true,
       showBrandName: true,
       navLinks: [
-        { id: 'nav-ev-1', label: 'Albanie & Thaïlande', target: '#tarifs' },
-        { id: 'nav-ev-2', label: '53 Pays E-Visa', target: '#visa-documents' },
+        { id: 'nav-ev-1', label: 'Scénario 42s', target: '#evisa-storyboard' },
+        { id: 'nav-ev-2', label: 'Tarifs E-Visa', target: '#tarifs' },
         { id: 'nav-ev-3', label: 'Demander', target: '#form-block' },
       ],
       ctaLabel: '98 140 514',
@@ -4875,7 +5089,8 @@ export const DEMO_PAGES: Page[] = [
     footer: {
       enabled: true,
       showLogo: true,
-      companyDescription: 'Easy2Book — Albanie (380 DT avec traduction anglaise), Thaïlande (130 DT) et 53 destinations E-Visa sur demande.',
+      companyDescription:
+        'Easy2Book — Des destinations accessibles avec des formalités électroniques (E-Visa) pour passeport tunisien. Les conditions varient selon le pays et la décision finale relève des autorités concernées.',
       navLinks: [{ id: 'ft-ev-1', label: 'Tarifs E-Visa', target: '#tarifs' }],
       phone: '98 140 514',
       whatsapp: '98 140 514',
@@ -4883,17 +5098,17 @@ export const DEMO_PAGES: Page[] = [
       address: 'Tunisie · Centrale Easy2Book',
       socialLinks: {},
       legalLinks: {},
-      copyrightText: '© 2026 Easy2Book · Centrale de Réservation · 98 140 514',
+      copyrightText: '© 2026 Easy2Book · خطوتك الأولى نحو العالم · 98 140 514',
     },
     commerceModules: ['visa'],
     templateId: 'tpl-visa-evisa-easy2book',
-    language: 'fr',
+    language: 'ar',
     isDemoData: true,
     createdAt: '2026-11-15T10:05:00Z',
-    updatedAt: '2026-11-15T10:10:00Z',
+    updatedAt: '2026-11-20T05:10:00Z',
     publication: {
       status: 'published',
-      publishedAt: '2026-11-15T10:10:00Z',
+      publishedAt: '2026-11-20T05:10:00Z',
       publishedBy: 'Équipe Studio Easy2Book',
     },
     offerRef: {
@@ -4901,33 +5116,133 @@ export const DEMO_PAGES: Page[] = [
       externalSourceName: 'Catalogue Visas Easy2Book',
       universe: 'visa',
       offerCode: 'VISA-EVS-2026',
-      displayLabel: 'Albanie (380 DT), Thaïlande (130 DT) & 53 Destinations E-Visa',
+      displayLabel: 'Des destinations accessibles avec des formalités électroniques (E-Visa)',
       cachedSummary: {
-        startingPriceLabel: 'Thaïlande 130 DT · Albanie 380 DT · 53 E-Visa',
-        datesOrValidity: 'Traitement numérique rapide',
-        availabilityLabel: '53 destinations E-Visa consultables en ligne',
-        conditionsSummary: 'Traduction en anglais incluse pour l’Albanie · 98 140 514',
+        startingPriceLabel: 'Thaïlande 130 DT · Albanie 380 DT · +50 E-Visa',
+        datesOrValidity: 'Accompagnement E-Visa en ligne · 42 s',
+        availabilityLabel: 'Afrique, Asie, Europe & Amériques sur demande',
+        conditionsSummary: 'Décision finale des autorités du pays concerné · 98 140 514',
       },
       syncMode: 'external_reference',
     },
     seo: {
       slug: 'visa-evisa-easy2book',
-      metaTitle: 'Easy2Book — Visa Albanie (380 DT), Thaïlande (130 DT) & 53 E-Visa + Vidéo 9:16',
-      metaDescription: 'Visa Albanie avec traduction anglaise incluse, Visa Thaïlande et explorateur interactif des 53 destinations E-Visa.',
-      ogTitle: 'Albanie, Thaïlande & 53 E-Visa — Easy2Book · 98 140 514',
-      ogDescription: 'À partir de 130 DT avec vidéo 9:16 et brochure PDF.',
+      metaTitle: 'Easy2Book — Passeport Tunisien & E-Visa · Formalités Électroniques (Vidéo 42s)',
+      metaDescription:
+        'Des destinations accessibles avec des formalités électroniques (Rwanda, Tanzanie, Cameroun, Qatar, Bahreïn, Vietnam, Ouzbékistan, Albanie, Colombie, Bahamas). Vidéo 9:16 voix tunisienne 42s.',
+      ogTitle: 'Passeport Tunisien · E-Visa en ligne — Easy2Book · 98 140 514',
+      ogDescription: 'Vidéo 42s en dialecte tunisien, découpage 5 séquences et accompagnement E-Visa.',
       canonicalPath: '/p/visa-evisa-easy2book',
       noIndex: false,
     },
     attribution: {
-      acquisitionSource: 'Offre Directe Easy2Book',
+      acquisitionSource: 'Campagne Reels E-Visa Easy2Book',
       utmSource: 'easy2book',
-      utmMedium: 'catalogue',
-      utmCampaign: 'visa_evisa_2026',
-      utmContent: 'direct_98140514',
+      utmMedium: 'reels_tiktok',
+      utmCampaign: 'visa_evisa_passeport_tn_2026',
+      utmContent: 'voix_tunisienne_42s',
     },
-    form: makeForm('fr', 'visa-evisa'),
+    form: makeForm('ar', 'visa-evisa'),
     blocks: VISA_EVISA_BLOCKS,
+  }),
+
+  buildDemoPage({
+    id: 'page-billetterie-avion-bateau-easy2book',
+    title: "Easy2Book — Billet d'Avion & Bateau (Vidéo Promo 30s · 3 Clics)",
+    universe: 'voyages',
+    folderGroup: 'Billetterie Avion & Bateau',
+    isPilotPage: true,
+    pilotRenderer: 'flights_ferries_2026',
+    creationMode: 'full_page',
+    brandIdentity: {
+      ...createDefaultBrandIdentity({
+        brandName: 'Easy2Book',
+        tagline: 'The easiest way to travel · Avion & Bateau',
+        logoSrc: '/assets/aistudio/logo_transparent_e9918557.png',
+        visualStyle: 'premium',
+      }),
+    },
+    header: {
+      enabled: true,
+      variant: 'premium',
+      sticky: true,
+      showLogo: true,
+      showBrandName: true,
+      navLinks: [
+        { id: 'nav-ff-1', label: 'Vidéo 30s', target: '#video-promo' },
+        { id: 'nav-ff-2', label: 'Scénario & Conseils', target: '#scenario-tournage' },
+        { id: 'nav-ff-3', label: 'Avion & Bateau', target: '#configurateur' },
+        { id: 'nav-ff-4', label: 'Réserver', target: '#form-block' },
+      ],
+      ctaLabel: 'Réserve sur Easy2Book · 98 140 514',
+      ctaTarget: '#form-block',
+      showWhatsapp: true,
+      whatsappNumber: '98 140 514',
+      whatsappLabel: 'WhatsApp 98 140 514',
+    },
+    footer: {
+      enabled: true,
+      showLogo: true,
+      companyDescription:
+        "Easy2Book — Billetterie Avion & Bateaux : toutes les compagnies aériennes et traversées Méditerranée (Tunisie–France/Italie, îles) au même endroit, sans frais surprises, ton e-billet en 3 clics.",
+      navLinks: [
+        { id: 'ft-ff-1', label: 'Vidéo 30s (9:16)', target: '#video-promo' },
+        { id: 'ft-ff-2', label: 'Scénario & Tournage', target: '#scenario-tournage' },
+        { id: 'ft-ff-3', label: 'Comparateur Avion & Bateau', target: '#configurateur' },
+      ],
+      phone: '98 140 514',
+      whatsapp: '98 140 514',
+      email: 'contact@easy2book.tn',
+      address: 'Tunisie · Centrale Billetterie Avion & Maritime Easy2Book',
+      socialLinks: {},
+      legalLinks: {},
+      copyrightText: '© 2026 Easy2Book · The easiest way to travel · 98 140 514',
+    },
+    commerceModules: ['flights', 'ferries'],
+    templateId: 'tpl-billetterie-avion-bateau-easy2book',
+    language: 'fr',
+    isDemoData: true,
+    createdAt: '2026-11-17T10:00:00Z',
+    updatedAt: '2026-11-17T10:30:00Z',
+    publication: {
+      status: 'published',
+      publishedAt: '2026-11-17T10:30:00Z',
+      publishedBy: 'Équipe Studio Easy2Book',
+    },
+    offerRef: {
+      externalOfferId: 'CAT-BILLETTERIE-2026',
+      externalSourceName: 'Centrale Billetterie Avion & Bateau Easy2Book',
+      universe: 'voyages',
+      offerCode: 'FF-3CLICS-2026',
+      displayLabel: 'Avion ✈️ & Bateau ⛴️ · Toutes compagnies au même endroit (3 clics)',
+      cachedSummary: {
+        startingPriceLabel: 'Comparatif temps réel · 0 frais surprises · Tarif sur devis',
+        datesOrValidity: 'Vols express & traversées été / toute l’année',
+        availabilityLabel: 'Tunisie–France/Italie, îles & vols internationaux',
+        conditionsSummary: 'E-billet directement dans ton téléphone · 98 140 514',
+      },
+      syncMode: 'external_reference',
+    },
+    seo: {
+      slug: 'billetterie-avion-bateau-easy2book',
+      metaTitle: "Easy2Book — Billet d'Avion & Bateau en 3 clics (Vidéo Promo 30s · 9:16)",
+      metaDescription:
+        "STOP aux 15 onglets ouverts ! Comparez toutes les compagnies aériennes et maritimes (Tunisie-France/Italie, îles) au même endroit sur Easy2Book. Pas de frais surprises, e-billet sur téléphone.",
+      ogTitle: "Avion ✈️ ou Bateau ⛴️ ? Ton billet en 3 clics — Easy2Book · 98 140 514",
+      ogDescription:
+        'Vidéo promotionnelle 30s 9:16, scénario & conseils de tournage, comparateur Avion/Bateau et export MP4/PDF.',
+      canonicalPath: '/p/billetterie-avion-bateau-easy2book',
+      noIndex: false,
+    },
+    attribution: {
+      acquisitionSource: 'Campagne Reels/TikTok Billetterie Easy2Book',
+      utmSource: 'easy2book',
+      utmMedium: 'reels_tiktok',
+      utmCampaign: 'avion_bateau_3clics_2026',
+      utmContent: 'promo_30s_98140514',
+    },
+    form: makeForm('fr', 'billetterie-avion-bateau'),
+    blocks: FLIGHTS_FERRIES_BLOCKS,
   }),
 ];
 

@@ -41,6 +41,15 @@ const voiceoverCache = new Map<string, CachedAudio>();
 const DEFAULT_SCRIPT =
   "تحب تعيش روحانية شهر رمضان الكل في مكة المكرمة، وإنت مرتاح البال ومن غير حتى تعب؟ مع Easy2Book، حضرنالك برنامج عمرة شهر رمضان كامل: طيران تونس جدة تونس، فيزا، وتأطير كامل مع مرشدين مرافقين ليكم خطوة بخطوة، وإقامة مريحة في فندق ميسان الملتزم، وزيد معاهم رحلة للمدينة المنورة! الأسعار تبدأ من خمسة آلاف وتسعمية دينار للشخص في غرفة رباعية أو خماسية، ستة آلاف وأربعمية دينار في غرفة ثلاثية، وستة آلاف وتسعمية دينار في غرفة ثنائية... مع تخفيض ميتين دينار للعائلات انطلاقاً من شخصين! وللمجموعات أكثر من عشرة أشخاص كلمونا للحصول على الإمكانية. عدد الغرف محدود جداً والعرض صالح لـ خمسطاش ديسمبر ألفين وستة وعشرين! كلمنا توا على ثمانية وتسعين، مية وأربعين، خمس مية وأربعطاش، ولا احجز على easy2book.tn. Easy2Book... سفرتك أسهل!";
 
+const DEFAULT_FLIGHTS_FERRIES_SCRIPT =
+  "15 onglets ouverts juste pour réserver un billet d’avion ou de bateau ? Arrête tout de suite. Que tu partes par les airs ou par la mer, il y a beaucoup plus simple. Sur Easy2Book, toutes les compagnies aériennes et maritimes sont au même endroit. Que ce soit pour un vol express ou ta traversée d’été en Méditerranée, Tunisie-France, Italie ou les îles, tu compares, tu choisis ton tarif, et c’est réservé en quelques secondes. Pas de frais surprises à la fin, ton billet est directement dans ton téléphone. Easy2Book, the easiest way to travel. Prépare tes valises, clique sur le lien et réserve ton prochain départ maintenant.";
+
+const DEFAULT_VISA_EVISA_SCRIPT =
+  "تحب تسافر وتكتشف العالم؟ وعندك Passeport تونسي؟ اسمع المعلومة هاذي! فمّا برشا وجهات في العالم تنجم تقدّم على الفيزا متاعها إلكترونياً، من غير ما تبدأ بالإجراءات التقليدية متاع السفارة. من إفريقيا لآسيا، ومن أوروبا للأمريكيتين… وجهات مختلفة تستنّاك! كيف رواندا، تنزانيا، الكاميرون، قطر، البحرين، فيتنام، أوزبكستان، ألبانيا، كولومبيا، والبهاماس! مع Easy2Book، نعاونك تفهم إجراءات التأشيرة، تعرف الوثائق المطلوبة، وتحضّر مطلبك بطريقة أسهل. ما تخليش إجراءات الفيزا توقف أحلامك! Easy2Book — خطوتك الأولى نحو العالم! ابعثلنا توّة، واسألنا على وجهتك!";
+
+const DEFAULT_VISA_EGYPT_SCRIPT =
+  "مبرمج مشية لمصر ومطلوب عليك خطاب ضمان؟ ابعث تسكرتك ونسخة من باسبورك! مطار الإنطلاق تونس أو أي مكان في العالم، مطار الوصول القاهرة، الغردقة، شرم الشيخ! في أربع ساعات يكون عندك تصريح أمني وضمان من غير حتى تعقيد. معانا، Easy2Book... سفرتك أسهل!";
+
 const ALLOWED_VOICES = new Set([
   "Elias",
   "Layla",
@@ -434,9 +443,9 @@ async function startServer() {
         ],
         visa_egypt: [
           "egypt_pyramids_gem_9x16_1794694253332.jpg",
+          "evisa_green_passport_globe_1795182883677.jpg",
+          "airline_business_cabin_1794678794936.jpg",
           "egypt_nile_cruise_9x16_1794694254619.jpg",
-          "visa_travel_desk_1794651030778.jpg",
-          "egypt_islamic_cairo_9x16_1794694254977.jpg",
           "easy2book_studio_backdrop_1794604286505.jpg",
         ],
         visa_dubai: [
@@ -475,10 +484,10 @@ async function startServer() {
           "easy2book_studio_backdrop_1794604286505.jpg",
         ],
         visa_evisa: [
-          "visa_travel_desk_1794651030778.jpg",
-          "visa_europe_paris_1794652721585.jpg",
-          "turkey_bosphorus_reel_9x16_1794695569156.jpg",
-          "dubai_skyline_luxury_1794652718471.jpg",
+          "evisa_green_passport_globe_1795182883677.jpg",
+          "evisa_world_map_routes_1795179879338.jpg",
+          "evisa_destinations_collage_1795179879370.jpg",
+          "evisa_mobile_companion_1795179881635.jpg",
           "easy2book_studio_backdrop_1794604286505.jpg",
         ],
         visa_services: [
@@ -538,7 +547,14 @@ async function startServer() {
       }
 
       // 1. Optional Gemini TTS audio synthesis
-      const baseTotalDuration = preset === "flights_ferries" ? 30 : 48;
+      const baseTotalDuration =
+        preset === "flights_ferries"
+          ? 30
+          : preset === "visa_evisa"
+            ? 42
+            : preset === "visa_egypt"
+              ? 24
+              : 48;
       let wavPath: string | null = null;
       let totalDuration = baseTotalDuration;
       let hasAudio = false;
@@ -552,7 +568,13 @@ async function startServer() {
           const customScript =
             typeof req.body?.script === "string" && req.body.script.trim()
               ? req.body.script.trim()
-              : DEFAULT_SCRIPT;
+              : preset === "flights_ferries"
+                ? DEFAULT_FLIGHTS_FERRIES_SCRIPT
+                : preset === "visa_evisa"
+                  ? DEFAULT_VISA_EVISA_SCRIPT
+                  : preset === "visa_egypt"
+                    ? DEFAULT_VISA_EGYPT_SCRIPT
+                    : DEFAULT_SCRIPT;
           const tts = await synthesizeVoiceoverWav({
             script: customScript,
             voiceName,
@@ -611,11 +633,20 @@ async function startServer() {
       }
 
       // 3. Build 5-clip 9:16 timeline with smooth Ken Burns zoom & crossfades
-      const fadeDur = preset === "flights_ferries" ? 0.3 : 0.5;
+      const fadeDur =
+        preset === "flights_ferries" ||
+        preset === "visa_evisa" ||
+        preset === "visa_egypt"
+          ? 0.3
+          : 0.5;
       const baseSegments =
         preset === "flights_ferries"
           ? [3, 5, 10, 7, 5]
-          : [10, 6.5, 8.5, 11, 12];
+          : preset === "visa_evisa"
+            ? [4, 6, 13, 10, 9]
+            : preset === "visa_egypt"
+              ? [5, 4, 5, 5, 5]
+              : [10, 6.5, 8.5, 11, 12];
       const clipDurations = baseSegments.map((s, idx) =>
         Math.max(1.2, s * scale + (idx < baseSegments.length - 1 ? fadeDur : 0))
       );
@@ -675,13 +706,19 @@ async function startServer() {
           prefix: "flights-ferries",
           label: "Easy2Book-Avion-Bateau-30s-9x16.mp4",
         },
-        visa_egypt: { prefix: "visa-egypt", label: "Easy2Book-Visa-Egypte-9x16.mp4" },
+        visa_egypt: {
+          prefix: "visa-egypt",
+          label: "Easy2Book-Visa-Egypte-4h-24s-9x16.mp4",
+        },
         visa_dubai: { prefix: "visa-dubai", label: "Easy2Book-Visa-Dubai-9x16.mp4" },
         visa_qatar: { prefix: "visa-qatar", label: "Easy2Book-Visa-Qatar-9x16.mp4" },
         visa_oman: { prefix: "visa-oman", label: "Easy2Book-Visa-Oman-9x16.mp4" },
         visa_omra: { prefix: "visa-omra", label: "Easy2Book-Visa-Omra-9x16.mp4" },
         visa_international: { prefix: "visa-intl", label: "Easy2Book-Visa-International-9x16.mp4" },
-        visa_evisa: { prefix: "visa-evisa", label: "Easy2Book-Visa-EVisa-9x16.mp4" },
+        visa_evisa: {
+          prefix: "visa-evisa",
+          label: "Easy2Book-Passeport-Tunisien-EVisa-42s-9x16.mp4",
+        },
         visa_schengen: { prefix: "visa-schengen", label: "Easy2Book-Visa-Schengen-Mobilite-9x16.mp4" },
         visa_services: { prefix: "visa", label: "Easy2Book-Visas-Services-9x16.mp4" },
         turkey_excursions: { prefix: "turkey", label: "Easy2Book-Excursions-Turquie-9x16.mp4" },
@@ -779,13 +816,13 @@ async function startServer() {
     const DOWNLOAD_LABELS: [string, string][] = [
       ["easy2book-flights-ferries-", "Easy2Book-Avion-Bateau-30s-9x16.mp4"],
       ["easy2book-visa-schengen-", "Easy2Book-Visa-Schengen-Mobilite-9x16.mp4"],
-      ["easy2book-visa-egypt-", "Easy2Book-Visa-Egypte-9x16.mp4"],
+      ["easy2book-visa-egypt-", "Easy2Book-Visa-Egypte-4h-24s-9x16.mp4"],
       ["easy2book-visa-dubai-", "Easy2Book-Visa-Dubai-9x16.mp4"],
       ["easy2book-visa-qatar-", "Easy2Book-Visa-Qatar-9x16.mp4"],
       ["easy2book-visa-oman-", "Easy2Book-Visa-Oman-9x16.mp4"],
       ["easy2book-visa-omra-", "Easy2Book-Visa-Omra-9x16.mp4"],
       ["easy2book-visa-intl-", "Easy2Book-Visa-International-9x16.mp4"],
-      ["easy2book-visa-evisa-", "Easy2Book-Visa-EVisa-9x16.mp4"],
+      ["easy2book-visa-evisa-", "Easy2Book-Passeport-Tunisien-EVisa-42s-9x16.mp4"],
       ["easy2book-visa-", "Easy2Book-Visas-Services-9x16.mp4"],
       ["easy2book-turkey-", "Easy2Book-Excursions-Turquie-9x16.mp4"],
       ["easy2book-egypt-", "Easy2Book-Excursions-Egypte-9x16.mp4"],

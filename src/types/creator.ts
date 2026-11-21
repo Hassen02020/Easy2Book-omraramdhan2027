@@ -104,6 +104,7 @@ export type BlockType =
   | 'visa_documents'
   | 'visa_steps'
   | 'visa_faq'
+  | 'module_visa_egypt'
   // Universal Travel Commerce Modules
   | 'module_hotels_search'
   | 'module_flights'

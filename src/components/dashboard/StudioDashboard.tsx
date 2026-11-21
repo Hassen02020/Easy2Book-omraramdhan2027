@@ -243,6 +243,7 @@ export function StudioDashboard({
           'page-excursions-egypte-easy2book',
           'page-excursions-turquie-easy2book',
           'page-visas-services-easy2book',
+          'page-billetterie-avion-bateau-easy2book',
         ]);
         const pilotPages = pages.filter(
           (p) => flagshipIds.has(p.id) || (p.isPilotPage && p.pilotRenderer !== 'visa_category_2026')
@@ -255,6 +256,9 @@ export function StudioDashboard({
             {pilotPages.length > 0 && (
               <section className="grid gap-4 md:grid-cols-2">
                 {pilotPages.map((pilotPage) => {
+                  const isFlightsFerries =
+                    pilotPage.pilotRenderer === 'flights_ferries_2026' ||
+                    pilotPage.id === 'page-billetterie-avion-bateau-easy2book';
                   const isEgypt =
                     pilotPage.pilotRenderer === 'egypt_excursions_2026' ||
                     pilotPage.id === 'page-excursions-egypte-easy2book';
@@ -271,25 +275,29 @@ export function StudioDashboard({
                     >
                       <div className="space-y-1">
                         <p className="text-[11px] font-bold text-[#C8922A]">
-                          {isVisa
-                            ? `Arborescence Module Visa › ${pilotPage.folderGroup || 'Visas & E-Visa'} · Page Pilote`
-                            : isTurkey
-                              ? `Arborescence Module Turquie › ${pilotPage.folderGroup || 'Excursions Turquie'} · Page Pilote`
-                              : isEgypt
-                                ? `Arborescence Module Égypte › ${pilotPage.folderGroup || 'Excursions Égypte'} · Page Pilote`
-                                : `Arborescence Module Omra › Groupe ${pilotPage.folderGroup || 'Ramadan 2027'} · Page Pilote`}
+                          {isFlightsFerries
+                            ? `Arborescence Module Billetterie › ${pilotPage.folderGroup || 'Billetterie Avion & Bateau'} · Page Pilote`
+                            : isVisa
+                              ? `Arborescence Module Visa › ${pilotPage.folderGroup || 'Visas & E-Visa'} · Page Pilote`
+                              : isTurkey
+                                ? `Arborescence Module Turquie › ${pilotPage.folderGroup || 'Excursions Turquie'} · Page Pilote`
+                                : isEgypt
+                                  ? `Arborescence Module Égypte › ${pilotPage.folderGroup || 'Excursions Égypte'} · Page Pilote`
+                                  : `Arborescence Module Omra › Groupe ${pilotPage.folderGroup || 'Ramadan 2027'} · Page Pilote`}
                         </p>
                         <h2 className="text-lg font-extrabold text-[#102D45]">
                           {pilotPage.title}
                         </h2>
                         <p className="text-xs text-slate-600">
-                          {isVisa
-                            ? 'Page pilote arabe RTL avec vidéo 9:16 voix féminine (Layla), export MP4/PDF, 33 formules Visa (+30 DT : Égypte dès 90 DT, Schengen, Dubaï, Qatar, Oman, Omra, Chine, Albanie, Thaïlande, Canada/USA/UK/AU), 53 E-Visa et WhatsApp 98140514.'
-                            : isTurkey
-                              ? 'Page pilote arabe RTL avec vidéo 9:16 voix féminine (Layla), export MP4/PDF, 22 excursions/croisières (+25 DT), Vialand, Pack Antalya, transferts IST/SAW et WhatsApp 98140514.'
-                              : isEgypt
-                                ? 'Page pilote arabe RTL avec vidéo 9:16 voix féminine tunisienne (Layla), export MP4, galerie photos pro, simulateur multi-excursions (175 à 2,425 د.ت) et WhatsApp 98140514.'
-                                : 'Page pilote conservée intégralement avec vidéo 9:16, voix tunisienne Gemini TTS, tarifs 5,900 / 6,400 / 6,900 د.ت, remise famille 200 د.ت, compte à rebours, témoignages et WhatsApp Business 98140514.'}
+                          {isFlightsFerries
+                            ? 'Page pilote bilingue FR/AR avec Vidéo Promo 30s 9:16 (STOP 15 onglets → Avion/Bateau → 3 clics), conseils tournage & aspect local traversées Méditerranée (Tunisie–France/Italie, îles), comparateur Vols/Bateaux, export MP4/PDF et WhatsApp 98140514.'
+                            : isVisa
+                              ? 'Page pilote arabe RTL avec vidéo 9:16 voix féminine (Layla), export MP4/PDF, 33 formules Visa (+30 DT : Égypte dès 90 DT, Schengen, Dubaï, Qatar, Oman, Omra, Chine, Albanie, Thaïlande, Canada/USA/UK/AU), 53 E-Visa et WhatsApp 98140514.'
+                              : isTurkey
+                                ? 'Page pilote arabe RTL avec vidéo 9:16 voix féminine (Layla), export MP4/PDF, 22 excursions/croisières (+25 DT), Vialand, Pack Antalya, transferts IST/SAW et WhatsApp 98140514.'
+                                : isEgypt
+                                  ? 'Page pilote arabe RTL avec vidéo 9:16 voix féminine tunisienne (Layla), export MP4, galerie photos pro, simulateur multi-excursions (175 à 2,425 د.ت) et WhatsApp 98140514.'
+                                  : 'Page pilote conservée intégralement avec vidéo 9:16, voix tunisienne Gemini TTS, tarifs 5,900 / 6,400 / 6,900 د.ت, remise famille 200 د.ت, compte à rebours, témoignages et WhatsApp Business 98140514.'}
                         </p>
                       </div>
                       <div className="flex flex-wrap items-center gap-2">

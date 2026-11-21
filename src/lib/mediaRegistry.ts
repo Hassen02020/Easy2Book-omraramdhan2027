@@ -38,6 +38,10 @@ import flightsTabsStress9x16 from '../assets/images/flights_ferries_tabs_stress_
 import flightsRelaxedSuitcase9x16 from '../assets/images/flights_ferries_relaxed_suitcase_1794942092319.jpg';
 import flightsMedShip9x16 from '../assets/images/flights_ferries_mediterranean_ship_1794942095727.jpg';
 import flightsMobileEticket9x16 from '../assets/images/flights_ferries_mobile_eticket_1794942092613.jpg';
+import evisaPassportGlobe9x16 from '../assets/images/evisa_green_passport_globe_1795182883677.jpg';
+import evisaWorldMapRoutes9x16 from '../assets/images/evisa_world_map_routes_1795179879338.jpg';
+import evisaDestinationsCollage9x16 from '../assets/images/evisa_destinations_collage_1795179879370.jpg';
+import evisaMobileCompanion9x16 from '../assets/images/evisa_mobile_companion_1795179881635.jpg';
 
 export type HeroImageKey =
   | 'makkah_haram'
@@ -79,7 +83,11 @@ export type HeroImageKey =
   | 'flights_tabs_stress'
   | 'flights_relaxed_suitcase'
   | 'flights_mediterranean_ship'
-  | 'flights_mobile_eticket';
+  | 'flights_mobile_eticket'
+  | 'evisa_passport_globe'
+  | 'evisa_world_map'
+  | 'evisa_destinations_collage'
+  | 'evisa_mobile_companion';
 
 export const HERO_MEDIA_MAP: Record<
   HeroImageKey,
@@ -244,6 +252,22 @@ export const HERO_MEDIA_MAP: Record<
   flights_mobile_eticket: {
     src: flightsMobileEticket9x16,
     label: 'Billetterie Reel 9:16 — E-billet instantané sur téléphone en 3 clics',
+  },
+  evisa_passport_globe: {
+    src: evisaPassportGlobe9x16,
+    label: 'E-Visa Reel 9:16 — Passeport tunisien & globe terrestre (0–4 s)',
+  },
+  evisa_world_map: {
+    src: evisaWorldMapRoutes9x16,
+    label: 'E-Visa Reel 9:16 — Carte du monde & connexions internationales (4–10 s)',
+  },
+  evisa_destinations_collage: {
+    src: evisaDestinationsCollage9x16,
+    label: 'E-Visa Reel 9:16 — Destinations E-Visa Afrique, Asie, Europe & Amériques (10–23 s)',
+  },
+  evisa_mobile_companion: {
+    src: evisaMobileCompanion9x16,
+    label: 'E-Visa Reel 9:16 — Accompagnement Easy2Book & confirmation mobile (23–33 s)',
   },
 };
 

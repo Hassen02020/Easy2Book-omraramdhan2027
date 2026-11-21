@@ -15,6 +15,7 @@ import {
   LayoutDashboard,
   LayoutTemplate,
   MoonStar,
+  Plane,
   Settings,
   ShieldCheck,
   Star,
@@ -69,6 +70,7 @@ export function SidebarNav({
   const [egyptTreeOpen, setEgyptTreeOpen] = useState(true);
   const [turkeyTreeOpen, setTurkeyTreeOpen] = useState(true);
   const [visaTreeOpen, setVisaTreeOpen] = useState(true);
+  const [flightsTreeOpen, setFlightsTreeOpen] = useState(true);
 
   const omraPages = pages.filter((p) => p.universe === 'omra');
   const ramadan2027Pages = omraPages.filter(
@@ -94,6 +96,12 @@ export function SidebarNav({
       p.id === 'page-visas-services-easy2book' ||
       p.pilotRenderer === 'visa_services_2026' ||
       p.universe === 'visa'
+  );
+  const flightsPages = pages.filter(
+    (p) =>
+      p.id === 'page-billetterie-avion-bateau-easy2book' ||
+      p.pilotRenderer === 'flights_ferries_2026' ||
+      p.folderGroup === 'Billetterie Avion & Bateau'
   );
 
   const items: {
@@ -390,6 +398,63 @@ export function SidebarNav({
             {visaTreeOpen && (
               <div className="mt-2 space-y-1 ps-1">
                 {visaPages.map((pg) => {
+                  const isCurrent = activePageId === pg.id;
+                  return (
+                    <button
+                      key={pg.id}
+                      type="button"
+                      onClick={() => onOpenPilotOrPage(pg.id, pg.isPilotPage)}
+                      className={`flex w-full flex-col rounded-lg px-2 py-1.5 text-start transition-colors ${
+                        isCurrent
+                          ? 'bg-[#102D45] text-white'
+                          : 'bg-white text-[#102D45] hover:border-[#E7B34C] border border-[#102D45]/8'
+                      }`}
+                    >
+                      <span className="flex items-center gap-1 text-[11px] font-bold leading-snug">
+                        {pg.isPilotPage && (
+                          <Star className="h-3 w-3 shrink-0 fill-[#E7B34C] text-[#E7B34C]" />
+                        )}
+                        <span className="truncate">{pg.title}</span>
+                      </span>
+                      {pg.isPilotPage && (
+                        <span
+                          className={`text-[9px] font-semibold ${
+                            isCurrent ? 'text-[#E7B34C]' : 'text-[#1C4967]'
+                          }`}
+                        >
+                          Page Pilote Complète
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Arborescence Module Billetterie Avion & Bateau */}
+        {flightsPages.length > 0 && (
+          <div className="mx-3 mt-2 rounded-xl border border-[#102D45]/10 bg-[#F5F7FA] p-2.5">
+            <button
+              type="button"
+              onClick={() => setFlightsTreeOpen((o) => !o)}
+              className="flex w-full items-center justify-between text-[11px] font-extrabold text-[#102D45]"
+            >
+              <span className="flex items-center gap-1.5">
+                <Plane className="h-3.5 w-3.5 text-[#E7B34C]" />
+                Arborescence · Billetterie Avion & Bateau
+              </span>
+              {flightsTreeOpen ? (
+                <ChevronDown className="h-3.5 w-3.5 text-[#1C4967]" />
+              ) : (
+                <ChevronRight className="h-3.5 w-3.5 text-[#1C4967]" />
+              )}
+            </button>
+
+            {flightsTreeOpen && (
+              <div className="mt-2 space-y-1 ps-1">
+                {flightsPages.map((pg) => {
                   const isCurrent = activePageId === pg.id;
                   return (
                     <button

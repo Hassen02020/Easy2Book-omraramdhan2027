@@ -20,6 +20,11 @@ import flightsTabsStressImg from '../assets/images/flights_ferries_tabs_stress_1
 import flightsRelaxedSuitcaseImg from '../assets/images/flights_ferries_relaxed_suitcase_1794942092319.jpg';
 import flightsMedShipImg from '../assets/images/flights_ferries_mediterranean_ship_1794942095727.jpg';
 import flightsMobileEticketImg from '../assets/images/flights_ferries_mobile_eticket_1794942092613.jpg';
+import evisaPassportGlobeImg from '../assets/images/evisa_green_passport_globe_1795182883677.jpg';
+import evisaWorldMapImg from '../assets/images/evisa_world_map_routes_1795179879338.jpg';
+import evisaDestinationsCollageImg from '../assets/images/evisa_destinations_collage_1795179879370.jpg';
+import evisaMobileCompanionImg from '../assets/images/evisa_mobile_companion_1795179881635.jpg';
+import type { CountryFlagCode } from '../lib/realCountryFlags';
 
 export interface ReelScene {
   id: string;
@@ -39,6 +44,8 @@ export interface ReelScene {
   cameraMoveLabel: string;
   isStudioLockup?: boolean;
   overlayDir?: 'rtl' | 'ltr';
+  overlayPosition?: 'bottom' | 'center';
+  flagCodes?: CountryFlagCode[];
 }
 
 export interface SubtitleCue {
@@ -87,7 +94,73 @@ export const VISA_TUNISIAN_SCRIPT =
   'تلوج على خدمة فيزا موثوقة وسريعة من غير تعقيد ولا تأخير؟ مع Easy2Book، نجهزولك ملف التأشيرة متاعك الكل باحترافية! فيزا مصر في أربع ساعات فقط ابتداءً من تسعين دينار، مواعيد فضاء شنغن ابتداءً من مية وثمانين دينار، فيزا قطر شهر بمية وسبعين دينار، وفيزا دبي بالضمان ابتداءً من ثلاثمية وخمسين دينار، وعُمان ابتداءً من ميتين وثلاثين دينار، وفيزا العمرة بثمانمية وعشرين دينار! وزيد ملفات كندا بثمانمية وثلاثين، أمريكا بألف وثلاثين، بريطانيا بألف وأربعمية وثلاثين، أستراليا بألف وخمسمية وثلاثين، الصين بألف وثمانمية وثلاثين، ألبانيا ثلاثمية وثمانين مع الترجمة، وتايلاند بمية وثلاثين دينار، مع خدمة E-Visa لأكثر من خمسين وجهة دولية! كلم Easy2Book توا على ثمانية وتسعين، مية وأربعين، خمس مية وأربعطاش. Easy2Book... سفرتك أسهل!';
 
 export const VISA_EGYPT_TUNISIAN_SCRIPT =
-  'مسافرة ولا مسافر لمصر وتحب تضمن موافقة السفر والفيزا متاعك في أربع ساعات فقط ومن غير تعقيد؟ مع Easy2Book، وفرنالك خدمة فيزا وضمان مصر بأحسن التعريفات: رسالة ضمان وانطلاق من تونس بتسعين دينار برك، وضمان انطلاق من دولة أخرى حسب الطلب بمية وخمسين دينار! وللنزول في شرم الشيخ، الإسكندرية ولا الغردقة، ثلاثمية وخمسين دينار للشخص الواحد، وثلاثمية دينار للشخص ابتداءً من شخصين! والأوراق المطلوبة بسيطة برشة: نسخة من جواز السفر وتذكرة الطائرة برك! ابعت وثائقك توا لمركز الحجوزات Easy2Book على ثمانية وتسعين، مية وأربعين، خمس مية وأربعطاش، ولا على الواتساب. Easy2Book... سفرتك أسهل!';
+  'مبرمج مشية لمصر ومطلوب عليك خطاب ضمان؟ ابعث تسكرتك ونسخة من باسبورك! مطار الإنطلاق تونس أو أي مكان في العالم، مطار الوصول القاهرة، الغردقة، شرم الشيخ! في أربع ساعات يكون عندك تصريح أمني وضمان من غير حتى تعقيد. معانا، Easy2Book... سفرتك أسهل!';
+
+export const VISA_EGYPT_TUNISIAN_SCRIPT_DISPLAY = `مبرمج مشية لمصر ومطلوب عليك خطاب ضمان؟
+ابعث تسكرتك ونسخة من باسبورك!
+مطار الإنطلاق: تونس أو أي مكان في العالم،
+مطار الوصول: القاهرة، الغردقة، شرم الشيخ!
+4 ساعات يكون عندك تصريح أمني وضمان من غير حتى تعقيد.
+معانا... سفرتك أسهل!`;
+
+export interface EgyptStoryboardRow {
+  id: string;
+  timeRange: string;
+  startSec: number;
+  visualAr: string;
+  visualFr: string;
+  onScreenText: string;
+  voiceoverExcerpt: string;
+}
+
+export const VISA_EGYPT_STORYBOARD_ROWS: EgyptStoryboardRow[] = [
+  {
+    id: 'eg-sb-1',
+    timeRange: '0–5 s',
+    startSec: 0,
+    visualAr: 'أهرامات الجيزة وعلم مصر الحقيقي',
+    visualFr: 'Pyramides de Gizeh + drapeau réel d’Égypte',
+    onScreenText: 'مبرمج مشية لمصر؟',
+    voiceoverExcerpt: 'مبرمج مشية لمصر ومطلوب عليك خطاب ضمان؟',
+  },
+  {
+    id: 'eg-sb-2',
+    timeRange: '5–9 s',
+    startSec: 5,
+    visualAr: 'جواز السفر التونسي الأخضر + تذكرة الطائرة',
+    visualFr: 'Passeport tunisien vert + billet d’avion',
+    onScreenText: 'ابعث تسكرتك وباسبورك',
+    voiceoverExcerpt: 'ابعث تسكرتك ونسخة من باسبورك!',
+  },
+  {
+    id: 'eg-sb-3',
+    timeRange: '9–14 s',
+    startSec: 9,
+    visualAr: 'مطار الإنطلاق ومطارات الوصول في مصر',
+    visualFr: 'Aéroports de départ (Tunis / Monde) → Le Caire, Hurghada, Charm el-Cheikh',
+    onScreenText: 'تونس أو أي مكان → القاهرة · الغردقة · شرم الشيخ',
+    voiceoverExcerpt:
+      'مطار الإنطلاق تونس أو أي مكان في العالم، مطار الوصول القاهرة، الغردقة، شرم الشيخ!',
+  },
+  {
+    id: 'eg-sb-4',
+    timeRange: '14–19 s',
+    startSec: 14,
+    visualAr: 'إصدار سريع خلال 4 ساعات (تصريح أمني وخطاب ضمان)',
+    visualFr: 'Délivrance express en 4 heures · Autorisation sécuritaire & garantie',
+    onScreenText: '4 ساعات · تصريح أمني وضمان',
+    voiceoverExcerpt: '4 ساعات يكون عندك تصريح أمني وضمان من غير حتى تعقيد.',
+  },
+  {
+    id: 'eg-sb-5',
+    timeRange: '19–24 s',
+    startSec: 19,
+    visualAr: 'شعار Easy2Book وتواصل واتساب المباشر',
+    visualFr: 'Logo Easy2Book & WhatsApp 98 140 514',
+    onScreenText: 'معانا... سفرتك أسهل!',
+    voiceoverExcerpt: 'معانا... سفرتك أسهل! Easy2Book · 98 140 514',
+  },
+];
 
 export const VISA_SCHENGEN_TUNISIAN_SCRIPT =
   'تحب تحضّر ملف فيزا شنغن، فرنسا، كندا أو فيزا دراسة وأعمال من غير أخطاء ومن غير قلق؟ مع Easy2Book، نرافقوك خطوة بخطوة في تجهيز الملف الكامل! حجز مواعيد فضاء شنغن القياسية بمية وثمانين دينار، ومواعيد Prime Time شاملة بميتين وثمانين دينار! ونحضّرولك وثائق السفر، حجوزات الطيران والفنادق المؤكدة، الترجمة المعتمدة وتأمين السفر المطابق للشروط القنصلية! وزيد تحضير ملفات فيزا كندا بثمانمية وثلاثين دينار، أمريكا بألف وثلاثين، وبريطانيا بألف وأربعمية وثلاثين دينار للطلبة ورجال الأعمال والعائلات! كلم مركز الفيزا Easy2Book توا على ثمانية وتسعين، مية وأربعين، خمس مية وأربعطاش، ولا ابعتلنا على الواتساب. Easy2Book... سفرتك أسهل!';
@@ -108,7 +181,227 @@ export const VISA_INTERNATIONAL_TUNISIAN_SCRIPT =
   'تحضّر لسفر دولي نحو الصين، كندا، أمريكا، بريطانيا ولا أستراليا؟ مع Easy2Book، نتكفلو بإعداد ملفك القنصلي كامل وحجز الموعد! ملف فيزا كندا شامل الموعد بثمانمية وثلاثين دينار، أمريكا بألف وثلاثين، بريطانيا بألف وأربعمية وثلاثين، وأستراليا بألف وخمسمية وثلاثين دينار، والوثائق المبدئية نسخة الجواز وصورة خلفية بيضاء! وللصين، نجهزو الملف السياحي الكامل بألف وثمانمية وثلاثين دينار، الدعوة الرسمية بثلاثة آلاف وثلاثين دينار، وفيزا العمل Z حسب الطلب! كلم Easy2Book على ثمانية وتسعين، مية وأربعين، خمس مية وأربعطاش!';
 
 export const VISA_EVISA_TUNISIAN_SCRIPT =
-  'اكتشف الوجهات الجديدة وتأشيرات E-Visa الإلكترونية مع Easy2Book! فيزا تايلاند السياحية بمية وثلاثين دينار فقط، وفيزا ألبانيا بثلاثمية وثمانين دينار شاملة معاليم التأشيرة والترجمة إلى الإنجليزية من طرف Easy2Book! ومع هذا الكل، متوفرة عندنا ثلاثة وخمسين وجهة E-Visa حول العالم عند الطلب مثل سنغافورة، فيتنام، تنزانيا، كمبوديا وكولومبيا وغيرها! ابعتلنا وجهتك توا على واتساب Easy2Book ثمانية وتسعين، مية وأربعين، خمس مية وأربعطاش واحصل على التسعيرة والوثائق في الحين!';
+  'تحب تسافر وتكتشف العالم؟ وعندك Passeport تونسي؟ اسمع المعلومة هاذي! فمّا برشا وجهات في العالم تنجم تقدّم على الفيزا متاعها إلكترونياً، من غير ما تبدأ بالإجراءات التقليدية متاع السفارة. من إفريقيا لآسيا، ومن أوروبا للأمريكيتين… وجهات مختلفة تستنّاك! كيف رواندا، تنزانيا، الكاميرون، قطر، البحرين، فيتنام، أوزبكستان، ألبانيا، كولومبيا، والبهاماس! مع Easy2Book، نعاونك تفهم إجراءات التأشيرة، تعرف الوثائق المطلوبة، وتحضّر مطلبك بطريقة أسهل. ما تخليش إجراءات الفيزا توقف أحلامك! Easy2Book — خطوتك الأولى نحو العالم! ابعثلنا توّة، واسألنا على وجهتك!';
+
+export const VISA_EVISA_TUNISIAN_SCRIPT_DISPLAY = `تحب تسافر وتكتشف العالم؟ 🌍
+وعندك Passeport تونسي؟
+
+اسمع المعلومة هاذي!
+
+فمّا برشا وجهات في العالم تنجم تقدّم على الفيزا متاعها إلكترونياً، من غير ما تبدأ بالإجراءات التقليدية متاع السفارة.
+
+من إفريقيا لآسيا، ومن أوروبا للأمريكيتين…
+وجهات مختلفة تستنّاك!
+
+كيف رواندا، تنزانيا، الكاميرون، قطر، البحرين، فيتنام، أوزبكستان، ألبانيا، كولومبيا، والبهاماس!
+
+مع Easy2Book، نعاونك تفهم إجراءات التأشيرة، تعرف الوثائق المطلوبة، وتحضّر مطلبك بطريقة أسهل.
+
+ما تخليش إجراءات الفيزا توقف أحلامك!
+
+Easy2Book — خطوتك الأولى نحو العالم! ✈️
+
+ابعثلنا توّة، واسألنا على وجهتك!`;
+
+export const VISA_EVISA_LEGAL_DISCLAIMER_AR =
+  'ملاحظة: شروط التأشيرة تختلف حسب البلد، والجنسية، ومدة الإقامة. القبول النهائي يبقى من اختصاص سلطات البلد المعني.';
+
+export const VISA_EVISA_LEGAL_DISCLAIMER_FR =
+  'Note : Les conditions de visa varient selon le pays, la nationalité et la durée du séjour. L’approbation finale relève exclusivement des autorités du pays concerné.';
+
+export const VISA_EVISA_MARKETING_ADVICE = {
+  titleFr: 'Conseil marketing & conformité E-Visa',
+  titleAr: 'نصيحة تسويقية ومهنية حول E-Visa',
+  recommendedFr: 'Des destinations accessibles avec des formalités électroniques',
+  avoidFr: '42 pays sans visa',
+  detailFr:
+    'Utilise « Des destinations accessibles avec des formalités électroniques » plutôt que « 42 pays sans visa ». Un E-Visa reste une demande de visa, et son obtention n’est jamais garantie.',
+  detailAr:
+    'استعمل عبارة « وجهات متاحة بإجراءات تأشيرة إلكترونية » بدل « 42 دولة بدون فيزا ». لأن الـ E-Visa يبقى مطلب تأشيرة إلكتروني، والقبول النهائي يبقى دائماً من اختصاص سلطات البلد المعني.',
+};
+
+export interface EvisaHookAngle {
+  id: string;
+  numberLabel: string;
+  titleFr: string;
+  titleAr: string;
+  tagFr: string;
+  visualFr: string;
+  visualAr: string;
+  hookVoiceoverFr: string;
+  screenHeadline: string;
+  screenSubline: string;
+  whyItWorksFr: string;
+  whyItWorksAr: string;
+  sfxCueFr: string;
+}
+
+export const VISA_EVISA_HOOK_ANGLES: EvisaHookAngle[] = [
+  {
+    id: 'hook-shock',
+    numberLabel: '01',
+    titleFr: 'L’angle « Choc & Croyance limitante »',
+    titleAr: 'زاوية « الصدمة وكسر الفكرة الشائعة »',
+    tagFr: 'Très fort pour l’engagement',
+    visualFr:
+      'Quelqu’un qui regarde son passeport tunisien d’un air blasé, puis qui le jette sur une table où apparaissent soudainement des billets d’avion et des paysages paradisiaques.',
+    visualAr:
+      'شخص ينظر إلى جواز سفره التونسي بملل، ثم يضعه على الطاولة فتظهر فجأة تذاكر طيران ومناظر سياحية ساحرة.',
+    hookVoiceoverFr:
+      '« Tu penses que ton passeport tunisien te bloque partout ? Détrompe-toi. »',
+    screenHeadline: 'TU PENSES ÊTRE BLOQUÉ ?',
+    screenSubline: 'Détrompe-toi : des dizaines de destinations t’attendent en E-Visa.',
+    whyItWorksFr:
+      'Ça brise immédiatement une frustration commune en Tunisie et crée un effet de surprise qui retient l’attention dès la première seconde.',
+    whyItWorksAr:
+      'يكسر فوراً إحباطاً شائعاً في تونس ويصنع عنصر مفاجأة يشد الانتباه من الثانية الأولى.',
+    sfxCueFr: 'SFX 0,5 s : Tampon de passeport qui claque',
+  },
+  {
+    id: 'hook-speed',
+    numberLabel: '02',
+    titleFr: 'L’angle « Rapidité & Zéro galère »',
+    titleAr: 'زاوية « السرعة وبدون تعقيد »',
+    tagFr: 'Axé sur la solution',
+    visualFr:
+      'Gros plan sur un téléphone où l’on clique sur "Valider", transition immédiate (match cut) vers la porte d’embarquement à l’aéroport de Tunis-Carthage.',
+    visualAr:
+      'لقطة قريبة على الهاتف عند الضغط على « Valider »، مع انتقال فوري (Match Cut) إلى بوابة الصعود في مطار تونس قرطاج.',
+    hookVoiceoverFr:
+      '« Oublie les rendez-vous interminables à l’ambassade. Voici 42 pays accessibles en quelques clics. »',
+    screenHeadline: 'ZÉRO AMBASSADE · EN 3 CLICS ⚡',
+    screenSubline: 'Des formalités électroniques simples avant Tunis-Carthage.',
+    whyItWorksFr:
+      'Ça attaque directement la douleur principale des voyageurs (la paperasse et l’attente) en promettant de la simplicité.',
+    whyItWorksAr:
+      'يعالج مباشرة أكبر مشكلة لدى المسافرين (الأوراق والانتظار الطويل) ويقدّم وعداً بالبساطة.',
+    sfxCueFr: 'SFX 0,5 s : Clic sec + notification de validation',
+  },
+  {
+    id: 'hook-curiosity',
+    numberLabel: '03',
+    titleFr: 'L’angle « Curiosité & Chiffre précis »',
+    titleAr: 'زاوية « الفضول والرقم الدقيق »',
+    tagFr: 'Idéal pour l’animation de drapeaux',
+    visualFr:
+      'Gros plan dynamique sur la couverture verte du passeport tunisien qui s’ouvre, laissant jaillir une vague de drapeaux réels des pays.',
+    visualAr:
+      'لقطة ديناميكية على الغلاف الأخضر لجواز السفر التونسي وهو يُفتح لتخرج منه موجة من الأعلام الحقيقية للدول.',
+    hookVoiceoverFr:
+      '« 42 destinations dans le monde n’attendent que ton passeport tunisien… et ton e-visa. »',
+    screenHeadline: '42 DESTINATIONS · E-VISA 🌍',
+    screenSubline: 'Passeport tunisien + formalités en ligne : découvre la liste.',
+    whyItWorksFr:
+      'Le chiffre exact (42) intrigue et donne envie de rester pour voir quels pays font partie de la liste.',
+    whyItWorksAr:
+      'الرقم الدقيق (42) يثير الفضول ويدفع المشاهد للبقاء حتى يعرف قائمة الدول المتاحة.',
+    sfxCueFr: 'SFX 0,5 s : Whoosh dynamique sur l’ouverture du passeport',
+  },
+  {
+    id: 'hook-urgency',
+    numberLabel: '04',
+    titleFr: 'L’angle « Urgence / Appel au voyage »',
+    titleAr: 'زاوية « التشويق ودعوة السفر الفوري »',
+    tagFr: 'Émotionnel',
+    visualFr:
+      'Une valise qui se ferme d’un coup sec, suivi d’un plan rapide d’un passeport posé à côté d’un café à l’aéroport.',
+    visualAr:
+      'حقيبة سفر تُغلق بحركة سريعة، متبوعة بلقطة لجواز سفر موضوع بجانب قهوة في المطار.',
+    hookVoiceoverFr:
+      '« Et si ton prochain voyage commençait aujourd’hui, sans même sortir de chez toi ? »',
+    screenHeadline: 'TON VOYAGE COMMENCE ICI ✈️',
+    screenSubline: 'Prépare ton E-Visa aujourd’hui, sans même sortir de chez toi.',
+    whyItWorksFr:
+      'Ça projette immédiatement le spectateur dans l’excitation du départ.',
+    whyItWorksAr:
+      'يدخل المشاهد مباشرة في حماس الاستعداد للسفر والانطلاق.',
+    sfxCueFr: 'SFX 0,5 s : Zip sec de valise + whoosh aéroport',
+  },
+];
+
+export const VISA_EVISA_RETENTION_TIPS = [
+  {
+    id: 'ret-sound',
+    titleFr: 'Le son (dès 0,5 s)',
+    titleAr: 'الصوت (عند الثانية 0.5)',
+    detailFr:
+      'Utilise un bruitage sec (type whoosh, tampon de passeport qui claque ou notification de validation) dès la 0,5ème seconde pour stopper le scroll.',
+    detailAr:
+      'استعمل مؤثراً صوتياً حاداً (Whoosh، صوت ختم جواز السفر أو إشعار تأكيد) عند الثانية 0.5 لإيقاف التمرير فوراً.',
+  },
+  {
+    id: 'ret-text',
+    titleFr: 'Le texte à l’écran (70 % sans son)',
+    titleAr: 'النص على الشاشة (70% بدون صوت)',
+    detailFr:
+      'Garde un texte très gros, contrasté (blanc ou jaune sur fond sombre/flouté) et centré, car 70 % des utilisateurs regardent les vidéos sans le son au début.',
+    detailAr:
+      'حافظ على نص كبير جداً ومتباين (أبيض أو أصفر على خلفية داكنة/مموهة) في وسط الشاشة لأن 70% يشاهدون الثواني الأولى بدون صوت.',
+  },
+];
+
+export interface EvisaStoryboardRow {
+  id: string;
+  timeRange: string;
+  startSec: number;
+  visualFr: string;
+  visualAr: string;
+  onScreenText: string;
+  voiceoverExcerpt: string;
+}
+
+export const VISA_EVISA_STORYBOARD_ROWS: EvisaStoryboardRow[] = [
+  {
+    id: 'ev-sb-1',
+    timeRange: '0–4 s',
+    startSec: 0,
+    visualFr: 'Passeport tunisien vert + globe',
+    visualAr: 'جواز السفر التونسي الأخضر + كرة أرضية',
+    onScreenText: 'PASSEPORT TUNISIEN ?',
+    voiceoverExcerpt:
+      'تحب تسافر وتكتشف العالم؟ 🌍 وعندك Passeport تونسي؟ اسمع المعلومة هاذي!',
+  },
+  {
+    id: 'ev-sb-2',
+    timeRange: '4–10 s',
+    startSec: 4,
+    visualFr: 'Animation de carte du monde',
+    visualAr: 'تحريك خريطة العالم ومسارات السفر',
+    onScreenText: 'LE MONDE VOUS ATTEND 🌍',
+    voiceoverExcerpt:
+      'فمّا برشا وجهات في العالم تنجم تقدّم على الفيزا متاعها إلكترونياً، من غير ما تبدأ بالإجراءات التقليدية متاع السفارة.',
+  },
+  {
+    id: 'ev-sb-3',
+    timeRange: '10–23 s',
+    startSec: 10,
+    visualFr: 'Drapeaux des destinations',
+    visualAr: 'أعلام وصور الوجهات الدولية',
+    onScreenText: 'E-VISA • VISA EN LIGNE',
+    voiceoverExcerpt:
+      'من إفريقيا لآسيا، ومن أوروبا للأمريكيتين… وجهات مختلفة تستنّاك! كيف رواندا، تنزانيا، الكاميرون، قطر، البحرين، فيتنام، أوزبكستان، ألبانيا، كولومبيا، والبهاماس!',
+  },
+  {
+    id: 'ev-sb-4',
+    timeRange: '23–33 s',
+    startSec: 23,
+    visualFr: 'Logo Easy2Book + téléphone',
+    visualAr: 'شعار Easy2Book + هاتف وتحضير الملف',
+    onScreenText: 'ON VOUS ACCOMPAGNE',
+    voiceoverExcerpt:
+      'مع Easy2Book، نعاونك تفهم إجراءات التأشيرة، تعرف الوثائق المطلوبة، وتحضّر مطلبك بطريقة أسهل. ما تخليش إجراءات الفيزا توقف أحلامك!',
+  },
+  {
+    id: 'ev-sb-5',
+    timeRange: '33–42 s',
+    startSec: 33,
+    visualFr: 'WhatsApp / contact Easy2Book',
+    visualAr: 'واتساب وتواصل Easy2Book المباشر',
+    onScreenText: 'CONTACTEZ-NOUS',
+    voiceoverExcerpt:
+      'Easy2Book — خطوتك الأولى نحو العالم! ✈️ ابعثلنا توّة، واسألنا على وجهتك!',
+  },
+];
 
 export const EXCURSIONS_GENERAL_TUNISIAN_SCRIPT =
   'تحب تعيش أجمل الرحلات اليومية والجولات السياحية في مصر، تركيا، دبي وتونس براحة تامة وتنظيم محترف؟ مع Easy2Book، اخترنا لك باقة رحلات للأفراد والعائلات والمجموعات بأحسن الأسعار! في مصر، توصيل المطار بمية وخمسة وسبعين دينار، سهرة نايل كروز بميتين وخمسة وعشرين دينار، والأهرامات والمتحف الكبير ابتداءً من أربعمية وخمسة وعشرين دينار! وفي تركيا، رحلات صبنجا وبورصا ابتداءً من خمسة وستين دينار وسهرات البسفور ابتداءً من مية وخمسة دينار مع توصيل مطار إسطنبول VIP! وزيد رحلات دبي وسيدي بوسعيد والصحراء التونسية بسيارات خاصة مكيفة ومرشد مرافق! كلم Easy2Book توا على ثمانية وتسعين، مية وأربعين، خمس مية وأربعطاش. Easy2Book... سفرتك أسهل!';
@@ -559,68 +852,92 @@ export const VISA_EGYPT_REEL_SCENES: ReelScene[] = [
   {
     id: 'scene-1',
     indexLabel: '01',
-    arabicTitle: 'فيزا وضمان مصر · 4 ساعات',
-    subtitleSummary: 'ضمان السفر انطلاق تونس 90 د.ت وانطلاق دولة أخرى 150 د.ت',
+    arabicTitle: '0–5 ث · مبرمج مشية لمصر وخطاب ضمان؟',
+    subtitleSummary: 'مبرمج مشية لمصر ومطلوب عليك خطاب ضمان؟',
     startSec: 0,
-    endSec: 10,
+    endSec: 5,
     primaryImage: egyptPyramidsReelImg,
-    imageAlt: 'فيزا وضمان مصر مع Easy2Book في 4 ساعات',
-    overlayHeadline: 'فيزا مصر في 4 ساعات 🇪🇬',
-    overlayLines: ['انطلاق تونس 90 د.ت · دولة أخرى 150 د.ت'],
-    cameraMoveLabel: 'إصدار فوري خلال 4 ساعات · Easy2Book',
-    promptText: 'Vertical 9:16 Giza Pyramids editorial shot for Visa Egypte campaign.',
+    imageAlt: 'أهرامات الجيزة — خطاب ضمان وتصريح أمني لمصر مع Easy2Book',
+    overlayHeadline: 'مبرمج مشية لمصر؟',
+    overlayLines: ['مطلوب عليك خطاب ضمان أو تصريح أمني؟'],
+    cameraMoveLabel: '0–5 ث · خطاف افتتاحي سريع · مصر',
+    promptText: 'Vertical 9:16 Giza Pyramids editorial shot for Visa Egypte security clearance.',
+    overlayDir: 'rtl',
+    overlayPosition: 'center',
+    flagCodes: ['EG'],
+    isStudioLockup: false,
   },
   {
     id: 'scene-2',
     indexLabel: '02',
-    arabicTitle: 'شرم الشيخ، الإسكندرية والغردقة',
-    subtitleSummary: 'موافقات النزول في المطارات الساحلية والإسكندرية بأحسن تعريفة',
-    startSec: 10,
-    endSec: 25,
-    primaryImage: egyptNileReelImg,
-    secondaryImage: visaDeskImg,
-    matchCutOffsetSec: 6.5,
-    imageAlt: 'موافقات النزول في شرم الشيخ، الإسكندرية والغردقة',
-    secondaryImageAlt: 'مكتب تدقيق جواز السفر وتذكرة الطائرة في Easy2Book',
-    overlayHeadline: 'فيزا مصر • التعريفات ✈️',
-    overlayLines: [
-      '📄 ضمان انطلاق تونس: 90 د.ت · دولة أخرى: 150 د.ت',
-      '🏖️ شرم الشيخ / الإسكندرية / الغردقة (شخص واحد): 350 د.ت',
-      '👥 ابتداءً من شخصين: 300 د.ت للشخص',
-    ],
-    cameraMoveLabel: 'أجل الإصدار: 4 ساعات فقط',
-    promptText: 'Vertical 9:16 Nile view transitioning to visa desk preparation.',
+    arabicTitle: '5–9 ث · ابعث تسكرتك ونسخة من باسبورك',
+    subtitleSummary: 'الوثائق المطلوبة فقط: نسخة من الجواز التونسي + تذكرة الطائرة',
+    startSec: 5,
+    endSec: 9,
+    primaryImage: evisaPassportGlobeImg,
+    imageAlt: 'جواز السفر التونسي الأخضر وتذكرة الطائرة لفيزا مصر',
+    overlayHeadline: 'ابعث تسكرتك وباسبورك',
+    overlayLines: ['نسخة من جواز السفر التونسي + تذكرة الطائرة برك!'],
+    cameraMoveLabel: '5–9 ث · الجواز التونسي الأخضر وتذكرة الطائرة',
+    promptText: 'Vertical 9:16 authentic dark green Tunisian passport beside travel globe.',
+    overlayDir: 'rtl',
+    overlayPosition: 'center',
+    flagCodes: ['TN'],
+    isStudioLockup: false,
   },
   {
     id: 'scene-3',
     indexLabel: '03',
-    arabicTitle: 'الوثائق المطلوبة لفيزا مصر',
-    subtitleSummary: 'نسخة من جواز السفر + تذكرة الطائرة فقط',
-    startSec: 25,
-    endSec: 36,
-    primaryImage: egyptIslamicReelImg,
-    imageAlt: 'الوثائق المطلوبة: نسخة جواز السفر وتذكرة الطائرة',
-    overlayHeadline: 'الوثائق المطلوبة 📋',
+    arabicTitle: '9–14 ث · مطار الإنطلاق والوصول',
+    subtitleSummary: 'الإنطلاق تونس أو أي مكان في العالم ← القاهرة، الغردقة، شرم الشيخ',
+    startSec: 9,
+    endSec: 14,
+    primaryImage: airlineCabinImg,
+    imageAlt: 'رحلات جوية من تونس أو أي مطار في العالم نحو مصر',
+    overlayHeadline: 'مطار الإنطلاق ✈️ مطار الوصول',
     overlayLines: [
-      '🛂 نسخة من جواز السفر',
-      '🎫 تذكرة الطائرة',
+      'الإنطلاق: تونس أو أي مكان في العالم',
+      'الوصول: القاهرة · الغردقة · شرم الشيخ',
     ],
-    cameraMoveLabel: 'إرسال فوري عبر الواتساب ومعالجة خلال 4 ساعات',
-    promptText: 'Vertical 9:16 Cairo architecture backdrop for required documents checklist.',
+    cameraMoveLabel: '9–14 ث · جميع مطارات الإنطلاق والوصول',
+    promptText: 'Vertical 9:16 aircraft flight view connecting Tunisia and worldwide airports to Egypt.',
+    overlayDir: 'rtl',
+    isStudioLockup: false,
   },
   {
     id: 'scene-4',
     indexLabel: '04',
-    arabicTitle: 'خاتمة Easy2Book · 98 140 514',
-    subtitleSummary: 'أودع وثائق فيزا مصر اليوم على 98 140 514',
-    startSec: 36,
-    endSec: 48,
+    arabicTitle: '14–19 ث · في 4 ساعات تصريح أمني وضمان',
+    subtitleSummary: '4 ساعات يكون عندك تصريح أمني وضمان من غير حتى تعقيد',
+    startSec: 14,
+    endSec: 19,
+    primaryImage: egyptNileReelImg,
+    imageAlt: 'إصدار التصريح الأمني وخطاب الضمان لمصر خلال 4 ساعات',
+    overlayHeadline: 'في 4 ساعات فقط ⚡',
+    overlayLines: [
+      'تصريح أمني وضمان من غير حتى تعقيد',
+      'ابعث تسكرتك ونسخة من باسبورك على واتساب',
+    ],
+    cameraMoveLabel: '14–19 ث · إصدار مضمون في 4 ساعات بدون تعقيد',
+    promptText: 'Vertical 9:16 golden Cairo Nile skyline for 4-hour express Egypt guarantee.',
+    overlayDir: 'rtl',
+    isStudioLockup: false,
+  },
+  {
+    id: 'scene-5',
+    indexLabel: '05',
+    arabicTitle: '19–24 ث · معانا... سفرتك أسهل!',
+    subtitleSummary: 'Easy2Book · 98 140 514 · www.easy2book.tn',
+    startSec: 19,
+    endSec: 24,
     primaryImage: studioBackdropImg,
     imageAlt: 'خلفية استوديو Easy2Book الذهبية والكحلية',
-    overlayHeadline: 'فيزا مصر · إصدار 4 ساعات 📞',
-    overlayLines: ['مركز فيزا Easy2Book', '📞 98 140 514', '🌐 www.easy2book.tn'],
-    cameraMoveLabel: 'خدمة يومية مباشرة عبر الهاتف والواتساب',
+    overlayHeadline: 'معانا... سفرتك أسهل!',
+    overlayLines: ['مركز فيزا وضمان مصر Easy2Book', '📞 98 140 514', '🌐 www.easy2book.tn'],
+    cameraMoveLabel: '19–24 ث · خاتمة Easy2Book وتواصل فوري',
     promptText: 'Vertical 9:16 Easy2Book studio closing lockup.',
+    overlayDir: 'rtl',
+    isStudioLockup: true,
   },
 ];
 
@@ -973,67 +1290,93 @@ export const VISA_EVISA_REEL_SCENES: ReelScene[] = [
   {
     id: 'scene-1',
     indexLabel: '01',
-    arabicTitle: 'ألبانيا، تايلاند و 53 دولة E-Visa',
-    subtitleSummary: 'تأشيرات إلكترونية جديدة بأسعار واضحة ومعالجة رقمية',
+    arabicTitle: '0–4 s · Passeport tunisien vert + globe',
+    subtitleSummary: 'تحب تسافر وتكتشف العالم؟ وعندك Passeport تونسي؟ اسمع المعلومة هاذي!',
     startSec: 0,
-    endSec: 10,
-    primaryImage: visaDeskImg,
-    imageAlt: 'الوجهات الجديدة ألبانيا وتايلاند و53 دولة E-Visa',
-    overlayHeadline: 'الوجهات الجديدة و 53 E-Visa 🌐',
-    overlayLines: ['تايلاند 130 DT · ألبانيا 380 DT · +53 دولة'],
-    cameraMoveLabel: 'مرافقة إلكترونية وترجمة معتمدة',
-    promptText: 'Vertical 9:16 travel passport e-visa preparation.',
+    endSec: 4,
+    primaryImage: evisaPassportGlobeImg,
+    imageAlt: 'Passeport tunisien vert foncé posé à côté d’un globe terrestre doré',
+    overlayHeadline: 'PASSEPORT TUNISIEN ?',
+    overlayLines: ['تحب تسافر وتكتشف العالم؟ وعندك Passeport تونسي؟'],
+    cameraMoveLabel: '0–4 s · Plan serré passeport tunisien vert + globe',
+    promptText: 'Vertical 9:16 editorial close-up of authentic dark green Tunisian passport beside brass world globe.',
+    overlayDir: 'ltr',
+    overlayPosition: 'center',
+    flagCodes: ['TN'],
+    isStudioLockup: false,
   },
   {
     id: 'scene-2',
     indexLabel: '02',
-    arabicTitle: 'فيزا ألبانيا (مشمولة الترجمة)',
-    subtitleSummary: 'تشمل المعاليم والترجمة للإنجليزية بـ 380 د.ت',
-    startSec: 10,
-    endSec: 25,
-    primaryImage: visaEuropeImg,
-    secondaryImage: turkeyBosphorusReelImg,
-    matchCutOffsetSec: 6.5,
-    imageAlt: 'فيزا ألبانيا بالترجمة إلى الإنجليزية من Easy2Book',
-    secondaryImageAlt: 'السفر السياحي إلى البلقان وأوروبا الشرقية',
-    overlayHeadline: 'ألبانيا 380 DT · تايلاند 130 DT ✨',
-    overlayLines: [
-      '🇦🇱 ألبانيا: 380 DT (شاملة الترجمة للإنجليزية)',
-      '🇹🇭 تايلاند: 130 DT (جواز، كشف 6 أشهر، صورة، تذكرة، نزل)',
-    ],
-    cameraMoveLabel: 'مراجعة كل وثيقة قبل الإرسال الإلكتروني',
-    promptText: 'Vertical 9:16 Europe gateway matching coastal resort view.',
+    arabicTitle: '4–10 s · Animation de carte du monde',
+    subtitleSummary: 'وجهات في العالم تنجم تقدّم على الفيزا متاعها إلكترونياً من غير إجراءات السفارة التقليدية',
+    startSec: 4,
+    endSec: 10,
+    primaryImage: evisaWorldMapImg,
+    imageAlt: 'Carte du monde marine et or avec lignes aériennes depuis la Tunisie',
+    overlayHeadline: 'LE MONDE VOUS ATTEND',
+    overlayLines: ['Des destinations accessibles avec des formalités électroniques'],
+    cameraMoveLabel: '4–10 s · Animation carte du monde depuis la Tunisie',
+    promptText: 'Vertical 9:16 luxury navy and gold world map with glowing flight paths.',
+    overlayDir: 'ltr',
+    isStudioLockup: false,
   },
   {
     id: 'scene-3',
     indexLabel: '03',
-    arabicTitle: '53 وجهة E-Visa عند الطلب',
-    subtitleSummary: 'سنغافورة، فيتنام، تنزانيا، كازاخستان، كولومبيا وغيرها',
-    startSec: 25,
-    endSec: 36,
-    primaryImage: dubaiSkylineImg,
-    imageAlt: 'قائمة 53 دولة E-Visa حسب الطلب في Easy2Book',
-    overlayHeadline: '53 وجهة E-Visa حسب الطلب 🗺️',
+    arabicTitle: '10–23 s · Drapeaux réels des destinations',
+    subtitleSummary: 'رواندا، تنزانيا، الكاميرون، قطر، البحرين، فيتنام، أوزبكستان، ألبانيا، كولومبيا والبهاماس',
+    startSec: 10,
+    endSec: 23,
+    primaryImage: evisaDestinationsCollageImg,
+    imageAlt: 'Destinations E-Visa en Afrique, Asie, Europe et Amériques',
+    overlayHeadline: 'E-VISA • VISA EN LIGNE',
     overlayLines: [
-      'سنغافورة · فيتنام · تنزانيا · كولومبيا · أذربيجان/كازاخستان',
-      'إصدار إلكتروني سريع بأقل وثائق',
+      'Afrique · Asie · Europe · Amériques — formalités électroniques',
     ],
-    cameraMoveLabel: 'اختر وجهتك من القائمة واستلم التسعيرة فوراً',
-    promptText: 'Vertical 9:16 global skyline representing 53 e-visa destinations.',
+    cameraMoveLabel: '10–23 s · Défilé des drapeaux réels des 10 destinations E-Visa',
+    promptText: 'Vertical 9:16 editorial collage of E-Visa destinations across 4 continents with real national flags.',
+    overlayDir: 'ltr',
+    flagCodes: ['RW', 'TZ', 'CM', 'QA', 'BH', 'VN', 'UZ', 'AL', 'CO', 'BS'],
+    isStudioLockup: false,
   },
   {
     id: 'scene-4',
     indexLabel: '04',
-    arabicTitle: 'تواصل مع Easy2Book · 98 140 514',
-    subtitleSummary: 'اطلب فيزا ألبانيا، تايلاند أو أي E-Visa اليوم',
-    startSec: 36,
-    endSec: 48,
+    arabicTitle: '23–33 s · Logo Easy2Book + téléphone',
+    subtitleSummary: 'مع Easy2Book نعاونك تفهم الإجراءات، تعرف الوثائق المطلوبة وتحضّر مطلبك أسهل',
+    startSec: 23,
+    endSec: 33,
+    primaryImage: evisaMobileCompanionImg,
+    imageAlt: 'Voyageuse tunisienne souriante présentant son dossier E-Visa sur téléphone',
+    overlayHeadline: 'ON VOUS ACCOMPAGNE',
+    overlayLines: [
+      'Easy2Book — خطوتك الأولى نحو العالم! ✈️',
+      'فهم الإجراءات · الوثائق المطلوبة · تحضير المطلب بسهولة',
+    ],
+    cameraMoveLabel: '23–33 s · Logo Easy2Book + téléphone & dossier digital',
+    promptText: 'Vertical 9:16 Tunisian traveler holding smartphone with digital travel confirmation.',
+    overlayDir: 'ltr',
+    isStudioLockup: false,
+  },
+  {
+    id: 'scene-5',
+    indexLabel: '05',
+    arabicTitle: '33–42 s · WhatsApp / contact Easy2Book',
+    subtitleSummary: 'ابعثلنا توّة، واسألنا على وجهتك · القبول النهائي من اختصاص سلطات البلد المعني',
+    startSec: 33,
+    endSec: 42,
     primaryImage: studioBackdropImg,
-    imageAlt: 'خلفية استوديو Easy2Book الذهبية والكحلية',
-    overlayHeadline: 'اطلب E-Visa لوجهتك 📞',
-    overlayLines: ['مركز E-Visa Easy2Book', '📞 98 140 514', '🌐 www.easy2book.tn'],
-    cameraMoveLabel: 'معالجة إلكترونية مضمونة وسريعة',
-    promptText: 'Vertical 9:16 Easy2Book studio closing lockup.',
+    imageAlt: 'Écran final studio Easy2Book contact WhatsApp 98 140 514',
+    overlayHeadline: 'CONTACTEZ-NOUS',
+    overlayLines: [
+      'Easy2Book — خطوتك الأولى نحو العالم! ✈️',
+      '📞 WhatsApp : 98 140 514 · www.easy2book.tn',
+    ],
+    cameraMoveLabel: '33–42 s · Contact WhatsApp Easy2Book + mention légale',
+    promptText: 'Vertical 9:16 Easy2Book studio closing lockup with WhatsApp CTA.',
+    overlayDir: 'ltr',
+    isStudioLockup: true,
   },
 ];
 
@@ -1314,11 +1657,11 @@ export const REEL_PRESET_CATALOG: ReelPresetCatalogEntry[] = [
   {
     id: 'visa_egypt',
     category: 'visa',
-    titleFr: 'Visa Égypte • Tarifs & Garantie (4h · 90 / 150 / 350 / 300 DT)',
-    titleAr: 'فيديو فيزا وضمان مصر (في 4 ساعات · 90 / 150 / 350 / 300 د.ت)',
-    badgeFr: 'Visa Égypte · Voix Layla',
+    titleFr: 'Visa Égypte • Lettre de Garantie & Autorisation 4h (24s)',
+    titleAr: 'فيديو خطاب ضمان وتصريح أمني لمصر في 4 ساعات (24 ثانية)',
+    badgeFr: 'Visa Égypte · Format 24s',
     summaryFr:
-      'Garantie départ Tunisie 90 DT, autre pays 150 DT, Charm/Alexandrie/Hurghada 350 DT (300 DT dès 2 pers.). Docs : passeport + billet.',
+      'Départ Tunis ou partout dans le monde → Le Caire, Hurghada, Charm el-Cheikh. Passeport + billet : autorisation sécuritaire & garantie en 4h.',
     defaultVoiceId: 'Layla',
     linkedPageId: 'page-visa-egypte-easy2book',
   },
@@ -1391,11 +1734,11 @@ export const REEL_PRESET_CATALOG: ReelPresetCatalogEntry[] = [
   {
     id: 'visa_evisa',
     category: 'visa',
-    titleFr: 'Albanie (380 DT), Thaïlande (130 DT) & 53 Destinations E-Visa',
-    titleAr: 'فيديو ألبانيا (380 د.ت)، تايلاند (130 د.ت) و 53 دولة E-Visa',
-    badgeFr: 'Nouvelles Destinations & E-Visa · Layla',
+    titleFr: 'Passeport Tunisien · E-Visa & Formalités Électroniques (42s)',
+    titleAr: 'جواز السفر التونسي · وجهات E-Visa إلكترونياً (42 ثانية)',
+    badgeFr: 'E-Visa 42s · Dialecte Tunisien (Layla)',
     summaryFr:
-      'Albanie 380 DT (traduction anglaise Easy2Book incluse), Thaïlande 130 DT et 53 destinations E-Visa sur demande.',
+      'Des destinations accessibles avec des formalités électroniques : Rwanda, Tanzanie, Cameroun, Qatar, Bahreïn, Vietnam, Ouzbékistan, Albanie, Colombie, Bahamas + 53 E-Visa.',
     defaultVoiceId: 'Layla',
     linkedPageId: 'page-visa-evisa-easy2book',
   },
@@ -1472,12 +1815,12 @@ export function getReelConfig(preset: ReelPresetId = 'omra'): {
       preset: 'visa_egypt',
       scenes: VISA_EGYPT_REEL_SCENES,
       script: VISA_EGYPT_TUNISIAN_SCRIPT,
-      totalDurationSec: TOTAL_REEL_DURATION_SEC,
+      totalDurationSec: 24,
       defaultVoiceId: 'Layla',
-      endBadgeText: 'إصدار في 4 ساعات · جواز السفر + تذكرة الطائرة · 90–350 د.ت',
-      secondarySceneLabelA: 'ضمان السفر 90 / 150 د.ت · شرم والإسكندرية والغردقة',
-      secondarySceneLabelB: 'أودع نسخة الجواز وتذكرة الطائرة الآن',
-      outputBaseName: 'Easy2Book-Visa-Egypte',
+      endBadgeText: 'تصريح أمني وضمان في 4 ساعات · من غير حتى تعقيد',
+      secondarySceneLabelA: 'مطار الإنطلاق: تونس أو أي مكان في العالم',
+      secondarySceneLabelB: 'مطار الوصول: القاهرة · الغردقة · شرم الشيخ',
+      outputBaseName: 'Easy2Book-Visa-Egypte-4h-24s',
     };
   }
   if (preset === 'visa_dubai') {
@@ -1550,12 +1893,12 @@ export function getReelConfig(preset: ReelPresetId = 'omra'): {
       preset: 'visa_evisa',
       scenes: VISA_EVISA_REEL_SCENES,
       script: VISA_EVISA_TUNISIAN_SCRIPT,
-      totalDurationSec: TOTAL_REEL_DURATION_SEC,
+      totalDurationSec: 42,
       defaultVoiceId: 'Layla',
-      endBadgeText: 'ألبانيا 380 د.ت (بالترجمة) · تايلاند 130 د.ت · 53 E-Visa',
-      secondarySceneLabelA: 'ترجمة ومعاليم ألبانيا مشمولة مع Easy2Book',
-      secondarySceneLabelB: '53 وجهة E-Visa جديدة عند الطلب',
-      outputBaseName: 'Easy2Book-Visa-EVisa',
+      endBadgeText: 'Des destinations accessibles avec des formalités électroniques · 98 140 514',
+      secondarySceneLabelA: '🇹🇳 PASSEPORT TUNISIEN ? · E-VISA EN LIGNE',
+      secondarySceneLabelB: 'Easy2Book — خطوتك الأولى نحو العالم!',
+      outputBaseName: 'Easy2Book-Passeport-Tunisien-EVisa-42s',
     };
   }
   if (preset === 'visa_services') {
@@ -1713,23 +2056,28 @@ export function getSubtitleCues(preset: ReelPresetId = 'omra'): SubtitleCue[] {
     return [
       {
         startSec: 0,
-        endSec: 10,
-        text: 'مسافر لمصر؟ مع Easy2Book فيزا وضمان مصر تصدرلك في 4 ساعات: انطلاق من تونس 90 د.ت ومن دولة أخرى 150 د.ت!',
+        endSec: 5,
+        text: 'مبرمج مشية لمصر ومطلوب عليك خطاب ضمان؟',
       },
       {
-        startSec: 10,
-        endSec: 25,
-        text: 'نزول شرم الشيخ، الإسكندرية والغردقة: شخص واحد 350 د.ت، وابتداءً من شخصين 300 د.ت للشخص فقط!',
+        startSec: 5,
+        endSec: 9,
+        text: 'ابعث تسكرتك ونسخة من باسبورك!',
       },
       {
-        startSec: 25,
-        endSec: 36,
-        text: 'الوثائق المطلوبة بسيطة برشة: نسخة من جواز السفر + تذكرة الطائرة فقط.',
+        startSec: 9,
+        endSec: 14,
+        text: 'مطار الإنطلاق تونس أو أي مكان في العالم، مطار الوصول القاهرة، الغردقة، شرم الشيخ!',
       },
       {
-        startSec: 36,
-        endSec: 48,
-        text: 'أودع ملفك اليوم على واتساب Easy2Book: 98 140 514 · www.easy2book.tn — سفرتك أسهل!',
+        startSec: 14,
+        endSec: 19,
+        text: '4 ساعات يكون عندك تصريح أمني وضمان من غير حتى تعقيد.',
+      },
+      {
+        startSec: 19,
+        endSec: 24,
+        text: 'معانا... سفرتك أسهل! Easy2Book · 98 140 514 · www.easy2book.tn',
       },
     ];
   }
@@ -1857,23 +2205,28 @@ export function getSubtitleCues(preset: ReelPresetId = 'omra'): SubtitleCue[] {
     return [
       {
         startSec: 0,
+        endSec: 4,
+        text: 'تحب تسافر وتكتشف العالم؟ 🌍 وعندك Passeport تونسي؟ اسمع المعلومة هاذي!',
+      },
+      {
+        startSec: 4,
         endSec: 10,
-        text: 'وجهات E-Visa الجديدة مع Easy2Book: فيزا تايلاند السياحية بـ 130 DT وفيزا ألبانيا بـ 380 DT!',
+        text: 'فمّا برشا وجهات في العالم تنجم تقدّم على الفيزا متاعها إلكترونياً، من غير ما تبدأ بالإجراءات التقليدية متاع السفارة.',
       },
       {
         startSec: 10,
-        endSec: 25,
-        text: 'فيزا ألبانيا تشمل معاليم الفيزا والترجمة إلى الإنجليزية من طرف فريق Easy2Book بالكامل!',
+        endSec: 23,
+        text: 'من إفريقيا لآسيا، ومن أوروبا للأمريكيتين… وجهات مختلفة تستنّاك! كيف رواندا، تنزانيا، الكاميرون، قطر، البحرين، فيتنام، أوزبكستان، ألبانيا، كولومبيا، والبهاماس!',
       },
       {
-        startSec: 25,
-        endSec: 36,
-        text: 'أكثر من 53 وجهة E-Visa متوفرة عند الطلب: سنغافورة، فيتنام، تنزانيا، كولومبيا، كازاخستان وغيرها!',
+        startSec: 23,
+        endSec: 33,
+        text: 'مع Easy2Book، نعاونك تفهم إجراءات التأشيرة، تعرف الوثائق المطلوبة، وتحضّر مطلبك بطريقة أسهل. ما تخليش إجراءات الفيزا توقف أحلامك!',
       },
       {
-        startSec: 36,
-        endSec: 48,
-        text: 'اختر وجهتك الآن وتواصل مع Easy2Book على 98 140 514 · www.easy2book.tn.',
+        startSec: 33,
+        endSec: 42,
+        text: 'Easy2Book — خطوتك الأولى نحو العالم! ✈️ ابعثلنا توّة، واسألنا على وجهتك! (القبول النهائي من اختصاص سلطات البلد المعني)',
       },
     ];
   }
@@ -2062,24 +2415,27 @@ export function getSocialCaptionBlocks(preset: ReelPresetId = 'omra') {
     return [
       {
         id: 'cap-veg-1',
-        scene: 'المشهد 01',
+        scene: '0–9 ث · الخطاف والوثائق',
         lines: [
-          '🇪🇬 فيزا وضمان مصر • التعريفات الرسمية (الأجل : 4 ساعات)',
-          'رسالة / ضمان السفر انطلاق من تونس : 90 د.ت | انطلاق من دولة أخرى (حسب الطلب) : 150 د.ت',
+          'مبرمج مشية لمصر ومطلوب عليك خطاب ضمان؟',
+          'ابعث تسكرتك ونسخة من باسبورك فقط!',
         ],
       },
       {
         id: 'cap-veg-2',
-        scene: 'المشهد 02 و 03',
+        scene: '9–19 ث · المطارات و 4 ساعات',
         lines: [
-          '✈️ نزول شرم الشيخ / الإسكندرية / الغردقة : 350 د.ت (شخص واحد) | 300 د.ت للشخص (ابتداءً من شخصين)',
-          '📋 الوثائق المطلوبة : نسخة من جواز السفر + تذكرة الطائرة',
+          'مطار الإنطلاق: تونس أو أي مكان في العالم',
+          'مطار الوصول: القاهرة، الغردقة، شرم الشيخ · 4 ساعات يكون عندك تصريح أمني وضمان بدون تعقيد!',
         ],
       },
       {
         id: 'cap-veg-3',
-        scene: 'المشهد 04',
-        lines: ['📞 واتساب وحجوزات Easy2Book : 98 140 514', '🌐 www.easy2book.tn'],
+        scene: '19–24 ث · التواصل',
+        lines: [
+          'معانا... سفرتك أسهل! 📞 واتساب Easy2Book : 98 140 514',
+          '🌐 www.easy2book.tn',
+        ],
       },
     ];
   }
@@ -2196,20 +2552,27 @@ export function getSocialCaptionBlocks(preset: ReelPresetId = 'omra') {
     return [
       {
         id: 'cap-vev-1',
-        scene: 'المشهد 01',
-        lines: ['🌐 الوجهات الجديدة & E-Visa · Easy2Book', '🇦🇱 ألبانيا 380 DT (شاملة الترجمة) | 🇹🇭 تايلاند 130 DT'],
+        scene: '0–10 s · Accroche',
+        lines: [
+          '🇹🇳 PASSEPORT TUNISIEN ? · LE MONDE VOUS ATTEND 🌍',
+          'Des destinations accessibles avec des formalités électroniques (E-Visa).',
+        ],
       },
       {
         id: 'cap-vev-2',
-        scene: 'المشهد 02 و 03',
+        scene: '10–33 s · Destinations & Accompagnement',
         lines: [
-          '🗺️ +53 وجهة E-Visa جديدة متوفرة عند الطلب: سنغافورة، فيتنام، تنزانيا، كولومبيا، كازاخستان وغيرها',
+          'E-VISA • VISA EN LIGNE : 🇷🇼 Rwanda, 🇹🇿 Tanzanie, 🇨🇲 Cameroun, 🇶🇦 Qatar, 🇧🇭 Bahreïn, 🇻🇳 Vietnam, 🇺🇿 Ouzbékistan, 🇦🇱 Albanie, 🇨🇴 Colombie, 🇧🇸 Bahamas.',
+          'ON VOUS ACCOMPAGNE : Easy2Book — خطوتك الأولى نحو العالم! ✈️',
         ],
       },
       {
         id: 'cap-vev-3',
-        scene: 'المشهد 04',
-        lines: ['📞 اطلب تسعيرتك عبر واتساب: 98 140 514', '🌐 www.easy2book.tn'],
+        scene: '33–42 s · Contact & Mention légale',
+        lines: [
+          '📞 CONTACTEZ-NOUS · WhatsApp Easy2Book : 98 140 514 | www.easy2book.tn',
+          'ملاحظة: شروط التأشيرة تختلف حسب البلد، والجنسية، ومدة الإقامة. القبول النهائي يبقى من اختصاص سلطات البلد المعني.',
+        ],
       },
     ];
   }

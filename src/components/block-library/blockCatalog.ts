@@ -473,6 +473,20 @@ export const BLOCK_CATALOG: BlockCatalogEntry[] = [
       ar: 'إجابات حول الآجال والبصمة البيومترية.',
     },
   },
+  {
+    type: 'module_visa_egypt',
+    category: 'visa',
+    labels: {
+      fr: 'Module Visa Égypte (Garantie & Autorisation 4h)',
+      en: 'Visa Egypt Module (Security Clearance & Guarantee)',
+      ar: 'وحدة فيزا وخطاب ضمان مصر (تصريح أمني 4 ساعات)',
+    },
+    description: {
+      fr: 'Formulaire interactif dédié aux demandes de visa / lettre de garantie Égypte : infos voyageur, passeport, date du vol, aéroports, motif du voyage et calcul tarifaire 4h.',
+      en: 'Interactive intake module for Egyptian visa & security clearance requests with traveler info, passport number, flight date, airports, travel purpose and 4h tariff calculation.',
+      ar: 'وحدة تفاعلية متخصصة لطلبات فيزا وخطاب ضمان وتصريح أمني لمصر تشمل بيانات المسافر، رقم الجواز، تاريخ الرحلة، المطارات، غرض السفر وحساب التعريفة في 4 ساعات.',
+    },
+  },
 
   // === 4 BLOCS STRUCTURELS PAGE COMPLÈTE ===
   {
@@ -627,6 +641,7 @@ export function createDefaultBlock(
     faq: 'faq',
     visa_faq: 'faq',
     lead_form: 'form-block',
+    module_visa_egypt: 'module-visa-egypte',
     module_hotels_search: 'module-hotels',
     module_flights: 'module-vols',
     module_ferries: 'module-bateaux',
@@ -1000,6 +1015,63 @@ export function createDefaultBlock(
           : 'Bonjour, je souhaite obtenir des informations sur cette offre.',
         trackAsCrmLead: false,
       },
+    },
+    module_visa_egypt: {
+      eyebrow: isAr
+        ? 'فيزا وتصريح أمني لمصر · إصدار في 4 ساعات'
+        : isEn
+          ? 'Visa Egypt & Security Clearance · 4-Hour Processing'
+          : 'Visa Égypte & Autorisation sécuritaire · Délai 4h',
+      title: isAr
+        ? 'طلب خطاب ضمان وتصريح أمني للسفر إلى مصر'
+        : isEn
+          ? 'Request Egyptian Visa / Security Clearance'
+          : 'Demande de Visa & Lettre de Garantie Égypte',
+      description: isAr
+        ? 'أدخل بيانات المسافر، تاريخ الرحلة، مطار الإنطلاق والوصول وغرض السفر لبدء معالجة ملفك في 4 ساعات فقط.'
+        : isEn
+          ? 'Fill in traveler information, flight date, departure/arrival airports, and travel purpose to process your Egyptian visa or guarantee letter within 4 hours.'
+          : 'Renseignez les informations du voyageur, la date du vol, les aéroports et le motif du voyage pour lancer votre autorisation sécuritaire ou lettre de garantie en 4 heures.',
+      imageKey: 'egypt_pyramids_museum',
+      primaryCtaLabel: isAr
+        ? 'إرسال طلب التصريح الأمني (4 ساعات)'
+        : isEn
+          ? 'Submit Egypt Visa Request (4h)'
+          : 'Envoyer la demande Visa Égypte (4h)',
+      items: [
+        {
+          id: 'eg-t1',
+          title: isAr
+            ? 'خطاب ضمان انطلاق من تونس'
+            : isEn
+              ? 'Guarantee Letter · Departure Tunisia'
+              : 'Lettre / garantie départ Tunisie',
+          price: isAr ? '90 د.ت' : '90 DT',
+          subtitle: isAr ? 'إصدار خلال 4 ساعات' : 'Délai 4h · Passeport + billet',
+        },
+        {
+          id: 'eg-t2',
+          title: isAr
+            ? 'خطاب ضمان انطلاق من دولة أخرى'
+            : isEn
+              ? 'Guarantee Letter · Other Country'
+              : 'Lettre / garantie autre pays',
+          price: isAr ? '150 د.ت' : '150 DT',
+          subtitle: isAr ? 'حسب الطلب · 4 ساعات' : 'Sur demande · Délai 4h',
+        },
+        {
+          id: 'eg-t3',
+          title: isAr
+            ? 'نزول شرم الشيخ / الغردقة / الإسكندرية'
+            : isEn
+              ? 'Sharm / Hurghada / Alexandria Landing'
+              : 'Atterrissage Charm / Hurghada / Alexandrie',
+          price: isAr ? '350 / 300 د.ت' : '350 / 300 DT',
+          subtitle: isAr
+            ? '350 د.ت (فردي) · 300 د.ت (+2)'
+            : '350 DT (1 pers.) · 300 DT (dès 2 pers.)',
+        },
+      ],
     },
     lead_form: {
       eyebrow: isAr ? 'تسجيل الاهتمام' : 'Demande de devis & réservation',

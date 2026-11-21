@@ -26,6 +26,12 @@ import {
   getSocialCaptionBlocks,
   getSubtitleCues,
   REEL_PRESET_CATALOG,
+  VISA_EVISA_HOOK_ANGLES,
+  VISA_EVISA_LEGAL_DISCLAIMER_AR,
+  VISA_EVISA_LEGAL_DISCLAIMER_FR,
+  VISA_EVISA_MARKETING_ADVICE,
+  VISA_EVISA_RETENTION_TIPS,
+  VISA_EVISA_STORYBOARD_ROWS,
   VOICE_OPTIONS,
   type ReelPresetId,
 } from '../../data/campaignData';
@@ -132,6 +138,9 @@ export function VideosStudioView({
   const [videoExportError, setVideoExportError] = useState<string | null>(null);
   const [videoLinkCopied, setVideoLinkCopied] = useState(false);
   const [copiedCaptionId, setCopiedCaptionId] = useState<string | null>(null);
+  const [selectedEvisaHookId, setSelectedEvisaHookId] = useState<string | null>(
+    null
+  );
   const [attachTargetPageId, setAttachTargetPageId] = useState<string>(
     presetMeta.linkedPageId
   );
@@ -153,6 +162,7 @@ export function VideosStudioView({
     setAudioActive(false);
     setAudioError(null);
     setCurrentTime(0);
+    setSelectedEvisaHookId(null);
     setVideoExportError(null);
     setVideoExportResult(null);
     setSelectedPreset(nextPreset);
@@ -164,6 +174,26 @@ export function VideosStudioView({
       setAttachTargetPageId(meta.linkedPageId);
     }
   };
+
+  const effectiveScenes = useMemo(() => {
+    if (selectedPreset !== 'visa_evisa' || !selectedEvisaHookId) {
+      return reelConfig.scenes;
+    }
+    const chosenHook = VISA_EVISA_HOOK_ANGLES.find(
+      (h) => h.id === selectedEvisaHookId
+    );
+    if (!chosenHook) return reelConfig.scenes;
+    return reelConfig.scenes.map((scene, idx) =>
+      idx === 0
+        ? {
+            ...scene,
+            overlayHeadline: chosenHook.screenHeadline,
+            overlayLines: [chosenHook.screenSubline],
+            overlayPosition: 'center' as const,
+          }
+        : scene
+    );
+  }, [reelConfig.scenes, selectedEvisaHookId, selectedPreset]);
 
   useEffect(() => {
     if (!isPlaying || audioActive) return;
@@ -303,6 +333,7 @@ export function VideosStudioView({
         voiceName: selectedVoice,
         showCaptions,
         customScript: activeScript,
+        scenesOverride: effectiveScenes,
         autoDownload: true,
         onProgress: (pct, label) => {
           setVideoExportPct(pct);
@@ -347,11 +378,8 @@ export function VideosStudioView({
     if (preset === 'visa_oman') return 'airline_business_cabin';
     if (preset === 'visa_international') return 'visa_canada';
     if (preset === 'visa_omra') return 'omra_vip_haram';
-    if (
-      preset === 'visa_services' ||
-      preset === 'visa_schengen' ||
-      preset === 'visa_evisa'
-    ) {
+    if (preset === 'visa_evisa') return 'evisa_passport_globe';
+    if (preset === 'visa_services' || preset === 'visa_schengen') {
       return 'visa_desk';
     }
     if (preset === 'turkey_excursions') return 'turkey_istanbul_reel';
@@ -855,6 +883,178 @@ export function VideosStudioView({
             </div>
           )}
 
+          {selectedPreset === 'visa_evisa' && (
+            <div className="rounded-2xl border border-[#C8922A]/35 bg-[#FFFDF7] p-5 space-y-4 shadow-2xs">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h3 className="text-sm font-extrabold text-[#102D45]">
+                  Découpage conseillé pour le montage (42 s) & Conseil marketing E-Visa
+                </h3>
+                <span className="font-mono-tabular text-[11px] font-bold text-[#1C4967]">
+                  0–42 s · 5 séquences
+                </span>
+              </div>
+
+              <div className="overflow-x-auto rounded-xl border border-[#102D45]/10 bg-white">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b border-[#102D45]/10 bg-[#FAF9F6] text-[11px] font-bold text-[#1C4967]">
+                      <th className="px-3.5 py-2.5 whitespace-nowrap">Temps</th>
+                      <th className="px-3.5 py-2.5">Image à afficher</th>
+                      <th className="px-3.5 py-2.5 whitespace-nowrap">Texte à l’écran</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#102D45]/8">
+                    {VISA_EVISA_STORYBOARD_ROWS.map((row) => (
+                      <tr
+                        key={row.id}
+                        onClick={() => {
+                          const target =
+                            (row.startSec / Math.max(1, reelConfig.totalDurationSec)) *
+                            totalDuration;
+                          setCurrentTime(target);
+                          if (audioRef.current) audioRef.current.currentTime = target;
+                        }}
+                        className="cursor-pointer hover:bg-[#FFF9EB] transition-colors"
+                      >
+                        <td className="px-3.5 py-2.5 font-mono-tabular font-extrabold text-[#C8922A] whitespace-nowrap">
+                          {row.timeRange}
+                        </td>
+                        <td className="px-3.5 py-2.5 font-semibold text-[#102D45]">
+                          {row.visualFr}
+                        </td>
+                        <td className="px-3.5 py-2.5 font-extrabold text-[#102D45] whitespace-nowrap">
+                          {row.onScreenText}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-xl border border-[#102D45]/10 bg-white p-3.5 space-y-1">
+                  <p className="text-xs font-extrabold text-[#102D45]">
+                    {VISA_EVISA_MARKETING_ADVICE.titleFr}
+                  </p>
+                  <p className="text-[11px] leading-relaxed text-slate-600">
+                    {VISA_EVISA_MARKETING_ADVICE.detailFr}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-[#102D45]/10 bg-white p-3.5 space-y-1.5">
+                  <p className="text-xs font-extrabold text-[#102D45]">
+                    Mention légale obligatoire (AR / FR)
+                  </p>
+                  <p dir="rtl" className="font-arabic text-[11px] font-semibold leading-relaxed text-[#1C4967]">
+                    {VISA_EVISA_LEGAL_DISCLAIMER_AR}
+                  </p>
+                  <p className="text-[11px] leading-relaxed text-slate-600">
+                    {VISA_EVISA_LEGAL_DISCLAIMER_FR}
+                  </p>
+                </div>
+              </div>
+
+              {/* 4 Opening Hook Angles (0–3 s) */}
+              <div className="space-y-3 border-t border-[#102D45]/10 pt-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h4 className="text-xs font-extrabold text-[#102D45]">
+                    4 angles d’accroche (0–3 s) — cliquez pour prévisualiser sur le Reel 9:16
+                  </h4>
+                  {selectedEvisaHookId && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedEvisaHookId(null);
+                        setCurrentTime(0);
+                        if (audioRef.current) audioRef.current.currentTime = 0;
+                      }}
+                      className="text-[11px] font-bold text-[#1C4967] hover:underline"
+                    >
+                      Accroche par défaut
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid gap-2.5 sm:grid-cols-2">
+                  {VISA_EVISA_HOOK_ANGLES.map((angle) => {
+                    const active = selectedEvisaHookId === angle.id;
+                    return (
+                      <button
+                        key={angle.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedEvisaHookId(angle.id);
+                          setCurrentTime(0);
+                          if (audioRef.current) audioRef.current.currentTime = 0;
+                        }}
+                        className={`rounded-xl border p-3.5 text-start transition-colors space-y-1.5 ${
+                          active
+                            ? 'border-[#C8922A] bg-[#102D45] text-white'
+                            : 'border-[#102D45]/10 bg-white text-[#102D45] hover:border-[#C8922A]'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-2 text-[10px] font-bold">
+                          <span className={active ? 'text-[#F6D365]' : 'text-[#C8922A]'}>
+                            HOOK {angle.numberLabel} · {angle.tagFr}
+                          </span>
+                          {active && (
+                            <span className="text-[#F6D365]">Actif 0–4 s</span>
+                          )}
+                        </div>
+                        <p className="text-xs font-extrabold leading-snug">
+                          {angle.titleFr}
+                        </p>
+                        <p
+                          className={`text-[11px] font-semibold leading-snug ${
+                            active ? 'text-[#F6D365]' : 'text-[#1C4967]'
+                          }`}
+                        >
+                          {angle.hookVoiceoverFr}
+                        </p>
+                        <p
+                          className={`text-[11px] leading-relaxed ${
+                            active ? 'text-slate-200' : 'text-slate-600'
+                          }`}
+                        >
+                          {angle.visualFr}
+                        </p>
+                        <p
+                          className={`text-[10px] leading-relaxed ${
+                            active ? 'text-slate-300' : 'text-slate-500'
+                          }`}
+                        >
+                          <span className="font-bold">Pourquoi ça marche : </span>
+                          {angle.whyItWorksFr}
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* 3-Second Retention Playbook */}
+                <div className="rounded-xl bg-[#102D45] p-4 text-white space-y-2.5">
+                  <p className="text-xs font-extrabold text-[#F6D365]">
+                    💡 Astuce pour maximiser la rétention sur les 3 premières secondes
+                  </p>
+                  <div className="grid gap-2.5 sm:grid-cols-2">
+                    {VISA_EVISA_RETENTION_TIPS.map((tip) => (
+                      <div
+                        key={tip.id}
+                        className="rounded-lg border border-white/15 bg-white/8 p-3 space-y-1"
+                      >
+                        <p className="text-[11px] font-extrabold text-[#F6D365]">
+                          {tip.titleFr}
+                        </p>
+                        <p className="text-[11px] leading-relaxed text-slate-200">
+                          {tip.detailFr}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Scene Timeline Scrubber + Subtitle Cue */}
           <div className="rounded-2xl border border-[#102D45]/10 bg-white p-5 space-y-4 shadow-2xs">
             <div className="flex items-center justify-between gap-2">
@@ -1005,7 +1205,7 @@ export function VideosStudioView({
             showCaptions={showCaptions}
             isMuted={isMuted}
             audioActive={audioActive}
-            scenes={reelConfig.scenes}
+            scenes={effectiveScenes}
             endBadgeText={reelConfig.endBadgeText}
             secondaryLabelA={reelConfig.secondarySceneLabelA}
             secondaryLabelB={reelConfig.secondarySceneLabelB}

@@ -40,7 +40,7 @@ export function BlockLibraryView({
   const filtered = BLOCK_CATALOG.filter((b) => {
     if (category !== 'all' && b.category !== category) return false;
     if (query.trim()) {
-      const hay = `${b.labels[language]} ${b.description[language]} ${b.type}`.toLowerCase();
+      const hay = `${b.labels.fr} ${b.labels.en} ${b.labels.ar} ${b.description.fr} ${b.description.en} ${b.description.ar} ${b.type}`.toLowerCase();
       if (!hay.includes(query.trim().toLowerCase())) return false;
     }
     return true;

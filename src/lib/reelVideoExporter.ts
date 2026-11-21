@@ -5,6 +5,10 @@ import {
   type ReelPresetId,
   type ReelScene,
 } from '../data/campaignData';
+import {
+  drawRealFlagCanvas,
+  EVISA_FLAG_CATALOG,
+} from './realCountryFlags';
 
 export interface VideoExportResult {
   blobUrl: string;
@@ -196,42 +200,134 @@ function renderOverlayToCanvas(
     ctx.restore();
   }
 
-  // 5. On-Screen Commercial Typography
+  // 5. On-Screen Commercial Typography + Real Country Flags
   if (showCaptions && !isStudioScene) {
     ctx.save();
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.65)';
-    ctx.shadowBlur = 12;
-
     const lines = seg.scene.overlayLines;
-    const baseBottom = HEIGHT - 96;
-    const lineHeight = 38;
-    const linesStartY = baseBottom - (lines.length - 1) * lineHeight;
-    const maxWidth = WIDTH - 76;
+    const flags = seg.scene.flagCodes ?? [];
 
-    if (isLtr) {
-      ctx.direction = 'ltr';
-      ctx.textAlign = 'left';
-      ctx.font = '800 36px "Plus Jakarta Sans", Inter, sans-serif';
+    if (seg.scene.overlayPosition === 'center') {
+      const cardW = WIDTH - 64;
+      const cardX = 32;
+      const hasSingleFlag = flags.length === 1;
+      const cardH = (hasSingleFlag ? 74 : 0) + 110 + lines.length * 36;
+      const cardY = Math.round((HEIGHT - cardH) / 2);
+
+      ctx.fillStyle = 'rgba(7, 14, 28, 0.78)';
+      drawRoundedRect(ctx, cardX, cardY, cardW, cardH, 24);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      let cursorY = cardY + 34;
+      if (hasSingleFlag) {
+        const fw = 78;
+        const fh = 52;
+        drawRealFlagCanvas(ctx, flags[0], (WIDTH - fw) / 2, cursorY, fw, fh);
+        cursorY += fh + 38;
+      } else {
+        cursorY += 28;
+      }
+
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.65)';
+      ctx.shadowBlur = 10;
+      ctx.direction = isLtr ? 'ltr' : 'rtl';
+      ctx.textAlign = 'center';
+      ctx.font = isLtr
+        ? '900 42px "Plus Jakarta Sans", Inter, sans-serif'
+        : '900 44px Cairo, sans-serif';
+      ctx.fillStyle = '#F6D365';
+      ctx.fillText(seg.scene.overlayHeadline, WIDTH / 2, cursorY, cardW - 48);
+
+      ctx.font = '700 25px Cairo, "Plus Jakarta Sans", sans-serif';
       ctx.fillStyle = '#FFFFFF';
-      ctx.fillText(seg.scene.overlayHeadline, 38, linesStartY - 46, maxWidth);
-
-      ctx.font = '700 24px "Plus Jakarta Sans", Inter, sans-serif';
-      ctx.fillStyle = '#F8E7C2';
       lines.forEach((line, idx) => {
-        ctx.fillText(line, 38, linesStartY + idx * lineHeight, maxWidth);
+        ctx.fillText(line, WIDTH / 2, cursorY + 46 + idx * 36, cardW - 48);
       });
     } else {
-      ctx.direction = 'rtl';
-      ctx.textAlign = 'right';
-      ctx.font = '800 42px Cairo, sans-serif';
-      ctx.fillStyle = '#FFFFFF';
-      ctx.fillText(seg.scene.overlayHeadline, WIDTH - 38, linesStartY - 48, maxWidth);
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.65)';
+      ctx.shadowBlur = 12;
 
-      ctx.font = '700 26px Cairo, sans-serif';
-      ctx.fillStyle = '#F8E7C2';
-      lines.forEach((line, idx) => {
-        ctx.fillText(line, WIDTH - 38, linesStartY + idx * lineHeight, maxWidth);
-      });
+      const baseBottom = HEIGHT - 92;
+      const lineHeight = 38;
+      const linesStartY = baseBottom - (lines.length - 1) * lineHeight;
+      const maxWidth = WIDTH - 76;
+
+      // Real Country Flags Grid above Headline (e.g., 10 E-Visa Destinations)
+      if (flags.length > 1) {
+        ctx.save();
+        ctx.shadowBlur = 0;
+        const cols = 2;
+        const rows = Math.ceil(flags.length / cols);
+        const boxPad = 18;
+        const cellGapX = 14;
+        const cellGapY = 12;
+        const cellH = 44;
+        const gridW = WIDTH - 64;
+        const gridX = 32;
+        const gridH = boxPad * 2 + rows * cellH + (rows - 1) * cellGapY;
+        const gridY = linesStartY - 102 - gridH;
+
+        ctx.fillStyle = 'rgba(7, 14, 28, 0.78)';
+        drawRoundedRect(ctx, gridX, gridY, gridW, gridH, 20);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        const cellW = (gridW - boxPad * 2 - cellGapX) / cols;
+        flags.forEach((code, i) => {
+          const col = i % cols;
+          const row = Math.floor(i / cols);
+          const cx = gridX + boxPad + col * (cellW + cellGapX);
+          const cy = gridY + boxPad + row * (cellH + cellGapY);
+
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.10)';
+          drawRoundedRect(ctx, cx, cy, cellW, cellH, 10);
+          ctx.fill();
+
+          drawRealFlagCanvas(ctx, code, cx + 10, cy + 9, 39, 26);
+
+          ctx.direction = 'ltr';
+          ctx.textAlign = 'left';
+          ctx.font = '700 21px "Plus Jakarta Sans", Inter, sans-serif';
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillText(
+            EVISA_FLAG_CATALOG[code]?.nameFr ?? code,
+            cx + 60,
+            cy + 29,
+            cellW - 70
+          );
+        });
+        ctx.restore();
+      }
+
+      if (isLtr) {
+        ctx.direction = 'ltr';
+        ctx.textAlign = 'left';
+        ctx.font = '800 38px "Plus Jakarta Sans", Inter, sans-serif';
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillText(seg.scene.overlayHeadline, 38, linesStartY - 46, maxWidth);
+
+        ctx.font = '700 24px "Plus Jakarta Sans", Inter, sans-serif';
+        ctx.fillStyle = '#F8E7C2';
+        lines.forEach((line, idx) => {
+          ctx.fillText(line, 38, linesStartY + idx * lineHeight, maxWidth);
+        });
+      } else {
+        ctx.direction = 'rtl';
+        ctx.textAlign = 'right';
+        ctx.font = '800 42px Cairo, sans-serif';
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillText(seg.scene.overlayHeadline, WIDTH - 38, linesStartY - 48, maxWidth);
+
+        ctx.font = '700 26px Cairo, sans-serif';
+        ctx.fillStyle = '#F8E7C2';
+        lines.forEach((line, idx) => {
+          ctx.fillText(line, WIDTH - 38, linesStartY + idx * lineHeight, maxWidth);
+        });
+      }
     }
     ctx.restore();
   }
@@ -242,12 +338,19 @@ async function renderBrowserWebmFallback(params: {
   showCaptions: boolean;
   preset?: ReelPresetId;
   customScript?: string;
+  scenesOverride?: ReelScene[];
   autoDownload?: boolean;
   onProgress?: (pct: number, label: string) => void;
 }): Promise<VideoExportResult> {
-  const { voiceName, showCaptions, preset = 'omra', onProgress } = params;
+  const {
+    voiceName,
+    showCaptions,
+    preset = 'omra',
+    scenesOverride,
+    onProgress,
+  } = params;
   const config = getReelConfig(preset);
-  const scenes = config.scenes;
+  const scenes = scenesOverride && scenesOverride.length > 0 ? scenesOverride : config.scenes;
   const baseTotalSec = Math.max(
     1,
     config.totalDurationSec || TOTAL_REEL_DURATION_SEC
@@ -390,6 +493,7 @@ export async function generateVideoDownloadLink(params: {
   showCaptions: boolean;
   preset?: ReelPresetId;
   customScript?: string;
+  scenesOverride?: ReelScene[];
   autoDownload?: boolean;
   onProgress?: (pct: number, label: string) => void;
 }): Promise<VideoExportResult> {
@@ -398,11 +502,12 @@ export async function generateVideoDownloadLink(params: {
     showCaptions,
     preset = 'omra',
     customScript,
+    scenesOverride,
     autoDownload = false,
     onProgress,
   } = params;
   const config = getReelConfig(preset);
-  const scenes = config.scenes;
+  const scenes = scenesOverride && scenesOverride.length > 0 ? scenesOverride : config.scenes;
   const resolvedScript = customScript?.trim() || config.script;
 
   try {

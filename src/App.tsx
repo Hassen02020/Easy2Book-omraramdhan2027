@@ -82,6 +82,12 @@ function upgradeStudioState(raw: CreatorState): CreatorState {
   const demoVisaEgyptPage = DEMO_PAGES.find(
     (p) => p.id === 'page-visa-egypte-easy2book'
   );
+  const demoVisaEvisaPage = DEMO_PAGES.find(
+    (p) => p.id === 'page-visa-evisa-easy2book'
+  );
+  const demoFlightsFerriesPage = DEMO_PAGES.find(
+    (p) => p.id === 'page-billetterie-avion-bateau-easy2book'
+  );
   const upgradedPages = raw.pages.map((pg) => {
     if (pg.id === 'page-omra-ramadan-2027') {
       return {
@@ -148,6 +154,25 @@ function upgradeStudioState(raw: CreatorState): CreatorState {
         folderGroup: pg.folderGroup || 'Visas par Type',
         isPilotPage: true,
         pilotRenderer: 'visa_category_2026' as const,
+      };
+    }
+    if (pg.id === 'page-visa-evisa-easy2book' && demoVisaEvisaPage) {
+      if (pg.updatedAt === '2026-11-15T10:10:00Z') {
+        return JSON.parse(JSON.stringify(demoVisaEvisaPage)) as Page;
+      }
+      return {
+        ...pg,
+        folderGroup: pg.folderGroup || 'Visas par Type',
+        isPilotPage: true,
+        pilotRenderer: 'visa_category_2026' as const,
+      };
+    }
+    if (pg.id === 'page-billetterie-avion-bateau-easy2book' && demoFlightsFerriesPage) {
+      return {
+        ...pg,
+        folderGroup: pg.folderGroup || 'Billetterie Avion & Bateau',
+        isPilotPage: true,
+        pilotRenderer: 'flights_ferries_2026' as const,
       };
     }
     return pg;

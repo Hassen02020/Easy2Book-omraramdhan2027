@@ -79,7 +79,7 @@ const ROUTE_CATALOG: RouteOption[] = [
     companiesAr: 'الخطوط التونسية · الطيران الجديد · Air France · Transavia',
     highlightsFr: ['Vols directs & express quotidiens', 'Option avec ou sans bagage soute', 'E-billet immédiat sur mobile'],
     highlightsAr: ['رحلات مباشرة وسريعة يومياً', 'اختيار مع أو بدون أمتعة شحن', 'تذكرة إلكترونية فورية على الهاتف'],
-    imageSrc: HERO_MEDIA_MAP.tunis_jeddah_flight.src,
+    imageSrc: HERO_MEDIA_MAP.tunis_flight.src,
   },
   {
     id: 'air-europe-med',
@@ -678,20 +678,24 @@ export function FlightsFerriesPilotPage({
     }
 
     const payload = buildCrmSubmissionPayload({
-      page,
-      snapshot,
-      crmConfig,
+      pageId: page.id,
+      offerId: snapshot.offerRef.externalOfferId,
+      businessUniverse: page.universe,
+      pageLanguage: lang,
+      formId: snapshot.form.formId,
+      attribution: snapshot.attribution,
+      includeUtm: crmConfig.includeUtmAttribution,
       fields: {
         fullName: fullName.trim(),
-        phone: phone.trim(),
+        phoneWhatsapp: phone.trim(),
         email: email.trim(),
-        selectedOffer: `${selectedModeLabelFr} · ${activeRoute.corridorFr} (${summaryOptionsFr})`,
-        passengersCount: String(passengersCount),
-        travelDates: travelDates.trim(),
-        message: notes.trim(),
+        travelersCount: passengersCount,
+        requestedDeparture: travelDates.trim(),
+        message: `${selectedModeLabelFr} · ${activeRoute.corridorFr} (${summaryOptionsFr})${notes.trim() ? ` — ${notes.trim()}` : ''}`,
+        consent: true,
       },
     });
-    const res = await SimulatedCrmAdapter.submitLead(payload, crmConfig);
+    const res = await SimulatedCrmAdapter.submitLeadForm(payload, crmConfig);
     setDispatchResult(res);
   };
 

@@ -5,6 +5,7 @@ import {
   TOTAL_REEL_DURATION_SEC,
   type ReelScene,
 } from '../data/campaignData';
+import { EVISA_FLAG_CATALOG, RealFlagSvg } from '../lib/realCountryFlags';
 
 interface ReelPlayerProps {
   currentTime: number;
@@ -358,37 +359,93 @@ export function ReelPlayer({
 
         {/* On-Screen Commercial Typography Overlays for Photographic Scenes */}
         {showCaptions && !isStudioScene && (
-          <div
-            dir={isLtrScene ? 'ltr' : 'rtl'}
-            className={`pointer-events-none absolute inset-x-5 bottom-8 z-20 ${
-              isLtrScene ? 'text-left' : 'text-right'
-            }`}
-          >
-            <h3 className="text-2xl font-extrabold leading-snug text-white drop-shadow-md">
-              {activeScene.overlayHeadline}
-            </h3>
-            <div className="mt-2.5 space-y-1.5">
-              {activeScene.overlayLines.map((line, index) => (
-                <p
-                  key={index}
-                  className="text-sm font-semibold leading-relaxed text-[#F8E7C2] drop-shadow"
+          activeScene.overlayPosition === 'center' ? (
+            <div
+              dir={isLtrScene ? 'ltr' : 'rtl'}
+              className="pointer-events-none absolute inset-x-4 top-1/2 -translate-y-1/2 z-20 flex flex-col items-center text-center"
+            >
+              <div className="w-full rounded-2xl border border-white/15 bg-[#070E1C]/74 px-4 py-4 backdrop-blur-md shadow-xl">
+                {activeScene.flagCodes && activeScene.flagCodes.length === 1 && (
+                  <div className="mb-2.5 flex justify-center">
+                    <RealFlagSvg
+                      code={activeScene.flagCodes[0]}
+                      className="h-7 w-11 rounded-[3px] border border-white/30 shadow-md"
+                    />
+                  </div>
+                )}
+                <h3
+                  className={`text-2xl font-black leading-tight text-[#F6D365] drop-shadow-md ${
+                    isLtrScene ? 'uppercase tracking-tight' : 'font-arabic'
+                  }`}
                 >
-                  {line}
-                </p>
-              ))}
-            </div>
-            {Boolean(
-              activeScene.secondaryImage &&
-                typeof activeScene.matchCutOffsetSec === 'number'
-            ) && (
-              <div className="mt-3 flex items-center gap-2 text-xs font-medium text-white/80">
-                <Plane className="h-3.5 w-3.5 text-[#C8922A]" aria-hidden="true" />
-                <span>
-                  {isSecondaryActive ? secondaryLabelB : secondaryLabelA}
-                </span>
+                  {activeScene.overlayHeadline}
+                </h3>
+                <div className="mt-2 space-y-1">
+                  {activeScene.overlayLines.map((line, index) => (
+                    <p
+                      key={index}
+                      className="text-sm font-bold leading-snug text-white drop-shadow"
+                    >
+                      {line}
+                    </p>
+                  ))}
+                </div>
               </div>
-            )}
-          </div>
+            </div>
+          ) : (
+            <div
+              dir={isLtrScene ? 'ltr' : 'rtl'}
+              className={`pointer-events-none absolute inset-x-4 bottom-7 z-20 ${
+                isLtrScene ? 'text-left' : 'text-right'
+              }`}
+            >
+              {activeScene.flagCodes && activeScene.flagCodes.length > 1 && (
+                <div
+                  dir="ltr"
+                  className="mb-3 grid grid-cols-2 gap-1.5 rounded-xl border border-white/15 bg-[#070E1C]/72 p-2.5 backdrop-blur-md"
+                >
+                  {activeScene.flagCodes.map((code) => (
+                    <div
+                      key={code}
+                      className="flex items-center gap-2 rounded-lg bg-white/8 px-2 py-1"
+                    >
+                      <RealFlagSvg
+                        code={code}
+                        className="h-3.5 w-5 shrink-0 rounded-[2px] border border-white/25"
+                      />
+                      <span className="truncate text-[11px] font-bold text-white">
+                        {EVISA_FLAG_CATALOG[code]?.nameFr ?? code}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <h3 className="text-2xl font-extrabold leading-snug text-white drop-shadow-md">
+                {activeScene.overlayHeadline}
+              </h3>
+              <div className="mt-2 space-y-1.5">
+                {activeScene.overlayLines.map((line, index) => (
+                  <p
+                    key={index}
+                    className="text-sm font-semibold leading-relaxed text-[#F8E7C2] drop-shadow"
+                  >
+                    {line}
+                  </p>
+                ))}
+              </div>
+              {Boolean(
+                activeScene.secondaryImage &&
+                  typeof activeScene.matchCutOffsetSec === 'number'
+              ) && (
+                <div className="mt-3 flex items-center gap-2 text-xs font-medium text-white/80">
+                  <Plane className="h-3.5 w-3.5 text-[#C8922A]" aria-hidden="true" />
+                  <span>
+                    {isSecondaryActive ? secondaryLabelB : secondaryLabelA}
+                  </span>
+                </div>
+              )}
+            </div>
+          )
         )}
       </div>
     </div>

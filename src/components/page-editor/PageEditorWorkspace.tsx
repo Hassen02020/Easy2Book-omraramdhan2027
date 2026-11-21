@@ -125,6 +125,14 @@ function inferDefaultReelPresetForPage(page: Page): ReelPresetId {
     return 'visa_services';
   }
   if (page.universe === 'voyages' || page.universe === 'hotels_tunisie') {
+    if (
+      page.id.includes('billetterie') ||
+      page.id.includes('avion') ||
+      page.id.includes('bateau') ||
+      page.id.includes('ferries')
+    ) {
+      return 'flights_ferries';
+    }
     if (page.id.includes('turquie') || page.id.includes('turkey')) return 'turkey_excursions';
     if (page.id.includes('egypt')) return 'egypt_excursions';
     return 'excursions_general';
@@ -823,30 +831,35 @@ export function PageEditorWorkspace({
             page.pilotRenderer === 'egypt_excursions_2026' ||
             page.pilotRenderer === 'turkey_excursions_2026' ||
             page.pilotRenderer === 'visa_services_2026' ||
-            page.pilotRenderer === 'visa_category_2026') && (
+            page.pilotRenderer === 'visa_category_2026' ||
+            page.pilotRenderer === 'flights_ferries_2026') && (
             <div className="mx-auto mb-3 flex max-w-5xl flex-wrap items-center justify-between gap-2 rounded-xl border border-[#E7B34C]/60 bg-white px-4 py-2 text-xs">
               <div className="flex items-center gap-2">
                 <span className="rounded bg-[#E7B34C]/20 px-2 py-0.5 text-[10px] font-bold text-[#102D45]">
-                  {page.pilotRenderer === 'visa_category_2026'
-                    ? `Landing Page Visa · ${page.folderGroup || 'Visas par Type'}`
-                    : page.pilotRenderer === 'visa_services_2026'
-                      ? `Page Pilote · Visa / ${page.folderGroup || 'Visas & E-Visa'}`
-                      : page.pilotRenderer === 'turkey_excursions_2026'
-                        ? `Page Pilote · Voyages / ${page.folderGroup || 'Excursions Turquie'}`
-                        : page.pilotRenderer === 'egypt_excursions_2026'
-                          ? `Page Pilote · Voyages / ${page.folderGroup || 'Excursions Égypte'}`
-                          : `Page Pilote · Omra / ${page.folderGroup || 'Ramadan 2027'}`}
+                  {page.pilotRenderer === 'flights_ferries_2026'
+                    ? `Page Pilote · Billetterie / ${page.folderGroup || 'Billetterie Avion & Bateau'}`
+                    : page.pilotRenderer === 'visa_category_2026'
+                      ? `Landing Page Visa · ${page.folderGroup || 'Visas par Type'}`
+                      : page.pilotRenderer === 'visa_services_2026'
+                        ? `Page Pilote · Visa / ${page.folderGroup || 'Visas & E-Visa'}`
+                        : page.pilotRenderer === 'turkey_excursions_2026'
+                          ? `Page Pilote · Voyages / ${page.folderGroup || 'Excursions Turquie'}`
+                          : page.pilotRenderer === 'egypt_excursions_2026'
+                            ? `Page Pilote · Voyages / ${page.folderGroup || 'Excursions Égypte'}`
+                            : `Page Pilote · Omra / ${page.folderGroup || 'Ramadan 2027'}`}
                 </span>
                 <span className="font-semibold text-[#102D45]">
-                  {page.pilotRenderer === 'visa_category_2026'
-                    ? page.title
-                    : page.pilotRenderer === 'visa_services_2026'
-                      ? 'Easy2Book — خدمات الفيزا و E-Visa'
-                      : page.pilotRenderer === 'turkey_excursions_2026'
-                        ? 'Easy2Book — رحلات تركيا اليومية'
-                        : page.pilotRenderer === 'egypt_excursions_2026'
-                          ? 'Easy2Book — رحلات يومية مصر'
-                          : 'Easy2Book — عمرة رمضان كامل'}
+                  {page.pilotRenderer === 'flights_ferries_2026'
+                    ? 'Easy2Book — Billet d’Avion & Bateau (30s)'
+                    : page.pilotRenderer === 'visa_category_2026'
+                      ? page.title
+                      : page.pilotRenderer === 'visa_services_2026'
+                        ? 'Easy2Book — خدمات الفيزا و E-Visa'
+                        : page.pilotRenderer === 'turkey_excursions_2026'
+                          ? 'Easy2Book — رحلات تركيا اليومية'
+                          : page.pilotRenderer === 'egypt_excursions_2026'
+                            ? 'Easy2Book — رحلات يومية مصر'
+                            : 'Easy2Book — عمرة رمضان كامل'}
                 </span>
               </div>
               <div className="flex items-center rounded-lg border border-[#102D45]/12 bg-[#F5F7FA] p-0.5">

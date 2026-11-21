@@ -38,7 +38,6 @@ import {
   getReelConfig,
   getSocialCaptionBlocks,
   getSubtitleCues,
-  TOTAL_REEL_DURATION_SEC,
   VOICE_OPTIONS,
   type ReelPresetId,
 } from '../../data/campaignData';
@@ -64,6 +63,7 @@ import { ReelPlayer } from '../ReelPlayer';
 import { TestimonialsSection } from '../TestimonialsSection';
 import { WhatsAppIcon } from '../WhatsAppIcon';
 import { BrandLogoMark } from './SiteHeader';
+import { VisaEgyptModuleBlock } from './VisaEgyptModuleBlock';
 
 function decodeBase64ToUint8Array(base64: string): Uint8Array {
   const binary = window.atob(base64);
@@ -149,40 +149,47 @@ export function BlockRenderer({
 
   const reelPreset: ReelPresetId =
     block.content.reelPreset ||
-    (pageId.includes('visa-egypte') || block.id.includes('-veg-')
-      ? 'visa_egypt'
-      : pageId.includes('visa-dubai') || block.id.includes('-vdxb-')
-        ? 'visa_dubai'
-        : pageId.includes('visa-qatar') || block.id.includes('-vqa-')
-          ? 'visa_qatar'
-          : pageId.includes('visa-oman') || block.id.includes('-vom-')
-            ? 'visa_oman'
-            : pageId.includes('visa-omra') || block.id.includes('-vomr-')
-              ? 'visa_omra'
-              : pageId.includes('visa-international') || block.id.includes('-vint-')
-                ? 'visa_international'
-                : pageId.includes('visa-evisa') || block.id.includes('-vev-')
-                  ? 'visa_evisa'
-                  : pageId.includes('schengen') ||
-                      pageId.includes('etudes') ||
-                      pageId.includes('affaires') ||
-                      pageId.includes('france')
-                    ? 'visa_schengen'
-                    : pageId.includes('visa') || block.id.includes('-visa-') || universe === 'visa'
-                      ? 'visa_services'
-                      : pageId.includes('turquie') ||
-                          pageId.includes('turkey') ||
-                          pageId.includes('istanbul') ||
-                          block.id.includes('-tr-')
-                        ? 'turkey_excursions'
-                        : pageId.includes('egypt') ||
-                            pageId.includes('cairo') ||
-                            block.id.includes('-eg-')
-                          ? 'egypt_excursions'
-                          : universe === 'voyages' || universe === 'hotels_tunisie'
-                            ? 'excursions_general'
-                            : 'omra');
+    (pageId.includes('billetterie') ||
+    pageId.includes('avion') ||
+    pageId.includes('bateau') ||
+    pageId.includes('ferries') ||
+    block.id.includes('-ff-')
+      ? 'flights_ferries'
+      : pageId.includes('visa-egypte') || block.id.includes('-veg-')
+        ? 'visa_egypt'
+        : pageId.includes('visa-dubai') || block.id.includes('-vdxb-')
+          ? 'visa_dubai'
+          : pageId.includes('visa-qatar') || block.id.includes('-vqa-')
+            ? 'visa_qatar'
+            : pageId.includes('visa-oman') || block.id.includes('-vom-')
+              ? 'visa_oman'
+              : pageId.includes('visa-omra') || block.id.includes('-vomr-')
+                ? 'visa_omra'
+                : pageId.includes('visa-international') || block.id.includes('-vint-')
+                  ? 'visa_international'
+                  : pageId.includes('visa-evisa') || block.id.includes('-vev-')
+                    ? 'visa_evisa'
+                    : pageId.includes('schengen') ||
+                        pageId.includes('etudes') ||
+                        pageId.includes('affaires') ||
+                        pageId.includes('france')
+                      ? 'visa_schengen'
+                      : pageId.includes('visa') || block.id.includes('-visa-') || universe === 'visa'
+                        ? 'visa_services'
+                        : pageId.includes('turquie') ||
+                            pageId.includes('turkey') ||
+                            pageId.includes('istanbul') ||
+                            block.id.includes('-tr-')
+                          ? 'turkey_excursions'
+                          : pageId.includes('egypt') ||
+                              pageId.includes('cairo') ||
+                              block.id.includes('-eg-')
+                            ? 'egypt_excursions'
+                            : universe === 'voyages' || universe === 'hotels_tunisie'
+                              ? 'excursions_general'
+                              : 'omra');
   const reelConfig = getReelConfig(reelPreset);
+  const baseDur = Math.max(1, reelConfig.totalDurationSec);
   const resolvedReelScript =
     block.content.customReelScript?.trim() || reelConfig.script;
   const subtitleCues = getSubtitleCues(reelPreset);
@@ -223,12 +230,10 @@ export function BlockRenderer({
   useEffect(() => {
     if (block.type !== 'hero_video' || !reelPlaying || audioActive) return;
     const id = window.setInterval(() => {
-      setReelTime((prev) =>
-        prev + 0.1 >= TOTAL_REEL_DURATION_SEC ? 0 : prev + 0.1
-      );
+      setReelTime((prev) => (prev + 0.1 >= baseDur ? 0 : prev + 0.1));
     }, 100);
     return () => window.clearInterval(id);
-  }, [audioActive, block.type, reelPlaying]);
+  }, [audioActive, baseDur, block.type, reelPlaying]);
 
   useEffect(() => {
     const map = audioUrlMapRef.current;
@@ -757,15 +762,16 @@ export function BlockRenderer({
                 audioRef.current?.duration &&
                 Number.isFinite(audioRef.current.duration)
                   ? audioRef.current.duration
-                  : TOTAL_REEL_DURATION_SEC;
+                  : baseDur;
               const scaledTime =
                 totalDur > 0
-                  ? (reelTime / totalDur) * TOTAL_REEL_DURATION_SEC
+                  ? (reelTime / totalDur) * baseDur
                   : 0;
               const activeCue =
                 subtitleCues.find(
                   (c) => scaledTime >= c.startSec && scaledTime < c.endSec
                 ) ?? subtitleCues[0];
+              const isLtrReel = reelPreset === 'flights_ferries';
               return (
                 <div
                   onClick={(e) => e.stopPropagation()}
@@ -773,10 +779,10 @@ export function BlockRenderer({
                 >
                   {activeCue && (
                     <p
-                      dir="rtl"
+                      dir={isLtrReel ? 'ltr' : 'rtl'}
                       className="text-xs font-semibold leading-relaxed text-[#102D45]"
                     >
-                      <span className="ml-1.5 font-mono text-[10px] font-bold text-[#C8922A]">
+                      <span className={`${isLtrReel ? 'mr-1.5' : 'ml-1.5'} font-mono text-[10px] font-bold text-[#C8922A]`}>
                         ●
                       </span>
                       {activeCue.text}
@@ -802,7 +808,7 @@ export function BlockRenderer({
                     </span>
                   </div>
                   {showSocialCaptions && (
-                    <div className="grid gap-2 pt-1 sm:grid-cols-3" dir="rtl">
+                    <div className="grid gap-2 pt-1 sm:grid-cols-3" dir={isLtrReel ? 'ltr' : 'rtl'}>
                       {socialCaptionBlocks.map((cap) => (
                         <div
                           key={cap.id}
@@ -857,7 +863,7 @@ export function BlockRenderer({
               totalDuration={
                 audioRef.current?.duration && Number.isFinite(audioRef.current.duration)
                   ? audioRef.current.duration
-                  : TOTAL_REEL_DURATION_SEC
+                  : baseDur
               }
               isPlaying={reelPlaying}
               showCaptions={reelCaptions}
@@ -1674,6 +1680,28 @@ export function BlockRenderer({
               })}
             </div>
           )}
+        </div>
+      </section>
+    );
+  }
+
+  // Dedicated Visa Egypt Interactive Clearance & Guarantee Module
+  if (block.type === 'module_visa_egypt') {
+    return (
+      <section {...wrapperProps} id={block.anchorId || 'module-visa-egypte'}>
+        {sectionTag}
+        <div className="mx-auto max-w-5xl px-6">
+          <VisaEgyptModuleBlock
+            block={block}
+            pageId={pageId}
+            universe={universe}
+            language={language}
+            offerRef={offerRef}
+            attribution={attribution}
+            crmConfig={crmConfig}
+            brandIdentity={brandIdentity}
+            interactiveEdit={interactiveEdit}
+          />
         </div>
       </section>
     );
