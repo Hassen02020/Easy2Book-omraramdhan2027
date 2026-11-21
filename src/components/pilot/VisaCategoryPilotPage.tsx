@@ -66,6 +66,7 @@ import {
 import type { Page, PageVersionSnapshot } from '../../types/creator';
 import { ReelPlayer } from '../ReelPlayer';
 import { PdfBrochureControl } from '../shared-components/PdfBrochureControl';
+import { SocialPosterControl } from '../shared-components/SocialPosterControl';
 import { WhatsAppIcon } from '../WhatsAppIcon';
 
 const WHATSAPP_NUMBER = '21698140514';
@@ -719,6 +720,17 @@ export function VisaCategoryPilotPage({
               </button>
             </div>
 
+            <SocialPosterControl
+              variant="pilot_header"
+              locale={isAr ? 'ar' : 'fr'}
+              page={page}
+              language={isAr ? 'ar' : 'fr'}
+              pageTitle={
+                isAr ? spec.titleAr : snapshot.seo.metaTitle || spec.titleFr
+              }
+              slug={snapshot.seo.slug || `Easy2Book-${spec.presetId}`}
+              universe="visa"
+            />
             <PdfBrochureControl
               variant="pilot_header"
               locale={isAr ? 'ar' : 'fr'}
@@ -907,6 +919,18 @@ export function VisaCategoryPilotPage({
                           : 'Télécharger Vidéo 9:16 (MP4 HD)'}
                     </span>
                   </button>
+
+                  <SocialPosterControl
+                    variant="pilot_inline"
+                    locale={isAr ? 'ar' : 'fr'}
+                    page={page}
+                    language={isAr ? 'ar' : 'fr'}
+                    pageTitle={
+                      isAr ? spec.titleAr : snapshot.seo.metaTitle || spec.titleFr
+                    }
+                    slug={snapshot.seo.slug || `Easy2Book-${spec.presetId}`}
+                    universe="visa"
+                  />
 
                   <button
                     type="button"

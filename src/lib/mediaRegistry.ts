@@ -42,6 +42,10 @@ import evisaPassportGlobe9x16 from '../assets/images/evisa_green_passport_globe_
 import evisaWorldMapRoutes9x16 from '../assets/images/evisa_world_map_routes_1795179879338.jpg';
 import evisaDestinationsCollage9x16 from '../assets/images/evisa_destinations_collage_1795179879370.jpg';
 import evisaMobileCompanion9x16 from '../assets/images/evisa_mobile_companion_1795179881635.jpg';
+import posterVisaLuxuryAirport from '../assets/images/poster_visa_luxury_airport_1795295073002.jpg';
+import posterVisaSchengenEurope from '../assets/images/poster_visa_schengen_europe_1795295069496.jpg';
+import posterHotelTunisiaResort from '../assets/images/poster_hotel_tunisia_resort_1795295068351.jpg';
+import posterHotelSuiteLuxury from '../assets/images/poster_hotel_suite_luxury_1795295066762.jpg';
 
 export type HeroImageKey =
   | 'makkah_haram'
@@ -87,7 +91,11 @@ export type HeroImageKey =
   | 'evisa_passport_globe'
   | 'evisa_world_map'
   | 'evisa_destinations_collage'
-  | 'evisa_mobile_companion';
+  | 'evisa_mobile_companion'
+  | 'poster_visa_luxury_airport'
+  | 'poster_visa_schengen_europe'
+  | 'poster_hotel_tunisia_resort'
+  | 'poster_hotel_suite_luxury';
 
 export const HERO_MEDIA_MAP: Record<
   HeroImageKey,
@@ -268,6 +276,22 @@ export const HERO_MEDIA_MAP: Record<
   evisa_mobile_companion: {
     src: evisaMobileCompanion9x16,
     label: 'E-Visa Reel 9:16 — Accompagnement Easy2Book & confirmation mobile (23–33 s)',
+  },
+  poster_visa_luxury_airport: {
+    src: posterVisaLuxuryAirport,
+    label: 'Affiche Visa Luxe — Passeport, salon VIP & avion au coucher du soleil',
+  },
+  poster_visa_schengen_europe: {
+    src: posterVisaSchengenEurope,
+    label: 'Affiche Visa Europe & Schengen — Paris & Tour Eiffel à l’heure dorée',
+  },
+  poster_hotel_tunisia_resort: {
+    src: posterHotelTunisiaResort,
+    label: 'Affiche Hôtel Tunisie 5★ — Piscine à débordement & coucher de soleil mer',
+  },
+  poster_hotel_suite_luxury: {
+    src: posterHotelSuiteLuxury,
+    label: 'Affiche Suite Hôtel 5★ — Chambre panoramique vue mer & terrasse privée',
   },
 };
 

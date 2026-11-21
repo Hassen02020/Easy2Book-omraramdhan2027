@@ -45,6 +45,7 @@ import {
 import type { Page, PageVersionSnapshot } from '../../types/creator';
 import { ReelPlayer } from '../ReelPlayer';
 import { PdfBrochureControl } from '../shared-components/PdfBrochureControl';
+import { SocialPosterControl } from '../shared-components/SocialPosterControl';
 import { WhatsAppIcon } from '../WhatsAppIcon';
 
 type TurkeyCategory =
@@ -862,6 +863,16 @@ export function TurkeyExcursionsPilotPage({
           </nav>
 
           <div className="flex items-center gap-2.5 shrink-0">
+            <SocialPosterControl
+              variant="pilot_header"
+              locale="ar"
+              page={page}
+              language="ar"
+              pageTitle={page.title}
+              slug={snapshot.seo.slug}
+              universe="voyages"
+              photoKey="turkey_istanbul_reel"
+            />
             <PdfBrochureControl
               variant="pilot_header"
               pageTitle={page.title}
@@ -978,6 +989,17 @@ export function TurkeyExcursionsPilotPage({
                       : 'إنشاء رابط تحميل الفيديو (MP4)'}
                   </span>
                 </button>
+
+                <SocialPosterControl
+                  variant="pilot_inline"
+                  locale="ar"
+                  page={page}
+                  language="ar"
+                  pageTitle={page.title}
+                  slug={snapshot.seo.slug}
+                  universe="voyages"
+                  photoKey="turkey_istanbul_reel"
+                />
 
                 <PdfBrochureControl
                   variant="pilot_inline"

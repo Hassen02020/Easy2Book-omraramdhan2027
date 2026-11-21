@@ -17,6 +17,7 @@ import type {
   Page,
   PageStatus,
 } from '../../types/creator';
+import { SocialPosterControl } from '../shared-components/SocialPosterControl';
 import { StatusBadge, UniverseTag } from '../shared-components/StatusBadge';
 
 export type PageListFilterMode = 'all' | 'drafts' | 'published' | 'archives';
@@ -223,6 +224,13 @@ export function PagesListView({
                     <Eye className="h-3.5 w-3.5" />
                     {t.actions.preview}
                   </button>
+
+                  <SocialPosterControl
+                    variant="toolbar"
+                    page={pg}
+                    pageTitle={pg.title}
+                    slug={pg.seo.slug}
+                  />
 
                   <button
                     type="button"

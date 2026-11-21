@@ -44,6 +44,7 @@ import type { Page, PageVersionSnapshot } from '../../types/creator';
 import { CountdownTimer } from '../CountdownTimer';
 import { ReelPlayer } from '../ReelPlayer';
 import { PdfBrochureControl } from '../shared-components/PdfBrochureControl';
+import { SocialPosterControl } from '../shared-components/SocialPosterControl';
 import { TestimonialsSection } from '../TestimonialsSection';
 import { WhatsAppIcon } from '../WhatsAppIcon';
 
@@ -480,6 +481,15 @@ export function OmraRamadanPilotPage({
           </nav>
 
           <div className="flex items-center gap-2.5">
+            <SocialPosterControl
+              variant="pilot_header"
+              locale="ar"
+              page={page}
+              language="ar"
+              pageTitle={page.title}
+              slug={snapshot.seo.slug}
+              universe="omra"
+            />
             <PdfBrochureControl
               variant="pilot_header"
               pageTitle={page.title}
@@ -592,6 +602,16 @@ export function OmraRamadanPilotPage({
                       : 'إنشاء رابط تحميل الفيديو (MP4)'}
                   </span>
                 </button>
+
+                <SocialPosterControl
+                  variant="pilot_inline"
+                  locale="ar"
+                  page={page}
+                  language="ar"
+                  pageTitle={page.title}
+                  slug={snapshot.seo.slug}
+                  universe="omra"
+                />
 
                 <PdfBrochureControl
                   variant="pilot_inline"

@@ -55,6 +55,7 @@ import {
 } from '../preview-renderer/PagePreviewCanvas';
 import { PublicationPanel } from '../publication/PublicationPanel';
 import { PdfBrochureControl } from '../shared-components/PdfBrochureControl';
+import { SocialPosterControl } from '../shared-components/SocialPosterControl';
 import { StatusBadge } from '../shared-components/StatusBadge';
 import { VersionHistoryPanel } from '../version-history/VersionHistoryPanel';
 import type {
@@ -514,6 +515,12 @@ export function PageEditorWorkspace({
             <Save className="h-3.5 w-3.5 text-[#1C4967]" />
             Sauvegarder
           </button>
+          <SocialPosterControl
+            variant="toolbar"
+            page={page}
+            pageTitle={page.title}
+            slug={page.seo.slug}
+          />
           <PdfBrochureControl
             variant="toolbar"
             pageTitle={page.title}

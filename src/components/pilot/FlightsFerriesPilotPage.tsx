@@ -52,6 +52,7 @@ import {
 import type { Page, PageVersionSnapshot } from '../../types/creator';
 import { ReelPlayer } from '../ReelPlayer';
 import { PdfBrochureControl } from '../shared-components/PdfBrochureControl';
+import { SocialPosterControl } from '../shared-components/SocialPosterControl';
 import { WhatsAppIcon } from '../WhatsAppIcon';
 
 type TransportMode = 'flight' | 'ferry' | 'combo';
@@ -773,6 +774,20 @@ export function FlightsFerriesPilotPage({
               <span>{isAr ? 'FR' : 'عربي'}</span>
             </button>
 
+            <SocialPosterControl
+              variant="pilot_header"
+              locale={lang}
+              page={page}
+              language={lang}
+              pageTitle={
+                isAr
+                  ? 'Easy2Book — تذاكر الطيران والبواخر (3 نقرات)'
+                  : 'Easy2Book — Billet Avion & Bateau en 3 Clics'
+              }
+              slug={snapshot.seo.slug || 'billetterie-avion-bateau-easy2book'}
+              universe="voyages"
+              photoKey="flights_mediterranean_ship"
+            />
             <PdfBrochureControl
               variant="pilot_header"
               locale={lang}
@@ -1000,6 +1015,21 @@ export function FlightsFerriesPilotPage({
                         : 'Télécharger MP4 9:16'}
                   </span>
                 </button>
+
+                <SocialPosterControl
+                  variant="pilot_inline"
+                  locale={lang}
+                  page={page}
+                  language={lang}
+                  pageTitle={
+                    isAr
+                      ? 'Easy2Book — تذاكر الطيران والبواخر (3 نقرات)'
+                      : 'Easy2Book — Billet Avion & Bateau en 3 Clics'
+                  }
+                  slug={snapshot.seo.slug || 'billetterie-avion-bateau-easy2book'}
+                  universe="voyages"
+                  photoKey="flights_mediterranean_ship"
+                />
 
                 <PdfBrochureControl
                   variant="pilot_inline"

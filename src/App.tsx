@@ -16,6 +16,7 @@ import {
 import { createDefaultBlock } from './components/block-library/blockCatalog';
 import { CreatorSettingsView } from './components/settings/CreatorSettingsView';
 import { PdfBrochureControl } from './components/shared-components/PdfBrochureControl';
+import { SocialPosterControl } from './components/shared-components/SocialPosterControl';
 import { StatusBadge } from './components/shared-components/StatusBadge';
 import { TemplatesGallery } from './components/templates/TemplatesGallery';
 import { VideosStudioView } from './components/videos-studio/VideosStudioView';
@@ -630,6 +631,13 @@ export default function App() {
                   );
                 })}
               </div>
+
+              <SocialPosterControl
+                variant="toolbar"
+                page={previewPage}
+                pageTitle={previewPage.title}
+                slug={snapshot.seo.slug}
+              />
 
               <PdfBrochureControl
                 variant="toolbar"

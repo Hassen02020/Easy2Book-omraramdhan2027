@@ -23,6 +23,7 @@ import type {
   Page,
   PageTemplate,
 } from '../../types/creator';
+import { SocialPosterControl } from '../shared-components/SocialPosterControl';
 import { StatusBadge, UniverseTag } from '../shared-components/StatusBadge';
 import type { StudioNavId } from '../navigation/SidebarNav';
 
@@ -392,6 +393,12 @@ export function StudioDashboard({
                           <Edit3 className="h-3 w-3 text-[#E7B34C]" />
                           Éditer
                         </button>
+                        <SocialPosterControl
+                          variant="toolbar"
+                          page={vpg}
+                          pageTitle={vpg.title}
+                          slug={vpg.seo.slug}
+                        />
                         <button
                           type="button"
                           onClick={() => onDownloadPdf(vpg.id)}
@@ -467,6 +474,12 @@ export function StudioDashboard({
                     <Eye className="h-3.5 w-3.5" />
                     {t.actions.preview}
                   </button>
+                  <SocialPosterControl
+                    variant="toolbar"
+                    page={pg}
+                    pageTitle={pg.title}
+                    slug={pg.seo.slug}
+                  />
                   <button
                     type="button"
                     onClick={() => onDownloadPdf(pg.id)}
