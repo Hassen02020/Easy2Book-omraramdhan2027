@@ -4,6 +4,7 @@ import type {
   CreatorLanguage,
   PageFooterConfig,
 } from '../../types/creator';
+import { renderBidiSafeText } from '../../lib/bidiText';
 import { WhatsAppIcon } from '../WhatsAppIcon';
 import { BrandLogoMark } from './SiteHeader';
 
@@ -227,7 +228,7 @@ export function SiteFooter({
 
         {/* Bottom Copyright & Legal */}
         <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-white/12 pt-5 text-[11px] text-white/70">
-          <p>{footer.copyrightText}</p>
+          <p>{renderBidiSafeText(footer.copyrightText)}</p>
           {(hasTerms || hasPrivacy) && (
             <div className="flex items-center gap-4">
               {hasTerms && (

@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Menu, X } from 'lucide-react';
+import { Menu, PhoneCall, Sparkles, X } from 'lucide-react';
 import type {
   BrandIdentity,
   CreatorLanguage,
   PageHeaderConfig,
 } from '../../types/creator';
+import { renderBidiSafeText } from '../../lib/bidiText';
 import { WhatsAppIcon } from '../WhatsAppIcon';
 
 interface SiteHeaderProps {
@@ -37,13 +38,15 @@ export function BrandLogoMark({
     return (
       <div
         className={`flex items-center justify-center overflow-hidden ${
-          darkBg ? 'rounded-lg bg-white px-2 py-1 shadow-2xs' : ''
+          darkBg
+            ? 'rounded-xl bg-white px-2.5 py-1.5 ring-1 ring-[#E7B34C]/40 shadow-sm'
+            : ''
         }`}
       >
         <img
           src={brandIdentity.logoSrc}
           alt={brandIdentity.brandName}
-          className={`${compact ? 'h-7' : 'h-8'} w-auto max-w-[140px] object-contain`}
+          className={`${compact ? 'h-7' : 'h-8'} w-auto max-w-[144px] object-contain`}
         />
       </div>
     );
@@ -283,8 +286,8 @@ export function SiteHeader({
                   : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200'
               }`}
             >
-              <WhatsAppIcon className="h-3.5 w-3.5 text-[#25D366]" />
-              <span>{header.whatsappLabel || 'WhatsApp'}</span>
+              <WhatsAppIcon className="h-4 w-4 shrink-0 text-[#25D366]" />
+              <span>{renderBidiSafeText(header.whatsappLabel || 'WhatsApp')}</span>
             </a>
           )}
 
@@ -303,9 +306,14 @@ export function SiteHeader({
                   ? `1px solid ${brandIdentity.primaryColor}`
                   : 'none',
               }}
-              className={`hidden sm:inline-flex items-center justify-center ${buttonRadiusClass} px-4 py-2 text-xs font-bold transition-transform hover:scale-[1.01] whitespace-nowrap shrink-0`}
+              className={`hidden sm:inline-flex items-center justify-center gap-1.5 ${buttonRadiusClass} px-4 py-2 text-xs font-bold transition-transform hover:scale-[1.01] whitespace-nowrap shrink-0`}
             >
-              {header.ctaLabel}
+              {/\d{2}[\s-]\d{3}[\s-]\d{3}/.test(header.ctaLabel) ? (
+                <PhoneCall className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              ) : (
+                <Sparkles className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              )}
+              <span>{renderBidiSafeText(header.ctaLabel)}</span>
             </a>
           )}
 
@@ -354,8 +362,8 @@ export function SiteHeader({
                 onClick={(e) => interactiveEdit && e.preventDefault()}
                 className={`inline-flex flex-1 items-center justify-center gap-1.5 ${buttonRadiusClass} bg-[#25D366] px-3 py-2.5 text-xs font-bold text-white whitespace-nowrap`}
               >
-                <WhatsAppIcon className="h-3.5 w-3.5" />
-                <span>{header.whatsappLabel || 'WhatsApp'}</span>
+                <WhatsAppIcon className="h-4 w-4 shrink-0" />
+                <span>{renderBidiSafeText(header.whatsappLabel || 'WhatsApp')}</span>
               </a>
             )}
             {header.ctaLabel && (
@@ -368,9 +376,14 @@ export function SiteHeader({
                   backgroundColor: brandIdentity.ctaColor,
                   color: brandIdentity.ctaTextColor,
                 }}
-                className={`inline-flex flex-1 items-center justify-center ${buttonRadiusClass} px-4 py-2.5 text-xs font-bold whitespace-nowrap`}
+                className={`inline-flex flex-1 items-center justify-center gap-1.5 ${buttonRadiusClass} px-4 py-2.5 text-xs font-bold whitespace-nowrap`}
               >
-                {header.ctaLabel}
+                {/\d{2}[\s-]\d{3}[\s-]\d{3}/.test(header.ctaLabel) ? (
+                  <PhoneCall className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                ) : (
+                  <Sparkles className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                )}
+                <span>{renderBidiSafeText(header.ctaLabel)}</span>
               </a>
             )}
           </div>

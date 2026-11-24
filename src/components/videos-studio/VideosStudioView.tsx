@@ -49,6 +49,7 @@ import {
   triggerVideoBlobDownload,
   type VideoExportResult,
 } from '../../lib/reelVideoExporter';
+import { renderBidiSafeText } from '../../lib/bidiText';
 import type { CreatorLanguage, MediaAsset, Page } from '../../types/creator';
 import { ReelPlayer } from '../ReelPlayer';
 
@@ -206,11 +207,9 @@ export function VideosStudioView({
           ? {
               ...scene,
               overlayHeadline: chosenHook.screenHeadline,
-              overlayLines: [
-                chosenHook.screenSubline,
-                'مكة المكرمة 📍 • المدينة المنورة 📍',
-              ],
+              overlayLines: [chosenHook.screenSubline],
               overlayPosition: 'center' as const,
+              hideBrandOverlay: true,
             }
           : scene
       );
@@ -266,9 +265,24 @@ export function VideosStudioView({
       ? (currentTime / totalDuration) * baseDurationSec
       : 0;
 
+  const effectiveSubtitleCues = useMemo(() => {
+    if (selectedPreset === 'omra_sur_mesure') {
+      const chosenHook = OMRA_SUR_MESURE_HOOKS.find(
+        (h) => h.id === selectedOmraCustomHookId
+      );
+      if (chosenHook) {
+        return subtitleCues.map((cue, idx) =>
+          idx === 0 ? { ...cue, text: `« ${chosenHook.voiceoverAr} »` } : cue
+        );
+      }
+    }
+    return subtitleCues;
+  }, [selectedOmraCustomHookId, selectedPreset, subtitleCues]);
+
   const activeCue =
-    subtitleCues.find((c) => scaledTime >= c.startSec && scaledTime < c.endSec) ??
-    subtitleCues[0];
+    effectiveSubtitleCues.find(
+      (c) => scaledTime >= c.startSec && scaledTime < c.endSec
+    ) ?? effectiveSubtitleCues[0];
 
   const handleTogglePlay = async (forceVoice?: string) => {
     const voice = forceVoice || selectedVoice;
@@ -918,21 +932,21 @@ export function VideosStudioView({
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <p className="text-[11px] font-bold text-[#C8922A]">
-                    OMRA SUR-MESURE · مكة 📍 · المدينة المنورة 📍 · 25–30s (9:16)
+                    OMRA SUR-MESURE · مكة المكرمة · المدينة المنورة · 40s Cinématique (9:16)
                   </p>
                   <h3 className="text-sm font-extrabold text-[#102D45]">
-                    عمرتك على كيفك! — 3 Hooks Darja, Découpage 30s & 4 Prompts Veo / AI Studio
+                    عمرتك على كيفك! — Scènes 1–4 sans logo, End-Card Crème & Or & 5 Prompts Veo
                   </h3>
                 </div>
-                <span className="font-mono-tabular text-[11px] font-bold text-[#1C4967]">
-                  30 s · 100% TND · 98 140 514
+                <span className="font-mono-tabular text-[11px] font-bold text-[#1C4967]" dir="ltr">
+                  40 s · 100% TND · 98 140 514
                 </span>
               </div>
 
               {/* 3 Interactive Tunisian Darja Hooks */}
               <div className="space-y-2.5">
                 <p className="text-xs font-extrabold text-[#102D45]">
-                  3 Hooks (0:00 – 0:04) — cliquez pour appliquer sur l’aperçu 9:16 et le script voix off
+                  3 Hooks (00:00 – 00:07) — cliquez pour appliquer sur l’aperçu 9:16 et le script voix off
                 </p>
                 <div className="grid gap-2.5 sm:grid-cols-3">
                   {OMRA_SUR_MESURE_HOOKS.map((hook) => {
@@ -942,13 +956,19 @@ export function VideosStudioView({
                         key={hook.id}
                         type="button"
                         onClick={() => {
+                          if (audioRef.current) {
+                            audioRef.current.pause();
+                            audioRef.current.currentTime = 0;
+                          }
+                          setAudioActive(false);
+                          setIsPlaying(false);
+                          setTotalDuration(reelConfig.totalDurationSec);
                           setSelectedOmraCustomHookId(hook.id);
                           setCustomScripts((prev) => ({
                             ...prev,
                             omra_sur_mesure: `${hook.voiceoverAr} ${OMRA_SUR_MESURE_BODY_SCRIPT}`,
                           }));
                           setCurrentTime(0);
-                          if (audioRef.current) audioRef.current.currentTime = 0;
                         }}
                         className={`rounded-xl border p-3.5 text-start transition-colors space-y-1.5 ${
                           active
@@ -961,7 +981,7 @@ export function VideosStudioView({
                             HOOK {hook.numberLabel}
                           </span>
                           {active && (
-                            <span className="text-[#F6D365]">Actif 0–4 s</span>
+                            <span className="text-[#F6D365]">Actif 0–7 s</span>
                           )}
                         </div>
                         <p
@@ -998,7 +1018,20 @@ export function VideosStudioView({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#102D45]/8">
-                    {OMRA_SUR_MESURE_STORYBOARD_ROWS.map((row) => (
+                    {OMRA_SUR_MESURE_STORYBOARD_ROWS.map((row, rowIdx) => {
+                      const activeHookForRow =
+                        rowIdx === 0
+                          ? OMRA_SUR_MESURE_HOOKS.find(
+                              (h) => h.id === selectedOmraCustomHookId
+                            )
+                          : undefined;
+                      const displayScreenText = activeHookForRow
+                        ? `${activeHookForRow.screenHeadline} (${activeHookForRow.screenSubline})`
+                        : row.onScreenText;
+                      const displayVoiceover = activeHookForRow
+                        ? `« ${activeHookForRow.voiceoverAr} »`
+                        : row.voiceoverExcerpt;
+                      return (
                       <tr
                         key={row.id}
                         onClick={() => {
@@ -1027,28 +1060,29 @@ export function VideosStudioView({
                           dir="rtl"
                           className="px-3 py-2.5 font-arabic text-[11px] font-extrabold text-[#102D45]"
                         >
-                          {row.onScreenText}
+                          {renderBidiSafeText(displayScreenText)}
                         </td>
                         <td
                           dir="rtl"
                           className="px-3 py-2.5 font-arabic text-[11px] font-semibold text-slate-700"
                         >
-                          {row.voiceoverExcerpt}
+                          {renderBidiSafeText(displayVoiceover)}
                         </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
 
-              {/* 4 Copy-Ready Cinematic 9:16 AI Video Prompts (Google AI Studio / Veo) */}
+              {/* 5 Copy-Ready Cinematic 9:16 AI Video Prompts (Google AI Studio / Veo) */}
               <div className="space-y-2.5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <h4 className="text-xs font-extrabold text-[#102D45]">
-                    4 Prompts Cinématiques 9:16 prêts à copier (Google AI Studio / Veo)
+                    5 Prompts Cinématiques 9:16 prêts à copier (40s · Google AI Studio / Veo)
                   </h4>
                   <span className="text-[11px] font-semibold text-slate-500">
-                    Format vertical 9:16 · 4K · Sans texte incrusté
+                    Format vertical 9:16 · 4K · Zéro logo scènes 1–4 + End-Card Crème & Or
                   </span>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -1543,7 +1577,7 @@ export function VideosStudioView({
                 dir={selectedPreset === 'flights_ferries' ? 'ltr' : 'rtl'}
                 className="rounded-xl border border-[#E7B34C]/40 bg-[#FFFDF7] px-3.5 py-2.5 text-xs font-semibold text-[#102D45]"
               >
-                {activeCue.text}
+                {renderBidiSafeText(activeCue.text)}
               </div>
             )}
 

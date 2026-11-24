@@ -50,6 +50,8 @@ export interface ReelScene {
   promptText: string;
   cameraMoveLabel: string;
   isStudioLockup?: boolean;
+  hideBrandOverlay?: boolean;
+  endCardStyle?: 'cream_gold';
   overlayDir?: 'rtl' | 'ltr';
   overlayPosition?: 'bottom' | 'center';
   flagCodes?: CountryFlagCode[];
@@ -2064,22 +2066,22 @@ export const OMRA_SUR_MESURE_HOOKS: OmraCustomHookOption[] = [
   {
     id: 'hook1',
     numberLabel: '01',
-    tagAr: 'كسر النمط التقليدي · الأكثر جذباً',
-    tagFr: 'Rupture de modèle (Plus fort engagement)',
+    tagAr: 'الهوك الرسمي (40 ث) · الحرية والاختيار',
+    tagFr: 'Hook officiel 40s (Liberté totale · Aérien La Mecque)',
     voiceoverAr:
-      'يزّي ما يفرضوا عليك وقتاش تمشي ووين تسكن في العمرة... اليوم مع Easy2Book، عمرتك تفصّلها على كيفك!',
+      'تحب تخرج للعمرة في الوقت إلي يساعدك، وتختار كل شيء وحدك؟ مع إيزي تو بوك، عمرتك على كيفك!',
     screenHeadline: 'عمرتك على كيفك! 🕋✨',
-    screenSubline: '(بلا برامج مفروضة)',
+    screenSubline: 'اختار كل شيء وحدك',
   },
   {
     id: 'hook2',
     numberLabel: '02',
-    tagAr: 'التركيز على السهولة والدفع بالدينار',
-    tagFr: 'Simplicité & Paiement en Dinar Tunisien',
+    tagAr: 'كسر النمط التقليدي · بلا برامج مفروضة',
+    tagFr: 'Rupture de modèle (Sans programmes imposés)',
     voiceoverAr:
-      'تحب تخرج للعمرة في الوقت إلي يساعدك، وتختار أوتيلك في مكة والمدينة قبل ما تسافر، وتخلّص بالدينار التونسي؟',
-    screenHeadline: 'أوتيلك قبل السفر بالدينار التونسي 🇹🇳',
-    screenSubline: 'مكة والمدينة في الوقت إلي يساعدك',
+      'يزّي ما يفرضوا عليك وقتاش تمشي ووين تسكن في العمرة... اليوم مع إيزي تو بوك، عمرتك تفصّلها على كيفك!',
+    screenHeadline: 'عمرتك على كيفك! 🕋✨',
+    screenSubline: 'بلا برامج مفروضة',
   },
   {
     id: 'hook3',
@@ -2088,13 +2090,13 @@ export const OMRA_SUR_MESURE_HOOKS: OmraCustomHookOption[] = [
     tagFr: 'Curiosité & Rapidité (3 étapes sur mobile)',
     voiceoverAr:
       'في 3 خطوات برك، تنجم تحضّر برنامج عمرتك كامل من تليفونك... شوف كيفاش!',
-    screenHeadline: 'عمرتك في 3 خطوات من تليفونك 📱',
+    screenHeadline: 'عمرتك في 3 خطوات 📱',
     screenSubline: 'طيران • فنادق مكة • فنادق المدينة',
   },
 ];
 
 export const OMRA_SUR_MESURE_BODY_SCRIPT =
-  'أول حاجة: اختار برنامج الطيران إلي يناسبك، بالنهار والوقت إلي يساعد ظروفك وخدمتك. ثاني حاجة: اختار غرفتك في فنادق مكة بكل راحة، بحجز مسبق ومضمون، والخلاص بالدينار التونسي! وثالث حاجة: اختار غرفتك في فنادق المدينة حسب المتاح، وكمّل برنامجك على قياسك. كل شيء حاضر ومضمون... ما بقالك كان تتوكل على ربي! كلمنا توا على ثمانية وتسعين، مية وأربعين، خمس مية وأربعطاش، ولا ادخل لـ easy2book.tn وابدأ رحلتك.';
+  'أول حاجة: اختار برنامج الطيران إلي يناسبك، بالنهار والوقت إلي يساعد ظروفك. ثاني حاجة: اختار غرفتك في فنادق مكة بكل راحة، بحجز مسبق ومضمون، والخلاص بالدينار التونسي. وثالث حاجة: اختار غرفتك في فنادق المدينة حسب المتاح، وكمّل برنامجك على قياسك. كل شيء حاضر ومضمون... ما بقالك كان تتوكل على ربي! كلمنا توا على ثمانية وتسعين، مية وأربعين، خمس مية وأربعطاش ولا ادخل لـ إيزي تو بوك بوان تي أن وابدأ رحلتك. مع إيزي تو بوك... رحلتك أسهل!';
 
 export const OMRA_SUR_MESURE_SCRIPT = `${OMRA_SUR_MESURE_HOOKS[0].voiceoverAr} ${OMRA_SUR_MESURE_BODY_SCRIPT}`;
 
@@ -2102,163 +2104,160 @@ export const OMRA_SUR_MESURE_REEL_SCENES: ReelScene[] = [
   {
     id: 'osm-scene-1',
     indexLabel: '01',
-    arabicTitle: '0:00 – 0:04 · The Hook (عمرتك على كيفك)',
+    arabicTitle: '00:00 – 00:07 · The Hook (مكة من الجو عند الشروق)',
     subtitleSummary:
-      'شاب أو عائلة تونسية يشوفوا في التليفون بحيرة، ثم ابتسامة ارتياح وانتقال للكعبة المشرفة.',
+      'لقطة درون جوية ساحرة للكعبة المشرفة والمسجد الحرام عند الشروق الذهبي مع حركة كاميرا بطيئة وسلسة.',
     startSec: 0,
-    endSec: 4,
-    primaryImage: worldHotelsCafeImg,
-    secondaryImage: makkahSunriseImg,
-    matchCutOffsetSec: 2,
-    imageAlt: 'عائلة تونسية تحضر برنامج العمرة من الهاتف وانتقال إلى الكعبة المشرفة',
-    secondaryImageAlt: 'إطلالة الكعبة المشرفة والمسجد الحرام عند الفجر',
+    endSec: 7,
+    primaryImage: makkahSunriseImg,
+    imageAlt: 'لقطة جوية للكعبة المشرفة والمسجد الحرام عند الشروق الذهبي',
     overlayHeadline: 'عمرتك على كيفك! 🕋✨',
-    overlayLines: ['(بلا برامج مفروضة)', 'مكة المكرمة 📍 • المدينة المنورة 📍'],
+    overlayLines: ['اختار كل شيء وحدك'],
+    promptText:
+      'Breathtaking, serene aerial drone shot of the Holy Kaaba in Mecca at golden sunrise, soft warm light illuminating the Grand Mosque courtyard. Smooth slow camera push-in. Photorealistic 4K vertical 9:16, no logos, no phone numbers, no websites.',
+    cameraMoveLabel: 'Slow Aerial Push-In · Golden Sunrise',
     overlayPosition: 'center',
-    flagCodes: ['TN', 'SA'],
-    motion: 'zoom-in',
+    hideBrandOverlay: true,
   },
   {
     id: 'osm-scene-2',
     indexLabel: '02',
-    arabicTitle: '0:04 – 0:10 · الخطوة 1: الطيران',
+    arabicTitle: '00:07 – 00:14 · الخطوة 1: اختيار برنامج الطيران',
     subtitleSummary:
-      'لقطة سينمائية لطائرة تقلع في السماء الصافية مع اختيار التواريخ وشركات الطيران.',
-    startSec: 4,
-    endSec: 10,
+      'لقطة سينمائية من زاوية منخفضة لطائرة حديثة تحلّق فوق السحب البيضاء في سماء الساعة الذهبية.',
+    startSec: 7,
+    endSec: 14,
     primaryImage: tunisFlightImg,
-    secondaryImage: airlineCabinImg,
-    matchCutOffsetSec: 3.5,
-    imageAlt: 'طائرة تقلع في السماء الصافية عند الساعة الذهبية',
-    secondaryImageAlt: 'راحة رحلة الطيران نحو جدة والمدينة',
+    imageAlt: 'طائرة حديثة تحلّق فوق السحب البيضاء في سماء الساعة الذهبية',
     overlayHeadline: '1. اختار برنامج طيرانك ✈️',
-    overlayLines: [
-      '(التاريخ والوقت إلي يناسبك)',
-      'بالنهار والوقت إلي يساعد ظروفك وخدمتك',
-    ],
-    overlayPosition: 'bottom',
-    flagCodes: ['TN', 'SA'],
-    motion: 'pan-right',
+    overlayLines: ['التاريخ والوقت إلي يناسبك'],
+    promptText:
+      'Smooth transition to a dynamic, cinematic low-angle shot of a modern commercial airplane soaring gracefully above soft white clouds in a clear golden-hour sky. Photorealistic 4K vertical 9:16, no logos, no phone numbers, no websites.',
+    cameraMoveLabel: 'Dynamic Low-Angle Soar · Golden Hour',
+    overlayPosition: 'center',
+    hideBrandOverlay: true,
   },
   {
     id: 'osm-scene-3',
     indexLabel: '03',
-    arabicTitle: '0:10 – 0:17 · الخطوة 2: فنادق مكة',
+    arabicTitle: '00:14 – 00:23 · الخطوة 2: فندق 5 نجوم بمكة بإطلالة الكعبة',
     subtitleSummary:
-      'لقطة بانورامية لفنادق مطلة على الحرم في مكة ثم دخول لغرفة فندقية فاخرة ومريحة.',
-    startSec: 10,
-    endSec: 17,
+      'غرفة فندقية فاخرة 5 نجوم في مكة بنوافذ بانورامية مطلة مباشرة على الكعبة وأبراج البيت بدون أي علامة مائية.',
+    startSec: 14,
+    endSec: 23,
     primaryImage: omraVipHaramImg,
     secondaryImage: makkahSuiteImg,
-    matchCutOffsetSec: 3.5,
-    imageAlt: 'غرفة فندقية 5 نجوم في مكة بإطلالة بانورامية على الحرم والكعبة',
-    secondaryImageAlt: 'جناح فندقي فاخر ومريح في مكة المكرمة',
+    matchCutOffsetSec: 4.5,
+    imageAlt: 'غرفة فندقية 5 نجوم في مكة بنوافذ بانورامية مطلة على الكعبة المشرفة وأبراج البيت',
+    secondaryImageAlt: 'تفاصيل غرفة فندقية هادئة ومشرقة بضوء الصباح في مكة المكرمة',
     overlayHeadline: '2. اختار غرفتك في مكة 🏨',
-    overlayLines: [
-      '(حجز مسبق بالدينار التونسي 🇹🇳)',
-      'فنادق مضمونة وقريبة من الحرم المكي',
-    ],
-    overlayPosition: 'bottom',
-    flagCodes: ['SA', 'TN'],
-    motion: 'zoom-out',
+    overlayLines: ['حجز مسبق بالدينار التونسي 🇹🇳'],
+    promptText:
+      'Smooth transition to the interior of a modern, serene 5-star hotel room in Mecca with floor-to-ceiling panoramic windows looking directly at the Kaaba and Abraj Al Bait clock tower. Soft morning sunlight on a neatly made bed. No logos or watermarks on the window.',
+    cameraMoveLabel: 'Smooth Gimbal Pan · Kaaba Panoramic Window',
+    overlayPosition: 'center',
+    hideBrandOverlay: true,
   },
   {
     id: 'osm-scene-4',
     indexLabel: '04',
-    arabicTitle: '0:17 – 0:23 · الخطوة 3: فنادق المدينة',
+    arabicTitle: '00:23 – 00:31 · الخطوة 3: إقامتك في المدينة المنورة',
     subtitleSummary:
-      'لقطة هادئة ومشرقة للمسجد النبوي الشريف في المدينة المنورة مع خيارات الإقامة المتاحة.',
-    startSec: 17,
-    endSec: 23,
+      'لقطة واسعة وهادئة لساحة المسجد النبوي الشريف بالمظلات البيضاء والقبة الخضراء المضيئة عند الغروب.',
+    startSec: 23,
+    endSec: 31,
     primaryImage: madinahTwilightImg,
-    imageAlt: 'المسجد النبوي الشريف والقبة الخضراء والمظلات في المدينة المنورة',
+    imageAlt: 'ساحة المسجد النبوي الشريف بالمظلات البيضاء والقبة الخضراء في المدينة المنورة',
     overlayHeadline: '3. اختار إقامتك في المدينة 🕌',
-    overlayLines: [
-      '(حسب المتاح وبكل مرونة)',
-      'كمّل برنامج عمرتك على قياسك',
-    ],
-    overlayPosition: 'bottom',
-    flagCodes: ['SA'],
-    motion: 'pan-left',
+    overlayLines: ['حسب المتاح وبكل مرونة'],
+    promptText:
+      'Smooth transition to a peaceful, sunlit wide shot of Al-Masjid an-Nabawi courtyard in Medina with its iconic white umbrellas and green dome glowing softly at twilight. Clean frame with no overlapping contact details.',
+    cameraMoveLabel: 'Wide Serene Tilt · Al-Masjid an-Nabawi',
+    overlayPosition: 'center',
+    hideBrandOverlay: true,
   },
   {
     id: 'osm-scene-5',
     indexLabel: '05',
-    arabicTitle: '0:23 – 0:30 · CTA (توكل على ربي)',
+    arabicTitle: '00:31 – 00:40 · بطاقة النهاية والاتصال (End-Card كريمي وذهبي)',
     subtitleSummary:
-      'شعار Easy2Book مع الواتساب والموقع الإلكتروني ولقطة روحانية للمسجد الحرام.',
-    startSec: 23,
-    endSec: 30,
+      'انتقال هادئ لبطاقة علامة Easy2Book الكريمية والذهبية مع الشعار الرسمي والاتصال بوضوح عالٍ.',
+    startSec: 31,
+    endSec: 40,
     primaryImage: makkahNightImg,
-    imageAlt: 'المسجد الحرام والكعبة المشرفة في أجواء روحانية مضيئة',
-    overlayHeadline: 'توكل على ربي! 🤲',
-    overlayLines: ['📞 98 140 514', '🌐 www.easy2book.tn'],
+    imageAlt: 'بطاقة العلامة التجارية Easy2Book الكريمية والذهبية',
+    overlayHeadline: 'مع Easy2Book رحلتك أسهل ✨',
+    overlayLines: ['توكل على ربي! 🤲', '98 140 514', 'www.easy2book.tn'],
+    promptText:
+      'Smooth fade into an elegant, warm cream-and-gold minimalist background card (no busy background footage). Sequential centered reveal: 1) Easy2Book official brand logo, 2) "مع Easy2Book رحلتك أسهل ✨", 3) "توكل على ربي! 🤲", 4) High-contrast dark navy/gold contact block: 98 140 514 & www.easy2book.tn.',
+    cameraMoveLabel: 'Clean Cream & Gold Brand End-Card',
+    isStudioLockup: true,
+    endCardStyle: 'cream_gold',
+    hideBrandOverlay: true,
     overlayPosition: 'center',
-    flagCodes: ['TN', 'SA'],
-    motion: 'zoom-in',
   },
 ];
 
 export const OMRA_SUR_MESURE_STORYBOARD_ROWS: EgyptStoryboardRow[] = [
   {
     id: 'osm-sb-1',
-    timeRange: '0:00 – 0:04',
+    timeRange: '00:00 – 00:07',
     startSec: 0,
     visualAr:
-      'شاب أو عائلة تونسية في الدار يشوفوا في التليفون بحيرة، ثم ابتسامة ارتياح وانتقال سريع للكعبة المشرفة',
+      'لقطة درون جوية ساحرة للكعبة المشرفة عند الشروق الذهبي مع حركة كاميرا بطيئة (بدون شعارات أو أرقام)',
     visualFr:
-      'Couple/famille tunisienne sur smartphone → sourire de soulagement → transition fluide vers la Kaaba à l’aube',
-    onScreenText: 'عمرتك على كيفك! 🕋✨ (بلا برامج مفروضة)',
+      'Drone aérien Kaaba au lever doré · Push-in lent · Zéro logo / numéro sur l’image',
+    onScreenText: 'عمرتك على كيفك! 🕋✨ (اختار كل شيء وحدك)',
     voiceoverExcerpt:
-      'يزّي ما يفرضوا عليك برنامج معيّن للعمرة! مع Easy2Book، عمرتك اليوم تفصّلها على كيفك...',
+      'تحب تخرج للعمرة في الوقت إلي يساعدك، وتختار كل شيء وحدك؟ مع إيزي تو بوك، عمرتك على كيفك!',
   },
   {
     id: 'osm-sb-2',
-    timeRange: '0:04 – 0:10',
-    startSec: 4,
+    timeRange: '00:07 – 00:14',
+    startSec: 7,
     visualAr:
-      'لقطة سينمائية لطائرة تقلع في السماء الصافية، مع واجهة اختيار التواريخ وشركات الطيران',
+      'لقطة سينمائية من زاوية منخفضة لطائرة حديثة تحلّق فوق السحب البيضاء عند الساعة الذهبية',
     visualFr:
-      'Décollage cinématique d’un avion à l’heure dorée + choix libre des dates et compagnies aériennes',
+      'Avion moderne en contre-plongée au-dessus des nuages (golden hour) · Image propre sans logo',
     onScreenText: '1. اختار برنامج طيرانك ✈️ (التاريخ والوقت إلي يناسبك)',
     voiceoverExcerpt:
-      'أول حاجة: اختار برنامج الطيران إلي يناسبك، بالنهار والوقت إلي يساعد ظروفك وخدمتك.',
+      'أول حاجة: اختار برنامج الطيران إلي يناسبك، بالنهار والوقت إلي يساعد ظروفك.',
   },
   {
     id: 'osm-sb-3',
-    timeRange: '0:10 – 0:17',
-    startSec: 10,
+    timeRange: '00:14 – 00:23',
+    startSec: 14,
     visualAr:
-      'لقطة بانورامية لفنادق مطلة على الحرم في مكة، ثم دخول لغرفة فندقية فاخرة ومريحة',
+      'غرفة فندقية 5 نجوم بمكة بنوافذ بانورامية مطلة مباشرة على الكعبة وأبراج البيت (بدون علامات مائية)',
     visualFr:
-      'Vue panoramique hôtels face au Haram à La Mecque → chambre 5★ lumineuse avec tapis de prière',
+      'Chambre 5★ La Mecque avec baies vitrées face à la Kaaba & Abraj Al Bait · Lumière matinale propre',
     onScreenText: '2. اختار غرفتك في مكة 🏨 (حجز مسبق بالدينار التونسي 🇹🇳)',
     voiceoverExcerpt:
-      'ثاني حاجة: اختار غرفتك في فنادق مكة بكل راحة، بحجز مسبق ومضمون، والخلاص بالدينار التونسي!',
+      'ثاني حاجة: اختار غرفتك في فنادق مكة بكل راحة، بحجز مسبق ومضمون، والخلاص بالدينار التونسي.',
   },
   {
     id: 'osm-sb-4',
-    timeRange: '0:17 – 0:23',
-    startSec: 17,
+    timeRange: '00:23 – 00:31',
+    startSec: 23,
     visualAr:
-      'لقطة هادئة ومشرقة للمسجد النبوي الشريف في المدينة المنورة مع إظهار خيارات الإقامة المتاحة',
+      'لقطة واسعة هادئة لساحة المسجد النبوي الشريف بالمظلات البيضاء والقبة الخضراء المضيئة عند الغروب',
     visualFr:
-      'Al-Masjid an-Nabawi à Médine (Dôme vert & ombrelles) + options d’hébergement disponibles',
+      'Plan large esplanade Al-Masjid an-Nabawi (ombrelles blanches & Dôme vert au crépuscule) · Image épurée',
     onScreenText: '3. اختار إقامتك في المدينة 🕌 (حسب المتاح وبكل مرونة)',
     voiceoverExcerpt:
       'وثالث حاجة: اختار غرفتك في فنادق المدينة حسب المتاح، وكمّل برنامجك على قياسك.',
   },
   {
     id: 'osm-sb-5',
-    timeRange: '0:23 – 0:30',
-    startSec: 23,
+    timeRange: '00:31 – 00:40',
+    startSec: 31,
     visualAr:
-      'شعار Easy2Book بوضوح مع أيقونة الواتساب والموقع الإلكتروني ولقطة معتمر مبتسم يرفع يديه بالدعاء',
+      'بطاقة نهاية أنيقة كريمية وذهبية (Clean End-Card): الشعار الرسمي + مع Easy2Book رحلتك أسهل + توكل على ربي + الاتصال',
     visualFr:
-      'Logo Easy2Book + WhatsApp & site web + pèlerin souriant en Ihram levant les mains en invocation (Dua)',
-    onScreenText: 'توكل على ربي! 🤲 · 📞 98 140 514 · 🌐 www.easy2book.tn',
+      'End-Card minimaliste crème & or : Logo Easy2Book → « مع Easy2Book رحلتك أسهل ✨ » → « توكل على ربي! 🤲 » → Contact',
+    onScreenText: 'مع Easy2Book رحلتك أسهل ✨ · توكل على ربي! 🤲 · 98 140 514 · www.easy2book.tn',
     voiceoverExcerpt:
-      'كل شيء حاضر ومضمون... ما بقالك كان تتوكل على ربي! كلمنا توا على 98 140 514 ولا ادخل لـ easy2book.tn وابدأ رحلتك.',
+      'كل شيء حاضر ومضمون... ما بقالك كان تتوكل على ربي! كلمنا توا على 98 140 514 ولا ادخل لـ easy2book.tn وابدأ رحلتك. مع إيزي تو بوك... رحلتك أسهل!',
   },
 ];
 
@@ -2273,35 +2272,43 @@ export interface VeoScenePromptItem {
 export const OMRA_SUR_MESURE_VEO_PROMPTS: VeoScenePromptItem[] = [
   {
     id: 'veo-osm-1',
-    sceneLabelFr: 'Scène 1 · Le Hook — Couple tunisien → Kaaba à l’aube',
-    sceneLabelAr: 'المشهد 1 · الهوك — عائلة تونسية + انتقال للكعبة المشرفة',
-    timeRange: '0:00 – 0:04',
+    sceneLabelFr: 'Scène 1 · The Hook — Drone Aérien La Mecque (Lever doré)',
+    sceneLabelAr: 'المشهد 1 · الهوك — لقطة جوية للكعبة المشرفة عند الشروق الذهبي',
+    timeRange: '00:00 – 00:07',
     promptEn:
-      'Vertical 9:16 cinematic shot, warm natural lighting. A happy North African couple in their 30s sitting in a cozy modern living room, smiling and relaxing while booking their trip on a smartphone together. Smooth seamless camera push-in towards the phone screen, transitioning with a soft golden light flare into a breathtaking aerial view of the Holy Kaaba in Mecca at dawn. Photorealistic, 4k, shallow depth of field, peaceful and inspiring atmosphere.',
+      'Vertical 9:16 4K photorealistic cinematic shot. Breathtaking, serene aerial drone shot of the Holy Kaaba in Mecca at golden sunrise, soft warm light illuminating the Grand Mosque courtyard. Smooth slow camera push-in. Clean footage with zero logos, no phone numbers, no websites, no text.',
   },
   {
     id: 'veo-osm-2',
-    sceneLabelFr: 'Scène 2 · Étape 1 — Le Vol (Décollage heure dorée)',
-    sceneLabelAr: 'المشهد 2 · الخطوة 1 — الطيران (إقلاع في السماء الصافية)',
-    timeRange: '0:04 – 0:10',
+    sceneLabelFr: 'Scène 2 · Étape 1 — Vol (Avion au-dessus des nuages)',
+    sceneLabelAr: 'المشهد 2 · الخطوة 1 — طائرة تحلّق فوق السحب في الساعة الذهبية',
+    timeRange: '00:07 – 00:14',
     promptEn:
-      'Vertical 9:16 cinematic travel shot. A modern commercial passenger airplane taking off smoothly into a clear golden-hour sky above soft white clouds, filmed from a dynamic low-angle perspective. Warm sunlight reflecting off the fuselage. Smooth slow-motion camera movement, ultra-realistic, 4k resolution, crisp details, uplifting and serene mood, no text.',
+      'Vertical 9:16 4K photorealistic cinematic shot. Dynamic, cinematic low-angle shot of a modern commercial airplane soaring gracefully above soft white clouds in a clear golden-hour sky. Warm sunlight reflecting off the fuselage. Smooth slow-motion camera glide. Clean footage, no logos, no text.',
   },
   {
     id: 'veo-osm-3',
-    sceneLabelFr: 'Scène 3 · Étape 2 — Hôtel 5★ La Mecque (Vue Haram)',
-    sceneLabelAr: 'المشهد 3 · الخطوة 2 — غرفة فندقية 5★ مطلة على الحرم',
-    timeRange: '0:10 – 0:17',
+    sceneLabelFr: 'Scène 3 · Étape 2 — Hôtel 5★ La Mecque (Vue Kaaba & Abraj Al Bait)',
+    sceneLabelAr: 'المشهد 3 · الخطوة 2 — غرفة 5 نجوم في مكة مطلة على الكعبة وأبراج البيت',
+    timeRange: '00:14 – 00:23',
     promptEn:
-      'Vertical 9:16 luxury hospitality shot. Interior of an elegant, modern 5-star hotel room in Mecca with floor-to-ceiling windows overlooking the Grand Mosque and the Kaaba glowing softly in the distance. Gentle morning sunlight streaming onto a neatly made white bed and prayer rug. Slow, smooth gimbal pan from the room interior toward the panoramic window view. Photorealistic, 4k, peaceful spiritual ambiance, no text.',
+      'Vertical 9:16 4K photorealistic luxury hospitality shot. Interior of a modern, serene 5-star hotel room in Mecca with floor-to-ceiling panoramic windows looking directly at the Kaaba and Abraj Al Bait clock tower. Soft morning sunlight on a neatly made bed. Smooth slow gimbal pan. Clean window with zero logos, watermarks, or text.',
   },
   {
     id: 'veo-osm-4',
-    sceneLabelFr: 'Scène 4 · Étape 3 — Médine & Outro (Sérénité & Dua)',
-    sceneLabelAr: 'المشهد 4 · الخطوة 3 والخاتمة — المسجد النبوي ومعتمر يدعو',
-    timeRange: '0:17 – 0:30',
+    sceneLabelFr: 'Scène 4 · Étape 3 — Hôtel Médine (Al-Masjid an-Nabawi)',
+    sceneLabelAr: 'المشهد 4 · الخطوة 3 — ساحة المسجد النبوي بالمظلات البيضاء والقبة الخضراء',
+    timeRange: '00:23 – 00:31',
     promptEn:
-      'Vertical 9:16 cinematic shot at Al-Masjid an-Nabawi in Medina during golden sunset. The iconic green dome and white umbrellas glowing warmly under a soft twilight sky. In the foreground, a serene North African pilgrim dressed in clean white Ihram garments smiling peacefully and raising hands in gentle prayer (Dua). Soft bokeh background, slow cinematic camera tilt up, 4k photorealistic, deeply spiritual and trustworthy feel, no text.',
+      'Vertical 9:16 4K photorealistic cinematic shot. Peaceful, sunlit wide shot of Al-Masjid an-Nabawi courtyard in Medina with its iconic white umbrellas and green dome glowing softly at twilight. Slow smooth camera tilt. Clean frame with zero logos, no contact details, no text.',
+  },
+  {
+    id: 'veo-osm-5',
+    sceneLabelFr: 'Scène 5 · Outro Clean End-Card (Crème & Or + Direction Audio)',
+    sceneLabelAr: 'المشهد 5 · بطاقة النهاية الكريمية والذهبية + التوجيه الصوتي',
+    timeRange: '00:31 – 00:40',
+    promptEn:
+      'Vertical 9:16 minimalist luxury end-card: warm cream-and-gold background (no busy footage). Sequential centered appearance: Easy2Book official logo -> "مع Easy2Book رحلتك أسهل ✨" -> "توكل على ربي! 🤲" -> crisp high-contrast dark navy/gold contact block "98 140 514" and "www.easy2book.tn". Audio: warm Tunisian Darja voice-over + serene acoustic spiritual instrumental at 15% volume, gently swelling in final 3s.',
   },
 ];
 
@@ -2370,11 +2377,11 @@ export const REEL_PRESET_CATALOG: ReelPresetCatalogEntry[] = [
   {
     id: 'omra_sur_mesure',
     category: 'omra',
-    titleFr: 'Omra Sur-Mesure · « عمرتك على كيفك » en 3 Étapes (30s · 100% TND)',
-    titleAr: 'فيديو عمرتك على كيفك! 🕋✨ (3 خطوات بالدينار التونسي · 30 ثانية)',
-    badgeFr: 'Omra Sur-Mesure · 3 Hooks + Veo 9:16',
+    titleFr: 'Omra Sur-Mesure · « عمرتك على كيفك » Cinématique 40s (100% TND)',
+    titleAr: 'فيديو عمرتك على كيفك! 🕋✨ (40 ثانية · بطاقة نهاية كريمي وذهبي)',
+    badgeFr: 'Omra Sur-Mesure · 40s · Clean End-Card',
     summaryFr:
-      'Promo 30s (3 Hooks Darja tunisienne + 4 prompts cinématiques Veo) : 1. Choix vol libre · 2. Hôtel La Mecque pré-réservé en TND · 3. Hôtel Médine flexible · CTA WhatsApp 98 140 514.',
+      'Promo 40s 9:16 sans logos sur les scènes 1–4 : La Mecque aérien (0–7s) → Avion (7–14s) → Chambre 5★ vue Kaaba TND (14–23s) → Médine (23–31s) → End-Card crème & or Easy2Book (31–40s).',
     defaultVoiceId: 'Layla',
     linkedPageId: 'page-omra-sur-mesure-easy2book',
   },
@@ -2579,20 +2586,7 @@ export function getReelConfig(preset: ReelPresetId = 'omra'): {
   outputBaseName: string;
 } {
   if (preset === 'visa_egypt') {
-    if (preset === 'omra_sur_mesure') {
     return {
-      preset: 'omra_sur_mesure',
-      scenes: OMRA_SUR_MESURE_REEL_SCENES,
-      script: OMRA_SUR_MESURE_SCRIPT,
-      totalDurationSec: 30,
-      defaultVoiceId: 'Layla',
-      endBadgeText: 'توكل على ربي! 🤲 · 📞 98 140 514 · www.easy2book.tn',
-      secondarySceneLabelA: '1. طيرانك · 2. غرفتك في مكة بالدينار التونسي 🇹🇳',
-      secondarySceneLabelB: '3. إقامتك في المدينة حسب المتاح · بلا برامج مفروضة',
-      outputBaseName: 'Easy2Book-Omra-Sur-Mesure-30s',
-    };
-  }
-  return {
       preset: 'visa_egypt',
       scenes: VISA_EGYPT_REEL_SCENES,
       script: VISA_EGYPT_TUNISIAN_SCRIPT,
@@ -2797,6 +2791,19 @@ export function getReelConfig(preset: ReelPresetId = 'omra'): {
       secondarySceneLabelA: 'بدون كارت دوفيز وبلاش ما تمس منحتك السياحية (Allocation)',
       secondarySceneLabelB: 'عمرة • مصر • كندا • تركيا • دبي · Voucher فوري بالدينار',
       outputBaseName: 'Easy2Book-Hotels-Monde-Cafe-Scenario3-45s',
+    };
+  }
+  if (preset === 'omra_sur_mesure') {
+    return {
+      preset: 'omra_sur_mesure',
+      scenes: OMRA_SUR_MESURE_REEL_SCENES,
+      script: OMRA_SUR_MESURE_SCRIPT,
+      totalDurationSec: 40,
+      defaultVoiceId: 'Layla',
+      endBadgeText: 'توكل على ربي! 🤲',
+      secondarySceneLabelA: '1. طيرانك · 2. غرفتك في مكة بالدينار التونسي 🇹🇳',
+      secondarySceneLabelB: '3. إقامتك في المدينة حسب المتاح · بلا برامج مفروضة',
+      outputBaseName: 'Easy2Book-Omra-Sur-Mesure-40s',
     };
   }
   return {
@@ -3285,28 +3292,28 @@ export function getSubtitleCues(preset: ReelPresetId = 'omra'): SubtitleCue[] {
     return [
       {
         startSec: 0,
-        endSec: 4,
-        text: '« يزّي ما يفرضوا عليك برنامج معيّن للعمرة! مع Easy2Book، عمرتك اليوم تفصّلها على كيفك... »',
+        endSec: 7,
+        text: '« تحب تخرج للعمرة في الوقت إلي يساعدك، وتختار كل شيء وحدك؟ مع إيزي تو بوك، عمرتك على كيفك! »',
       },
       {
-        startSec: 4,
-        endSec: 10,
-        text: '« أول حاجة: اختار برنامج الطيران إلي يناسبك، بالنهار والوقت إلي يساعد ظروفك وخدمتك. »',
+        startSec: 7,
+        endSec: 14,
+        text: '« أول حاجة: اختار برنامج الطيران إلي يناسبك، بالنهار والوقت إلي يساعد ظروفك. »',
       },
       {
-        startSec: 10,
-        endSec: 17,
-        text: '« ثاني حاجة: اختار غرفتك في فنادق مكة بكل راحة، بحجز مسبق ومضمون، والخلاص بالدينار التونسي! »',
-      },
-      {
-        startSec: 17,
+        startSec: 14,
         endSec: 23,
-        text: '« وثالث حاجة: اختار غرفتك في فنادق المدينة حسب المتاح، وكمّل برنامجك على قياسك. »',
+        text: '« ثاني حاجة: اختار غرفتك في فنادق مكة بكل راحة، بحجز مسبق ومضمون، والخلاص بالدينار التونسي. »',
       },
       {
         startSec: 23,
-        endSec: 30,
-        text: '« كل شيء حاضر ومضمون... ما بقالك كان تتوكل على ربي! كلمنا توا على 98 140 514 ولا ادخل لـ easy2book.tn وابدأ رحلتك. »',
+        endSec: 31,
+        text: '« وثالث حاجة: اختار غرفتك في فنادق المدينة حسب المتاح، وكمّل برنامجك على قياسك. »',
+      },
+      {
+        startSec: 31,
+        endSec: 40,
+        text: '« كل شيء حاضر ومضمون... ما بقالك كان تتوكل على ربي! كلمنا توا على 98 140 514 ولا ادخل لـ easy2book.tn وابدأ رحلتك. مع إيزي تو بوك... رحلتك أسهل! »',
       },
     ];
   }

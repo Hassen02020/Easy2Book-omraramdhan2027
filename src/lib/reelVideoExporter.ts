@@ -127,77 +127,174 @@ function renderOverlayToCanvas(
     }
   });
 
-  // 3. Brand Top Badge
-  ctx.save();
-  ctx.direction = 'ltr';
-  ctx.textAlign = 'right';
-  ctx.font = '700 24px "Plus Jakarta Sans", Inter, sans-serif';
-  ctx.fillStyle = isStudioScene ? '#0B162C' : 'rgba(255, 255, 255, 0.95)';
-  ctx.fillText('Easy2Book', WIDTH - 28, 76);
-  ctx.restore();
+  // 3. Brand Top Badge (strictly omitted when hideBrandOverlay is set on scenes 1-4)
+  if (!seg.scene.hideBrandOverlay) {
+    ctx.save();
+    ctx.direction = 'ltr';
+    ctx.textAlign = 'right';
+    ctx.font = '700 24px "Plus Jakarta Sans", Inter, sans-serif';
+    ctx.fillStyle = isStudioScene ? '#0B162C' : 'rgba(255, 255, 255, 0.95)';
+    ctx.fillText('Easy2Book', WIDTH - 28, 76);
+    ctx.restore();
+  }
 
   // 4. Studio Scene Centered Brand Lockup
   if (isStudioScene) {
     const centerX = WIDTH / 2;
-    if (logoImg) {
-      const targetH = 156;
-      const ratio = logoImg.width / Math.max(1, logoImg.height);
-      const targetW = targetH * ratio;
-      ctx.drawImage(logoImg, centerX - targetW / 2, 340, targetW, targetH);
-    }
 
-    ctx.save();
-    if (isLtr) {
-      ctx.direction = 'ltr';
-      ctx.textAlign = 'center';
-      ctx.font = '800 30px "Plus Jakarta Sans", Inter, sans-serif';
-      ctx.fillStyle = '#0B162C';
-      ctx.fillText('The easiest way to travel', centerX, 536, WIDTH - 64);
-    } else {
+    if (seg.scene.endCardStyle === 'cream_gold') {
+      // Elegant warm cream-and-gold minimalist background card (covers any footage)
+      const bgGrad = ctx.createLinearGradient(0, 0, WIDTH, HEIGHT);
+      bgGrad.addColorStop(0, '#FFFDF8');
+      bgGrad.addColorStop(0.55, '#F7EFE0');
+      bgGrad.addColorStop(1, '#EFE0BE');
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+      // Subtle gold inner border frame
+      ctx.save();
+      ctx.strokeStyle = 'rgba(200, 146, 42, 0.40)';
+      ctx.lineWidth = 2.5;
+      drawRoundedRect(ctx, 28, 28, WIDTH - 56, HEIGHT - 56, 30);
+      ctx.stroke();
+
+      // Re-draw subtle progress bars cleanly on top of cream background
+      scenes.forEach((sc, idx) => {
+        const bx = sidePad + idx * (barW + barGap);
+        ctx.fillStyle = 'rgba(16, 45, 69, 0.14)';
+        drawRoundedRect(ctx, bx, barY, barW, 8, 4);
+        ctx.fill();
+        let pct = 0;
+        if (midTime >= sc.endSec) pct = 1;
+        else if (midTime > sc.startSec) {
+          pct = Math.min(
+            1,
+            (midTime - sc.startSec) / Math.max(0.5, sc.endSec - sc.startSec)
+          );
+        }
+        if (pct > 0) {
+          ctx.fillStyle = '#C8922A';
+          drawRoundedRect(ctx, bx, barY, Math.max(8, barW * pct), 8, 4);
+          ctx.fill();
+        }
+      });
+
+      // 1. Official Easy2Book Logo
+      if (logoImg) {
+        const targetH = 168;
+        const ratio = logoImg.width / Math.max(1, logoImg.height);
+        const targetW = Math.min(WIDTH - 140, targetH * ratio);
+        const finalH = targetW / Math.max(0.1, ratio);
+        ctx.drawImage(logoImg, centerX - targetW / 2, 310, targetW, finalH);
+      }
+
+      // Gold hairline separator
+      ctx.fillStyle = 'rgba(200, 146, 42, 0.65)';
+      ctx.fillRect(centerX - 84, 522, 168, 2.5);
+
+      // 2. Bold Arabic Middle Headline
       ctx.direction = 'rtl';
       ctx.textAlign = 'center';
+      ctx.font = '900 40px Cairo, sans-serif';
+      ctx.fillStyle = '#102D45';
+      ctx.fillText(
+        seg.scene.overlayHeadline || 'مع Easy2Book رحلتك أسهل ✨',
+        centerX,
+        590,
+        WIDTH - 96
+      );
+
+      // 3. Warm Gold Sub-headline
       ctx.font = '800 32px Cairo, sans-serif';
-      ctx.fillStyle = '#0B162C';
-      ctx.fillText('سفرتك أسهل', centerX, 540);
-    }
+      ctx.fillStyle = '#9A6E1B';
+      ctx.fillText(endBadgeText || 'توكل على ربي! 🤲', centerX, 650, WIDTH - 96);
 
-    ctx.fillStyle = 'rgba(200, 146, 42, 0.65)';
-    ctx.fillRect(centerX - 64, 566, 128, 2);
+      // 4. Bottom Contact Block (High-Contrast Dark Navy & Gold Card)
+      const boxW = 490;
+      const boxH = 178;
+      const boxX = Math.round((WIDTH - boxW) / 2);
+      const boxY = 716;
+      ctx.fillStyle = '#102D45';
+      drawRoundedRect(ctx, boxX, boxY, boxW, boxH, 24);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(200, 146, 42, 0.65)';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
 
-    if (showCaptions) {
-      if (isLtr && seg.scene.overlayHeadline) {
-        ctx.direction = 'ltr';
-        ctx.font = '800 30px "Plus Jakarta Sans", Inter, sans-serif';
-        ctx.fillStyle = '#102D45';
-        ctx.fillText(seg.scene.overlayHeadline, centerX, 608, WIDTH - 64);
+      ctx.direction = 'ltr';
+      ctx.textAlign = 'center';
+      ctx.font = '900 44px "JetBrains Mono", monospace';
+      ctx.fillStyle = '#F6D365';
+      ctx.fillText('📞 98 140 514', centerX, boxY + 76);
 
-        ctx.font = '700 21px "Plus Jakarta Sans", Inter, sans-serif';
-        ctx.fillStyle = '#9A6E1B';
-        ctx.fillText(endBadgeText, centerX, 646, WIDTH - 64);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.18)';
+      ctx.fillRect(centerX - 90, boxY + 102, 180, 1.5);
 
-        ctx.font = '800 34px "JetBrains Mono", monospace';
-        ctx.fillStyle = '#0B162C';
-        ctx.fillText('98 140 514', centerX, 700);
-
-        ctx.font = '700 24px "Plus Jakarta Sans", sans-serif';
-        ctx.fillStyle = '#C8922A';
-        ctx.fillText('www.easy2book.tn', centerX, 742);
-      } else {
-        ctx.font = '700 24px Cairo, sans-serif';
-        ctx.fillStyle = '#9A6E1B';
-        ctx.fillText(endBadgeText, centerX, 616, WIDTH - 64);
-
-        ctx.direction = 'ltr';
-        ctx.font = '800 36px "JetBrains Mono", monospace';
-        ctx.fillStyle = '#0B162C';
-        ctx.fillText('98 140 514', centerX, 674);
-
-        ctx.font = '700 24px "Plus Jakarta Sans", sans-serif';
-        ctx.fillStyle = '#C8922A';
-        ctx.fillText('www.easy2book.tn', centerX, 718);
+      ctx.font = '700 28px "Plus Jakarta Sans", Inter, sans-serif';
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillText('🌐 www.easy2book.tn', centerX, boxY + 148);
+      ctx.restore();
+    } else {
+      if (logoImg) {
+        const targetH = 156;
+        const ratio = logoImg.width / Math.max(1, logoImg.height);
+        const targetW = targetH * ratio;
+        ctx.drawImage(logoImg, centerX - targetW / 2, 340, targetW, targetH);
       }
+
+      ctx.save();
+      if (isLtr) {
+        ctx.direction = 'ltr';
+        ctx.textAlign = 'center';
+        ctx.font = '800 30px "Plus Jakarta Sans", Inter, sans-serif';
+        ctx.fillStyle = '#0B162C';
+        ctx.fillText('The easiest way to travel', centerX, 536, WIDTH - 64);
+      } else {
+        ctx.direction = 'rtl';
+        ctx.textAlign = 'center';
+        ctx.font = '800 32px Cairo, sans-serif';
+        ctx.fillStyle = '#0B162C';
+        ctx.fillText('سفرتك أسهل', centerX, 540);
+      }
+
+      ctx.fillStyle = 'rgba(200, 146, 42, 0.65)';
+      ctx.fillRect(centerX - 64, 566, 128, 2);
+
+      if (showCaptions) {
+        if (isLtr && seg.scene.overlayHeadline) {
+          ctx.direction = 'ltr';
+          ctx.font = '800 30px "Plus Jakarta Sans", Inter, sans-serif';
+          ctx.fillStyle = '#102D45';
+          ctx.fillText(seg.scene.overlayHeadline, centerX, 608, WIDTH - 64);
+
+          ctx.font = '700 21px "Plus Jakarta Sans", Inter, sans-serif';
+          ctx.fillStyle = '#9A6E1B';
+          ctx.fillText(endBadgeText, centerX, 646, WIDTH - 64);
+
+          ctx.font = '800 34px "JetBrains Mono", monospace';
+          ctx.fillStyle = '#0B162C';
+          ctx.fillText('98 140 514', centerX, 700);
+
+          ctx.font = '700 24px "Plus Jakarta Sans", sans-serif';
+          ctx.fillStyle = '#C8922A';
+          ctx.fillText('www.easy2book.tn', centerX, 742);
+        } else {
+          ctx.font = '700 24px Cairo, sans-serif';
+          ctx.fillStyle = '#9A6E1B';
+          ctx.fillText(endBadgeText, centerX, 616, WIDTH - 64);
+
+          ctx.direction = 'ltr';
+          ctx.font = '800 36px "JetBrains Mono", monospace';
+          ctx.fillStyle = '#0B162C';
+          ctx.fillText('98 140 514', centerX, 674);
+
+          ctx.font = '700 24px "Plus Jakarta Sans", sans-serif';
+          ctx.fillStyle = '#C8922A';
+          ctx.fillText('www.easy2book.tn', centerX, 718);
+        }
+      }
+      ctx.restore();
     }
-    ctx.restore();
   }
 
   // 5. On-Screen Commercial Typography + Real Country Flags

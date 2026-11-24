@@ -1,5 +1,15 @@
 import { useState } from 'react';
-import { Pause, Play, Volume2, VolumeX, Plane, Building2, Compass } from 'lucide-react';
+import {
+  Building2,
+  Compass,
+  Globe,
+  Pause,
+  PhoneCall,
+  Plane,
+  Play,
+  Volume2,
+  VolumeX,
+} from 'lucide-react';
 import {
   REEL_SCENES,
   TOTAL_REEL_DURATION_SEC,
@@ -167,8 +177,12 @@ export function ReelPlayer({
             <span className="font-mono-tabular">
               {formatTimecode(currentTime)} / {formatTimecode(totalDuration)}
             </span>
-            <span aria-hidden="true">·</span>
-            <span className="font-latin font-semibold tracking-tight">Easy2Book</span>
+            {!activeScene.hideBrandOverlay && (
+              <>
+                <span aria-hidden="true">·</span>
+                <span className="font-latin font-semibold tracking-tight">Easy2Book</span>
+              </>
+            )}
           </div>
         </div>
 
@@ -196,8 +210,20 @@ export function ReelPlayer({
                   isActive ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
                 }`}
               >
-                {/* Primary Image */}
-                {!primaryBroken ? (
+                {/* Primary Visual Layer or Clean Cream & Gold Minimalist End-Card */}
+                {scene.endCardStyle === 'cream_gold' ? (
+                  <div
+                    className="relative h-full w-full"
+                    style={{
+                      background:
+                        'linear-gradient(165deg, #FFFDF8 0%, #F7EFE0 52%, #EFE0BE 100%)',
+                    }}
+                  >
+                    <div className="pointer-events-none absolute inset-4 rounded-2xl border border-[#C8922A]/35" />
+                    <div className="pointer-events-none absolute inset-x-10 top-14 h-px bg-gradient-to-r from-transparent via-[#C8922A]/45 to-transparent" />
+                    <div className="pointer-events-none absolute inset-x-10 bottom-10 h-px bg-gradient-to-r from-transparent via-[#C8922A]/45 to-transparent" />
+                  </div>
+                ) : !primaryBroken ? (
                   <img
                     src={scene.primaryImage}
                     alt={scene.imageAlt}
@@ -220,7 +246,7 @@ export function ReelPlayer({
                 )}
 
                 {/* Secondary Match-Cut Image */}
-                {scene.secondaryImage && (
+                {scene.secondaryImage && scene.endCardStyle !== 'cream_gold' && (
                   <div
                     className={`absolute inset-0 transition-all duration-700 ease-out ${
                       showSecondaryOnScene
@@ -315,47 +341,135 @@ export function ReelPlayer({
         </button>
 
         {/* Studio Scene Centered Brand Lockup */}
-        {isStudioScene && (
-          <div
-            dir={isLtrScene ? 'ltr' : 'rtl'}
-            className="pointer-events-none absolute inset-0 z-20 flex flex-col items-center justify-center px-6 pt-12 pb-14 text-center"
-          >
-            <img
-              src="/assets/aistudio/logo_transparent_e9918557.png"
-              alt="Easy2Book Centrale de Réservation"
-              referrerPolicy="no-referrer"
-              className="h-24 w-auto object-contain"
-            />
-            <p className="mt-1.5 text-base font-bold text-[#0B162C]">
-              {isLtrScene ? 'The easiest way to travel' : 'سفرتك أسهل'}
-            </p>
-            <div className="mt-3 h-px w-16 bg-[#C8922A]/60" />
-            {showCaptions && (
-              <div className="mt-3 space-y-1 text-[#0B162C]">
-                {isLtrScene && activeScene.overlayHeadline && (
-                  <p className="text-base font-extrabold text-[#102D45]">
-                    {activeScene.overlayHeadline}
-                  </p>
-                )}
-                <p className="text-xs font-bold text-[#9A6E1B]">
-                  {endBadgeText}
-                </p>
-                <p
-                  className="font-mono-tabular text-lg font-extrabold text-[#0B162C]"
-                  dir="ltr"
-                >
-                  📞 98 140 514
-                </p>
-                <p
-                  className="font-latin text-xs font-semibold text-[#C8922A]"
-                  dir="ltr"
-                >
-                  www.easy2book.tn
+        {isStudioScene &&
+          (activeScene.endCardStyle === 'cream_gold' ? (
+            <div
+              dir="rtl"
+              className="pointer-events-none absolute inset-0 z-20 flex flex-col items-center justify-center px-6 pt-12 pb-12 text-center"
+            >
+              {/* 1. Official Brand Logo */}
+              <div
+                className="transition-all duration-500"
+                style={{
+                  opacity: !isPlaying || elapsedInScene >= 0.15 ? 1 : 0,
+                  transform:
+                    !isPlaying || elapsedInScene >= 0.15
+                      ? 'translateY(0)'
+                      : 'translateY(8px)',
+                }}
+              >
+                <img
+                  src="/assets/aistudio/logo_transparent_e9918557.png"
+                  alt="Easy2Book"
+                  referrerPolicy="no-referrer"
+                  className="mx-auto h-24 w-auto object-contain drop-shadow-xs"
+                />
+              </div>
+
+              <div className="my-4 h-px w-20 bg-[#C8922A]/55" />
+
+              {/* 2. Middle Headline */}
+              <div
+                className="transition-all duration-500"
+                style={{
+                  opacity: !isPlaying || elapsedInScene >= 0.8 ? 1 : 0,
+                  transform:
+                    !isPlaying || elapsedInScene >= 0.8
+                      ? 'translateY(0)'
+                      : 'translateY(8px)',
+                }}
+              >
+                <h3 className="font-arabic text-xl font-black leading-snug text-[#102D45]">
+                  {activeScene.overlayHeadline || 'مع Easy2Book رحلتك أسهل ✨'}
+                </h3>
+              </div>
+
+              {/* 3. Sub-headline */}
+              <div
+                className="mt-2 transition-all duration-500"
+                style={{
+                  opacity: !isPlaying || elapsedInScene >= 1.5 ? 1 : 0,
+                  transform:
+                    !isPlaying || elapsedInScene >= 1.5
+                      ? 'translateY(0)'
+                      : 'translateY(8px)',
+                }}
+              >
+                <p className="font-arabic text-base font-extrabold text-[#9A6E1B]">
+                  {endBadgeText || 'توكل على ربي! 🤲'}
                 </p>
               </div>
-            )}
-          </div>
-        )}
+
+              {/* 4. Bottom High-Contrast Navy / Gold Contact Block */}
+              <div
+                className="mt-6 w-full max-w-[260px] rounded-2xl border border-[#C8922A]/45 bg-[#102D45] px-4 py-3.5 text-white shadow-lg transition-all duration-500 space-y-2"
+                style={{
+                  opacity: !isPlaying || elapsedInScene >= 2.2 ? 1 : 0,
+                  transform:
+                    !isPlaying || elapsedInScene >= 2.2
+                      ? 'translateY(0)'
+                      : 'translateY(10px)',
+                }}
+              >
+                <div
+                  dir="ltr"
+                  className="flex items-center justify-center gap-2 font-mono-tabular text-xl font-black tracking-wide text-[#F6D365]"
+                >
+                  <PhoneCall className="h-4 w-4 shrink-0 text-[#F6D365]" aria-hidden="true" />
+                  <span>98 140 514</span>
+                </div>
+                <div className="mx-auto h-px w-16 bg-white/15" />
+                <div
+                  dir="ltr"
+                  className="flex items-center justify-center gap-1.5 font-latin text-xs font-bold tracking-wide text-white"
+                >
+                  <Globe className="h-3.5 w-3.5 shrink-0 text-[#E7B34C]" aria-hidden="true" />
+                  <span>www.easy2book.tn</span>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div
+              dir={isLtrScene ? 'ltr' : 'rtl'}
+              className="pointer-events-none absolute inset-0 z-20 flex flex-col items-center justify-center px-6 pt-12 pb-14 text-center"
+            >
+              <img
+                src="/assets/aistudio/logo_transparent_e9918557.png"
+                alt="Easy2Book Centrale de Réservation"
+                referrerPolicy="no-referrer"
+                className="h-24 w-auto object-contain"
+              />
+              <p className="mt-1.5 text-base font-bold text-[#0B162C]">
+                {isLtrScene ? 'The easiest way to travel' : 'سفرتك أسهل'}
+              </p>
+              <div className="mt-3 h-px w-16 bg-[#C8922A]/60" />
+              {showCaptions && (
+                <div className="mt-3 space-y-1 text-[#0B162C]">
+                  {isLtrScene && activeScene.overlayHeadline && (
+                    <p className="text-base font-extrabold text-[#102D45]">
+                      {activeScene.overlayHeadline}
+                    </p>
+                  )}
+                  <p className="text-xs font-bold text-[#9A6E1B]">
+                    {endBadgeText}
+                  </p>
+                  <p
+                    className="inline-flex items-center justify-center gap-1.5 font-mono-tabular text-lg font-extrabold text-[#0B162C]"
+                    dir="ltr"
+                  >
+                    <PhoneCall className="h-4 w-4 text-[#C8922A]" aria-hidden="true" />
+                    <span>98 140 514</span>
+                  </p>
+                  <p
+                    className="font-latin text-xs font-semibold text-[#C8922A]"
+                    dir="ltr"
+                  >
+                    www.easy2book.tn
+                  </p>
+                </div>
+              )}
+            </div>
+          ))}
 
         {/* On-Screen Commercial Typography Overlays for Photographic Scenes */}
         {showCaptions && !isStudioScene && (
@@ -364,7 +478,7 @@ export function ReelPlayer({
               dir={isLtrScene ? 'ltr' : 'rtl'}
               className="pointer-events-none absolute inset-x-4 top-1/2 -translate-y-1/2 z-20 flex flex-col items-center text-center"
             >
-              <div className="w-full rounded-2xl border border-white/15 bg-[#070E1C]/74 px-4 py-4 backdrop-blur-md shadow-xl">
+              <div className="w-full rounded-2xl border border-white/15 bg-[#070E1C]/62 px-5 py-4 backdrop-blur-md shadow-xl">
                 {activeScene.flagCodes && activeScene.flagCodes.length === 1 && (
                   <div className="mb-2.5 flex justify-center">
                     <RealFlagSvg
@@ -374,7 +488,7 @@ export function ReelPlayer({
                   </div>
                 )}
                 <h3
-                  className={`text-2xl font-black leading-tight text-[#F6D365] drop-shadow-md ${
+                  className={`text-[22px] font-black leading-tight text-[#F6D365] drop-shadow-md ${
                     isLtrScene ? 'uppercase tracking-tight' : 'font-arabic'
                   }`}
                 >
@@ -384,7 +498,7 @@ export function ReelPlayer({
                   {activeScene.overlayLines.map((line, index) => (
                     <p
                       key={index}
-                      className="text-sm font-bold leading-snug text-white drop-shadow"
+                      className="font-arabic text-sm font-bold leading-snug text-white drop-shadow"
                     >
                       {line}
                     </p>

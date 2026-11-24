@@ -38,10 +38,13 @@ import {
   getReelConfig,
   getSocialCaptionBlocks,
   getSubtitleCues,
+  OMRA_SUR_MESURE_BODY_SCRIPT,
+  OMRA_SUR_MESURE_HOOKS,
   VOICE_OPTIONS,
   type ReelPresetId,
 } from '../../data/campaignData';
 import { getHeroImageSrc } from '../../lib/mediaRegistry';
+import { renderBidiSafeText } from '../../lib/bidiText';
 import {
   formatFileSize,
   generateVideoDownloadLink,
@@ -198,9 +201,39 @@ export function BlockRenderer({
                               : 'omra');
   const reelConfig = getReelConfig(reelPreset);
   const baseDur = Math.max(1, reelConfig.totalDurationSec);
+  const [selectedOmraHookId, setSelectedOmraHookId] = useState<
+    'hook1' | 'hook2' | 'hook3'
+  >('hook1');
+  const activeOmraHook =
+    reelPreset === 'omra_sur_mesure'
+      ? (OMRA_SUR_MESURE_HOOKS.find((h) => h.id === selectedOmraHookId) ??
+        OMRA_SUR_MESURE_HOOKS[0])
+      : null;
+  const effectiveReelScenes =
+    activeOmraHook
+      ? reelConfig.scenes.map((scene, idx) =>
+          idx === 0
+            ? {
+                ...scene,
+                overlayHeadline: activeOmraHook.screenHeadline,
+                overlayLines: [activeOmraHook.screenSubline],
+                overlayPosition: 'center' as const,
+                hideBrandOverlay: true,
+              }
+            : scene
+        )
+      : reelConfig.scenes;
   const resolvedReelScript =
-    block.content.customReelScript?.trim() || reelConfig.script;
-  const subtitleCues = getSubtitleCues(reelPreset);
+    block.content.customReelScript?.trim() ||
+    (activeOmraHook
+      ? `${activeOmraHook.voiceoverAr} ${OMRA_SUR_MESURE_BODY_SCRIPT}`
+      : reelConfig.script);
+  const baseSubtitleCues = getSubtitleCues(reelPreset);
+  const subtitleCues = activeOmraHook
+    ? baseSubtitleCues.map((cue, idx) =>
+        idx === 0 ? { ...cue, text: `« ${activeOmraHook.voiceoverAr} »` } : cue
+      )
+    : baseSubtitleCues;
   const socialCaptionBlocks = getSocialCaptionBlocks(reelPreset);
 
   // ReelPlayer state for hero_video blocks
@@ -263,7 +296,7 @@ export function BlockRenderer({
     }
 
     setReelPlaying(true);
-    const cacheKey = `${voice}:${reelPreset}:${resolvedReelScript.length}`;
+    const cacheKey = `${voice}:${reelPreset}:${resolvedReelScript}`;
     let url = audioUrlMapRef.current.get(cacheKey);
     if (!url && !audioLoading) {
       setAudioLoading(true);
@@ -349,6 +382,7 @@ export function BlockRenderer({
         showCaptions: reelCaptions,
         preset: reelPreset,
         customScript: resolvedReelScript,
+        scenesOverride: effectiveReelScenes,
         autoDownload: true,
         onProgress: (pct, label) => {
           setVideoExportPct(pct);
@@ -525,17 +559,18 @@ export function BlockRenderer({
                 />
               )}
               <span
-                className="text-xs font-bold tracking-wide"
+                className="inline-flex items-center gap-1.5 text-xs font-bold tracking-wide"
                 style={{ color: block.style.accentColor }}
               >
-                {block.content.eyebrow}
+                <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <span>{renderBidiSafeText(block.content.eyebrow)}</span>
               </span>
             </div>
             <h1 className={`${titleScaleClass} font-extrabold leading-tight`}>
-              {block.content.title}
+              {renderBidiSafeText(block.content.title)}
             </h1>
             <p className="text-sm md:text-base opacity-85 leading-relaxed">
-              {block.content.description}
+              {renderBidiSafeText(block.content.description)}
             </p>
             <div className="rounded-xl border border-[#102D45]/10 bg-white/80 p-3 text-xs text-[#102D45]">
               <span className="font-semibold text-[#1C4967]">
@@ -550,7 +585,8 @@ export function BlockRenderer({
                   onClick={(e) => interactiveEdit && e.preventDefault()}
                   className="inline-flex items-center gap-2 rounded-lg bg-[#102D45] px-5 py-3 text-sm font-semibold text-white hover:bg-[#1C4967]"
                 >
-                  {block.content.primaryCtaLabel}
+                  <Sparkles className="h-4 w-4 text-[#E7B34C] shrink-0" aria-hidden="true" />
+                  <span>{renderBidiSafeText(block.content.primaryCtaLabel)}</span>
                 </a>
               )}
               <button
@@ -627,6 +663,76 @@ export function BlockRenderer({
                 </span>
               </button>
             </div>
+
+            {reelPreset === 'omra_sur_mesure' && (
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="rounded-xl border border-[#C8922A]/35 bg-[#FFFDF7] p-3 space-y-2 text-[#102D45]"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] font-bold">
+                  <span className="text-[#C8922A]">
+                    {isAr
+                      ? 'اختر الهوك (00:00 – 00:07) لتحديث الفيديو والصوت فوراً:'
+                      : 'Choisir le Hook (00:00 – 00:07) — met à jour vidéo, voix off & MP4 :'}
+                  </span>
+                  <span className="font-mono-tabular text-[10px] text-[#1C4967]" dir="ltr">
+                    9:16 · 40s
+                  </span>
+                </div>
+                <div className="grid gap-1.5 sm:grid-cols-3">
+                  {OMRA_SUR_MESURE_HOOKS.map((hook) => {
+                    const isHookActive = selectedOmraHookId === hook.id;
+                    return (
+                      <button
+                        key={hook.id}
+                        type="button"
+                        onClick={() => {
+                          if (audioRef.current) {
+                            audioRef.current.pause();
+                            audioRef.current.currentTime = 0;
+                          }
+                          setAudioActive(false);
+                          setReelPlaying(false);
+                          setReelTime(0);
+                          setSelectedOmraHookId(hook.id);
+                        }}
+                        className={`rounded-lg border px-2.5 py-2 text-start transition-colors ${
+                          isHookActive
+                            ? 'border-[#102D45] bg-[#102D45] text-white'
+                            : 'border-[#102D45]/12 bg-white text-[#102D45] hover:border-[#C8922A]'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-1 text-[10px] font-bold">
+                          <span
+                            className={
+                              isHookActive ? 'text-[#F6D365]' : 'text-[#C8922A]'
+                            }
+                          >
+                            Hook {hook.numberLabel}
+                          </span>
+                          <span
+                            dir="rtl"
+                            className={`font-arabic text-[10px] truncate ${
+                              isHookActive ? 'text-white/90' : 'text-[#1C4967]'
+                            }`}
+                          >
+                            {hook.tagAr}
+                          </span>
+                        </div>
+                        <p
+                          dir="rtl"
+                          className={`mt-1 font-arabic text-[11px] leading-snug line-clamp-2 ${
+                            isHookActive ? 'text-white' : 'text-slate-700'
+                          }`}
+                        >
+                          « {hook.voiceoverAr} »
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             <div
               onClick={(e) => e.stopPropagation()}
@@ -793,7 +899,7 @@ export function BlockRenderer({
                       <span className={`${isLtrReel ? 'mr-1.5' : 'ml-1.5'} font-mono text-[10px] font-bold text-[#C8922A]`}>
                         ●
                       </span>
-                      {activeCue.text}
+                      {renderBidiSafeText(activeCue.text)}
                     </p>
                   )}
                   <div className="flex items-center justify-between gap-2 pt-0.5">
@@ -877,7 +983,7 @@ export function BlockRenderer({
               showCaptions={reelCaptions}
               isMuted={reelMuted}
               audioActive={audioActive}
-              scenes={reelConfig.scenes}
+              scenes={effectiveReelScenes}
               endBadgeText={reelConfig.endBadgeText}
               secondaryLabelA={reelConfig.secondarySceneLabelA}
               secondaryLabelB={reelConfig.secondarySceneLabelB}

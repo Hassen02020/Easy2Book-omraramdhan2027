@@ -414,6 +414,10 @@ async function startServer() {
 
       const ALLOWED_PRESETS = new Set([
         "omra",
+        "omra_sur_mesure",
+        "world_hotels_tnd",
+        "world_hotels_packages",
+        "world_hotels_cafe",
         "flights_ferries",
         "egypt_excursions",
         "turkey_excursions",
@@ -434,6 +438,34 @@ async function startServer() {
 
       // Resolve scene images (supporting src/assets/images)
       const PRESET_IMAGES_MAP: Record<string, string[]> = {
+        omra_sur_mesure: [
+          "makkah_haram_sunrise_1794604285606.jpg",
+          "tunis_jeddah_flight_1794604285597.jpg",
+          "omra_vip_haram_view_1794652720059.jpg",
+          "madinah_umbrellas_twilight_1794604286691.jpg",
+          "easy2book_studio_backdrop_1794604286505.jpg",
+        ],
+        world_hotels_tnd: [
+          "flights_ferries_tabs_stress_1794942092639.jpg",
+          "makkah_haram_sunrise_1794604285606.jpg",
+          "poster_hotel_suite_luxury_1795295066762.jpg",
+          "world_hotels_canada_niagara_1795298620744.jpg",
+          "easy2book_studio_backdrop_1794604286505.jpg",
+        ],
+        world_hotels_packages: [
+          "flights_ferries_relaxed_suitcase_1794942092319.jpg",
+          "turkey_istanbul_reel_9x16_1794695568829.jpg",
+          "makkah_haram_sunrise_1794604285606.jpg",
+          "world_hotels_canada_niagara_1795298620744.jpg",
+          "easy2book_studio_backdrop_1794604286505.jpg",
+        ],
+        world_hotels_cafe: [
+          "world_hotels_cafe_booking_1795298623176.jpg",
+          "world_hotels_canada_niagara_1795298620744.jpg",
+          "flights_ferries_mobile_eticket_1794942092613.jpg",
+          "world_hotels_zanzibar_beach_1795298620655.jpg",
+          "easy2book_studio_backdrop_1794604286505.jpg",
+        ],
         flights_ferries: [
           "flights_ferries_tabs_stress_1794942092639.jpg",
           "flights_ferries_relaxed_suitcase_1794942092319.jpg",
@@ -548,13 +580,21 @@ async function startServer() {
 
       // 1. Optional Gemini TTS audio synthesis
       const baseTotalDuration =
-        preset === "flights_ferries"
-          ? 30
-          : preset === "visa_evisa"
-            ? 42
-            : preset === "visa_egypt"
-              ? 24
-              : 48;
+        preset === "omra_sur_mesure"
+          ? 40
+          : preset === "world_hotels_tnd"
+            ? 35
+            : preset === "world_hotels_packages"
+              ? 40
+              : preset === "world_hotels_cafe"
+                ? 45
+                : preset === "flights_ferries"
+                  ? 30
+                  : preset === "visa_evisa"
+                    ? 42
+                    : preset === "visa_egypt"
+                      ? 24
+                      : 48;
       let wavPath: string | null = null;
       let totalDuration = baseTotalDuration;
       let hasAudio = false;
@@ -634,19 +674,28 @@ async function startServer() {
 
       // 3. Build 5-clip 9:16 timeline with smooth Ken Burns zoom & crossfades
       const fadeDur =
+        preset === "omra_sur_mesure" ||
         preset === "flights_ferries" ||
         preset === "visa_evisa" ||
         preset === "visa_egypt"
-          ? 0.3
+          ? 0.35
           : 0.5;
       const baseSegments =
-        preset === "flights_ferries"
-          ? [3, 5, 10, 7, 5]
-          : preset === "visa_evisa"
-            ? [4, 6, 13, 10, 9]
-            : preset === "visa_egypt"
-              ? [5, 4, 5, 5, 5]
-              : [10, 6.5, 8.5, 11, 12];
+        preset === "omra_sur_mesure"
+          ? [7, 7, 9, 8, 9]
+          : preset === "world_hotels_tnd"
+            ? [4, 8, 12, 6, 5]
+            : preset === "world_hotels_packages"
+              ? [5, 9, 10, 10, 6]
+              : preset === "world_hotels_cafe"
+                ? [8, 14, 15, 4, 4]
+                : preset === "flights_ferries"
+                  ? [3, 5, 10, 7, 5]
+                  : preset === "visa_evisa"
+                    ? [4, 6, 13, 10, 9]
+                    : preset === "visa_egypt"
+                      ? [5, 4, 5, 5, 5]
+                      : [10, 6.5, 8.5, 11, 12];
       const clipDurations = baseSegments.map((s, idx) =>
         Math.max(1.2, s * scale + (idx < baseSegments.length - 1 ? fadeDur : 0))
       );
@@ -702,6 +751,22 @@ async function startServer() {
       });
 
       const PRESET_FILE_SLUGS: Record<string, { prefix: string; label: string }> = {
+        omra_sur_mesure: {
+          prefix: "omra-sur-mesure-40s",
+          label: "Easy2Book-Omra-Sur-Mesure-40s-9x16.mp4",
+        },
+        world_hotels_tnd: {
+          prefix: "hotels-monde-tnd",
+          label: "Easy2Book-Hotels-Monde-TND-35s-9x16.mp4",
+        },
+        world_hotels_packages: {
+          prefix: "hotels-monde-3-baqat",
+          label: "Easy2Book-Hotels-Monde-3-Baqat-40s-9x16.mp4",
+        },
+        world_hotels_cafe: {
+          prefix: "hotels-monde-cafe",
+          label: "Easy2Book-Hotels-Monde-Cafe-45s-9x16.mp4",
+        },
         flights_ferries: {
           prefix: "flights-ferries",
           label: "Easy2Book-Avion-Bateau-30s-9x16.mp4",
