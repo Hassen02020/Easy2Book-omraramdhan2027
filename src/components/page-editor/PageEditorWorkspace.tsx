@@ -127,6 +127,13 @@ function inferDefaultReelPresetForPage(page: Page): ReelPresetId {
   }
   if (page.universe === 'voyages' || page.universe === 'hotels_tunisie') {
     if (
+      page.id.includes('hotels-monde') ||
+      page.id.includes('world-hotels') ||
+      page.blocks.some((b) => b.type === 'module_world_hotels')
+    ) {
+      return 'world_hotels_tnd';
+    }
+    if (
       page.id.includes('billetterie') ||
       page.id.includes('avion') ||
       page.id.includes('bateau') ||

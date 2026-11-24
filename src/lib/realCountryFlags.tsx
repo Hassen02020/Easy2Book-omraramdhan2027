@@ -3,6 +3,12 @@ import React from 'react';
 export type CountryFlagCode =
   | 'TN'
   | 'EG'
+  | 'SA'
+  | 'CA'
+  | 'TR'
+  | 'MA'
+  | 'AE'
+  | 'MY'
   | 'RW'
   | 'TZ'
   | 'CM'
@@ -23,8 +29,14 @@ export interface CountryFlagMeta {
 export const EVISA_FLAG_CATALOG: Record<CountryFlagCode, CountryFlagMeta> = {
   TN: { code: 'TN', nameFr: 'Tunisie', nameAr: 'تونس' },
   EG: { code: 'EG', nameFr: 'Égypte', nameAr: 'مصر' },
+  SA: { code: 'SA', nameFr: 'Arabie Saoudite', nameAr: 'السعودية' },
+  CA: { code: 'CA', nameFr: 'Canada', nameAr: 'كندا' },
+  TR: { code: 'TR', nameFr: 'Turquie', nameAr: 'تركيا' },
+  MA: { code: 'MA', nameFr: 'Maroc', nameAr: 'المغرب' },
+  AE: { code: 'AE', nameFr: 'Émirats / Dubaï', nameAr: 'دبي والإمارات' },
+  MY: { code: 'MY', nameFr: 'Malaisie', nameAr: 'ماليزيا' },
   RW: { code: 'RW', nameFr: 'Rwanda', nameAr: 'رواندا' },
-  TZ: { code: 'TZ', nameFr: 'Tanzanie', nameAr: 'تنزانيا' },
+  TZ: { code: 'TZ', nameFr: 'Tanzanie / Zanzibar', nameAr: 'تنزانيا / زنجبار' },
   CM: { code: 'CM', nameFr: 'Cameroun', nameAr: 'الكاميرون' },
   QA: { code: 'QA', nameFr: 'Qatar', nameAr: 'قطر' },
   BH: { code: 'BH', nameFr: 'Bahreïn', nameAr: 'البحرين' },
@@ -115,6 +127,92 @@ export function RealFlagSvg({
             fill="#C09300"
           />
           <rect x="29.1" y="17.8" width="1.8" height="4.2" fill="#FFFFFF" />
+        </svg>
+      );
+
+    case 'SA':
+      return (
+        <svg viewBox="0 0 60 40" className={className} role="img" aria-label={label}>
+          <rect width="60" height="40" fill="#006C35" />
+          {/* Stylized Shahada calligraphy strokes */}
+          <path
+            d="M14 14.5 H24 M26 14.5 H38 M40 14.5 H46 M16 18.5 H30 M32 18.5 H45 M20 11.5 V18.5 M35 11.5 V18.5 M42 12 V17.5"
+            stroke="#FFFFFF"
+            strokeWidth="1.9"
+            strokeLinecap="round"
+          />
+          {/* Horizontal white sword */}
+          <rect x="15" y="25.2" width="28" height="2.2" rx="1.1" fill="#FFFFFF" />
+          <polygon points="15,26.3 11.5,24.8 11.5,27.8" fill="#FFFFFF" />
+          <rect x="42.5" y="23.5" width="2" height="5.6" rx="0.8" fill="#FFFFFF" />
+        </svg>
+      );
+
+    case 'CA':
+      return (
+        <svg viewBox="0 0 60 40" className={className} role="img" aria-label={label}>
+          <rect width="15" height="40" x="0" fill="#D80621" />
+          <rect width="30" height="40" x="15" fill="#FFFFFF" />
+          <rect width="15" height="40" x="45" fill="#D80621" />
+          {/* Stylized Canadian Maple Leaf */}
+          <path
+            d="M30 8.5 L32.2 14.2 L35.6 13.2 L34.4 18.4 L39.2 16.5 L37.8 19.6 L40.6 21.2 L35.2 24.4 L36 27.2 L31.2 26.2 L31.2 31.8 L28.8 31.8 L28.8 26.2 L24 27.2 L24.8 24.4 L19.4 21.2 L22.2 19.6 L20.8 16.5 L25.6 18.4 L24.4 13.2 L27.8 14.2 Z"
+            fill="#D80621"
+          />
+        </svg>
+      );
+
+    case 'TR':
+      return (
+        <svg viewBox="0 0 60 40" className={className} role="img" aria-label={label}>
+          <rect width="60" height="40" fill="#E30A17" />
+          <circle cx="24.5" cy="20" r="10" fill="#FFFFFF" />
+          <circle cx="27.2" cy="20" r="8" fill="#E30A17" />
+          <path d={starPathSvg(36.5, 20, 4.6, 1.8, -18)} fill="#FFFFFF" />
+        </svg>
+      );
+
+    case 'MA':
+      return (
+        <svg viewBox="0 0 60 40" className={className} role="img" aria-label={label}>
+          <rect width="60" height="40" fill="#C1272D" />
+          <path
+            d={starPathSvg(30, 20, 9.5, 3.7, -90)}
+            fill="none"
+            stroke="#006233"
+            strokeWidth="2.1"
+            strokeLinejoin="miter"
+          />
+        </svg>
+      );
+
+    case 'AE':
+      return (
+        <svg viewBox="0 0 60 40" className={className} role="img" aria-label={label}>
+          <rect width="15" height="40" x="0" fill="#FF0000" />
+          <rect width="45" height="13.34" x="15" y="0" fill="#00732F" />
+          <rect width="45" height="13.34" x="15" y="13.33" fill="#FFFFFF" />
+          <rect width="45" height="13.34" x="15" y="26.66" fill="#000000" />
+        </svg>
+      );
+
+    case 'MY':
+      return (
+        <svg viewBox="0 0 60 40" className={className} role="img" aria-label={label}>
+          {Array.from({ length: 14 }).map((_, idx) => (
+            <rect
+              key={idx}
+              x="0"
+              y={(idx * 40) / 14}
+              width="60"
+              height={40 / 14 + 0.2}
+              fill={idx % 2 === 0 ? '#CC0001' : '#FFFFFF'}
+            />
+          ))}
+          <rect x="0" y="0" width="30" height={22.9} fill="#010066" />
+          <circle cx="12.5" cy="11.4" r="6.4" fill="#FFCC00" />
+          <circle cx="14.5" cy="11.4" r="5.3" fill="#010066" />
+          <path d={starPathSvg(20.6, 11.4, 4.2, 2.0, -90)} fill="#FFCC00" />
         </svg>
       );
 
@@ -303,6 +401,122 @@ export function drawRealFlagCanvas(
       ctx.fill();
       ctx.fillStyle = '#FFFFFF';
       ctx.fillRect(29.1, 17.8, 1.8, 4.2);
+      break;
+    }
+
+    case 'SA': {
+      ctx.fillStyle = '#006C35';
+      ctx.fillRect(0, 0, 60, 40);
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 1.9;
+      ctx.lineCap = 'round';
+      const segs: [number, number, number, number][] = [
+        [14, 14.5, 24, 14.5],
+        [26, 14.5, 38, 14.5],
+        [40, 14.5, 46, 14.5],
+        [16, 18.5, 30, 18.5],
+        [32, 18.5, 45, 18.5],
+        [20, 11.5, 20, 18.5],
+        [35, 11.5, 35, 18.5],
+        [42, 12, 42, 17.5],
+      ];
+      segs.forEach(([x1, y1, x2, y2]) => {
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+      });
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(15, 25.2, 28, 2.2);
+      ctx.beginPath();
+      ctx.moveTo(15, 26.3);
+      ctx.lineTo(11.5, 24.8);
+      ctx.lineTo(11.5, 27.8);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillRect(42.5, 23.5, 2, 5.6);
+      break;
+    }
+
+    case 'CA': {
+      ctx.fillStyle = '#D80621';
+      ctx.fillRect(0, 0, 15, 40);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(15, 0, 30, 40);
+      ctx.fillStyle = '#D80621';
+      ctx.fillRect(45, 0, 15, 40);
+      const leaf = new Path2D(
+        'M30 8.5 L32.2 14.2 L35.6 13.2 L34.4 18.4 L39.2 16.5 L37.8 19.6 L40.6 21.2 L35.2 24.4 L36 27.2 L31.2 26.2 L31.2 31.8 L28.8 31.8 L28.8 26.2 L24 27.2 L24.8 24.4 L19.4 21.2 L22.2 19.6 L20.8 16.5 L25.6 18.4 L24.4 13.2 L27.8 14.2 Z'
+      );
+      ctx.fill(leaf);
+      break;
+    }
+
+    case 'TR': {
+      ctx.fillStyle = '#E30A17';
+      ctx.fillRect(0, 0, 60, 40);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.beginPath();
+      ctx.arc(24.5, 20, 10, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#E30A17';
+      ctx.beginPath();
+      ctx.arc(27.2, 20, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#FFFFFF';
+      drawFivePointStarCanvas(ctx, 36.5, 20, 4.6, 1.8, -18);
+      break;
+    }
+
+    case 'MA': {
+      ctx.fillStyle = '#C1272D';
+      ctx.fillRect(0, 0, 60, 40);
+      ctx.strokeStyle = '#006233';
+      ctx.lineWidth = 2.1;
+      ctx.beginPath();
+      for (let i = 0; i < 10; i++) {
+        const rad = ((-90 + i * 36) * Math.PI) / 180;
+        const r = i % 2 === 0 ? 9.5 : 3.7;
+        const px = 30 + r * Math.cos(rad);
+        const py = 20 + r * Math.sin(rad);
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+      ctx.stroke();
+      break;
+    }
+
+    case 'AE': {
+      ctx.fillStyle = '#FF0000';
+      ctx.fillRect(0, 0, 15, 40);
+      ctx.fillStyle = '#00732F';
+      ctx.fillRect(15, 0, 45, 13.34);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(15, 13.33, 45, 13.34);
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(15, 26.66, 45, 13.34);
+      break;
+    }
+
+    case 'MY': {
+      const sh = 40 / 14;
+      for (let idx = 0; idx < 14; idx++) {
+        ctx.fillStyle = idx % 2 === 0 ? '#CC0001' : '#FFFFFF';
+        ctx.fillRect(0, idx * sh, 60, sh + 0.3);
+      }
+      ctx.fillStyle = '#010066';
+      ctx.fillRect(0, 0, 30, 22.9);
+      ctx.fillStyle = '#FFCC00';
+      ctx.beginPath();
+      ctx.arc(12.5, 11.4, 6.4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#010066';
+      ctx.beginPath();
+      ctx.arc(14.5, 11.4, 5.3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#FFCC00';
+      drawFivePointStarCanvas(ctx, 20.6, 11.4, 4.2, 2.0, -90);
       break;
     }
 

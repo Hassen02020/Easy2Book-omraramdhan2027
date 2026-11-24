@@ -542,6 +542,20 @@ export const BLOCK_CATALOG: BlockCatalogEntry[] = [
     },
   },
   {
+    type: 'module_world_hotels',
+    category: 'commerce',
+    labels: {
+      fr: 'Module Hôtels dans le Monde (100% TND & Voucher Visa)',
+      en: 'Worldwide Hotels Module (100% TND & Visa Voucher)',
+      ar: 'وحدة فنادق العالم بالدينار التونسي (TND + Voucher فيزا)',
+    },
+    description: {
+      fr: 'Module interactif +500 000 hôtels dans le monde (Arabie Saoudite/Omra, Égypte, Canada, Turquie, Maroc, Dubaï, Malaisie, Zanzibar) payables 100% en Dinar Tunisien sans carte devise, avec Voucher officiel pour dossiers Visa.',
+      en: 'Interactive +500,000 worldwide hotels module (Saudi/Umrah, Egypt, Canada, Turkey, Morocco, Dubai, Malaysia, Zanzibar) paid 100% in TND with instant confirmed Voucher for travel & Visa files.',
+      ar: 'وحدة تفاعلية لحجز أكثر من 500 ألف فندق في العالم (السعودية والعمرة، مصر، كندا، تركيا، المغرب، دبي، ماليزيا وزنجبار) بالخلاص 100% بالدينار التونسي بدون كارت دوفيز مع Voucher رسمي مؤكد لملفات الفيزا.',
+    },
+  },
+  {
     type: 'module_flights',
     category: 'commerce',
     labels: { fr: 'Module Billetterie Aérienne', en: 'Flights Ticketing Module', ar: 'وحدة تذاكر الطيران' },
@@ -643,6 +657,7 @@ export function createDefaultBlock(
     lead_form: 'form-block',
     module_visa_egypt: 'module-visa-egypte',
     module_hotels_search: 'module-hotels',
+    module_world_hotels: 'module-hotels-monde',
     module_flights: 'module-vols',
     module_ferries: 'module-bateaux',
     module_transfers: 'module-transferts',
@@ -1015,6 +1030,52 @@ export function createDefaultBlock(
           : 'Bonjour, je souhaite obtenir des informations sur cette offre.',
         trackAsCrmLead: false,
       },
+    },
+    module_world_hotels: {
+      eyebrow: isAr
+        ? '+500,000 فندق في العالم · الخلاص 100% بالدينار التونسي (TND)'
+        : isEn
+          ? '+500,000 Hotels Worldwide · 100% Paid in Tunisian Dinar (TND)'
+          : '+500 000 Hôtels dans le Monde · Paiement 100% en Dinar Tunisien (TND)',
+      title: isAr
+        ? 'احجز فندقك في أي دولة في العالم بالدينار التونسي بدون كارت دوفيز'
+        : isEn
+          ? 'Book Worldwide Hotels in TND — Zero Foreign Card Needed'
+          : 'Réservez votre hôtel partout dans le monde en Dinar Tunisien (TND)',
+      description: isAr
+        ? 'السعودية والعمرة، مصر، كندا، تركيا، المغرب، دبي، ماليزيا وزنجبار — Voucher رسمي ومؤكد فوري بدون المساس بمنحتك السياحية.'
+        : isEn
+          ? 'Saudi Arabia/Umrah, Egypt, Canada, Turkey, Morocco, Dubai, Malaysia & Zanzibar — instant confirmed Voucher for travel and Visa dossiers without touching your tourist allowance.'
+          : 'Arabie Saoudite (Omra), Égypte, Canada, Turquie, Maroc, Dubaï, Malaisie & Zanzibar — Voucher officiel confirmé immédiatement sans toucher à votre allocation touristique.',
+      imageKey: 'world_hotels_canada_niagara',
+      primaryCtaLabel: isAr
+        ? 'اطلب عرضك بالدينار التونسي والـ Voucher'
+        : isEn
+          ? 'Request TND Hotel Quote & Voucher'
+          : 'Demander mon tarif en TND & Voucher',
+      items: [
+        {
+          id: 'wh-1',
+          title: isAr ? 'باقة السفر السريع بلاش فيزا' : 'Pack 1 · Sans Visa (Départ rapide)',
+          subtitle: isAr
+            ? 'تركيا · المغرب · ماليزيا · زنجبار'
+            : 'Turquie · Maroc · Malaisie · Zanzibar',
+        },
+        {
+          id: 'wh-2',
+          title: isAr ? 'باقة شمس الشتاء والعمرة' : 'Pack 2 · Soleil d’Hiver & Omra',
+          subtitle: isAr
+            ? 'السعودية (العمرة) · مصر (القاهرة وشرم الشيخ) · دبي'
+            : 'Arabie Saoudite (Omra) · Égypte · Dubaï',
+        },
+        {
+          id: 'wh-3',
+          title: isAr ? 'الوجهات الكبرى وملفات الفيزا' : 'Pack 3 · Canada, Europe & Dossiers Visa',
+          subtitle: isAr
+            ? 'كندا (مونتريال/تورونتو) وأوروبا · Voucher رسمي ومؤكد'
+            : 'Canada (Montréal/Toronto) & Europe · Voucher officiel confirmé',
+        },
+      ],
     },
     module_visa_egypt: {
       eyebrow: isAr

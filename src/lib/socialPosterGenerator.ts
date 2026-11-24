@@ -208,13 +208,45 @@ export const CURATED_POSTER_PHOTOS: PosterPhotoOption[] = [
     labelAr: 'رحلات الطيران والتذاكر',
     src: HERO_MEDIA_MAP.airline_business_cabin.src,
   },
+  {
+    id: 'world_hotels_canada_niagara',
+    category: 'hotels',
+    labelFr: 'Canada · Niagara & Hôtels Monde TND',
+    labelAr: 'كندا · شلالات نياغارا وفنادق العالم',
+    src: HERO_MEDIA_MAP.world_hotels_canada_niagara.src,
+  },
+  {
+    id: 'world_hotels_zanzibar_beach',
+    category: 'hotels',
+    labelFr: 'Zanzibar Resort 5★ · Sans Visa',
+    labelAr: 'زنجبار منتجع 5 نجوم · بدون فيزا',
+    src: HERO_MEDIA_MAP.world_hotels_zanzibar_beach.src,
+  },
+  {
+    id: 'world_hotels_malaysia_kuala',
+    category: 'hotels',
+    labelFr: 'Malaisie · Kuala Lumpur Skyline',
+    labelAr: 'ماليزيا · كوالالمبور وفنادق فاخرة',
+    src: HERO_MEDIA_MAP.world_hotels_malaysia_kuala.src,
+  },
+  {
+    id: 'world_hotels_cafe_booking',
+    category: 'destinations',
+    labelFr: 'Réservation Hôtel 100% TND depuis la Tunisie',
+    labelAr: 'حجز فندق 100% بالدينار التونسي',
+    src: HERO_MEDIA_MAP.world_hotels_cafe_booking.src,
+  },
 ];
+
+export const DEFAULT_POSTER_LOGO_SRC =
+  '/assets/aistudio/logo_transparent_e9918557.png';
 
 export interface SocialPosterConfig {
   format: SocialPosterFormatId;
   style: SocialPosterStyleId;
   language: CreatorLanguage;
   photoSrc: string;
+  logoSrc: string;
   eyebrow: string;
   headline: string;
   subtitle: string;
@@ -224,6 +256,7 @@ export interface SocialPosterConfig {
   ctaLabel: string;
   phoneLabel: string;
   websiteLabel: string;
+  socialHandle: string;
   brandName: string;
   flagCodes: CountryFlagCode[];
   accentColor: string;
@@ -313,7 +346,38 @@ export function buildDefaultPosterConfig(input: PosterSeedInput): SocialPosterCo
   let style: SocialPosterStyleId = 'editorial_luxury';
 
   // Smart presets for Visas & Hotels so posters look instantly commercial and magnetic
-  if (slugLower.includes('visa-egypt') || slugLower.includes('مصر') && universe === 'visa') {
+  if (
+    slugLower.includes('hotels-monde') ||
+    slugLower.includes('world-hotels') ||
+    slugLower.includes('فنادق العالم') ||
+    slugLower.includes('بالدينار التونسي')
+  ) {
+    photoSrc = input.photoKey
+      ? getHeroImageSrc(input.photoKey)
+      : HERO_MEDIA_MAP.world_hotels_canada_niagara.src;
+    eyebrow = isAr
+      ? 'فنادق العالم · الخلاص 100% بالدينار التونسي (TND)'
+      : 'Hôtels dans le Monde · 100% Dinar Tunisien (TND)';
+    headline = isAr
+      ? '+500,000 فندق في العالم بالدينار التونسي'
+      : '+500 000 Hôtels dans le Monde en TND';
+    subtitle = isAr
+      ? 'السعودية/العمرة • مصر • كندا • تركيا • المغرب • دبي • ماليزيا • زنجبار — بدون كارت دوفيز.'
+      : 'Omra • Égypte • Canada • Turquie • Maroc • Dubaï • Malaisie • Zanzibar — sans carte devise.';
+    highlights = isAr
+      ? [
+          'خلاص 100% بالدينار التونسي بدون كارت دوفيز ودون المساس بالمنحة',
+          'Voucher فندق وطيران مؤكد فوراً لدعم ملفات فيزا كندا وأوروبا',
+          '3 باقات: بدون فيزا · شمس الشتاء والعمرة · الوجهات الكبرى',
+        ]
+      : [
+          'Paiement 100% TND sans carte devise & allocation touristique préservée',
+          'Voucher hôtel + vol confirmé pour dossiers Visa Canada & Europe',
+          '3 packs : Sans Visa · Soleil d’Hiver & Omra · Grandes Destinations',
+        ];
+    flagCodes = ['TN', 'SA', 'EG', 'CA', 'TR'];
+    showPrice = false;
+  } else if (slugLower.includes('visa-egypt') || (slugLower.includes('مصر') && universe === 'visa')) {
     photoSrc = input.photoKey
       ? getHeroImageSrc(input.photoKey)
       : HERO_MEDIA_MAP.egypt_pyramids_reel.src;
@@ -534,6 +598,7 @@ export function buildDefaultPosterConfig(input: PosterSeedInput): SocialPosterCo
     style,
     language,
     photoSrc,
+    logoSrc: page?.brandIdentity?.logoSrc || DEFAULT_POSTER_LOGO_SRC,
     eyebrow,
     headline,
     subtitle,
@@ -543,6 +608,7 @@ export function buildDefaultPosterConfig(input: PosterSeedInput): SocialPosterCo
     ctaLabel: isAr ? 'احجز الآن عبر واتساب' : 'Réservez sur WhatsApp',
     phoneLabel: '98 140 514',
     websiteLabel: 'www.easy2book.tn',
+    socialHandle: '@easy2book.tn',
     brandName,
     flagCodes,
     accentColor,
@@ -698,6 +764,462 @@ function drawCheckBullet(
   ctx.restore();
 }
 
+/**
+ * Prepares a brand logo for transparent placement on posters:
+ * - Removes solid near-white background only if all 4 corners are opaque white (for uploaded logos).
+ * - Trims transparent outer padding so the mark aligns flush with poster margins.
+ * - In 'light_on_dark' mode, turns dark navy/slate brand strokes crisp white while preserving warm gold accents.
+ */
+function prepareTransparentLogoCanvas(
+  img: HTMLImageElement,
+  mode: 'original' | 'light_on_dark'
+): HTMLCanvasElement {
+  const sw = Math.max(1, img.naturalWidth);
+  const sh = Math.max(1, img.naturalHeight);
+  const work = document.createElement('canvas');
+  work.width = sw;
+  work.height = sh;
+  const wctx = work.getContext('2d');
+  if (!wctx) return work;
+  wctx.drawImage(img, 0, 0, sw, sh);
+
+  try {
+    const imgData = wctx.getImageData(0, 0, sw, sh);
+    const data = imgData.data;
+
+    const isOpaqueWhiteAt = (px: number, py: number) => {
+      const idx = (py * sw + px) * 4;
+      return (
+        data[idx + 3] > 235 &&
+        data[idx] > 238 &&
+        data[idx + 1] > 238 &&
+        data[idx + 2] > 238
+      );
+    };
+
+    const stripWhiteBg =
+      isOpaqueWhiteAt(0, 0) &&
+      isOpaqueWhiteAt(sw - 1, 0) &&
+      isOpaqueWhiteAt(0, sh - 1) &&
+      isOpaqueWhiteAt(sw - 1, sh - 1);
+
+    let minX = sw;
+    let minY = sh;
+    let maxX = 0;
+    let maxY = 0;
+    let hasVisiblePixels = false;
+
+    for (let y = 0; y < sh; y++) {
+      for (let x = 0; x < sw; x++) {
+        const i = (y * sw + x) * 4;
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        let a = data[i + 3];
+
+        if (stripWhiteBg && a > 0) {
+          const minCh = Math.min(r, g, b);
+          if (minCh > 236) {
+            a = 0;
+            data[i + 3] = 0;
+          } else if (minCh > 215 && Math.max(r, g, b) - minCh < 18) {
+            const factor = (236 - minCh) / 21;
+            a = Math.round(a * Math.max(0, Math.min(1, factor)));
+            data[i + 3] = a;
+          }
+        }
+
+        if (a > 12) {
+          hasVisiblePixels = true;
+          if (x < minX) minX = x;
+          if (y < minY) minY = y;
+          if (x > maxX) maxX = x;
+          if (y > maxY) maxY = y;
+
+          if (mode === 'light_on_dark') {
+            // Preserve warm brand gold/yellow pixels; turn dark navy/slate strokes crisp white
+            const isWarmGold = r > 145 && g > 105 && b < 155 && r - b > 36;
+            if (isWarmGold) {
+              data[i] = Math.min(255, Math.round(r * 1.06));
+              data[i + 1] = Math.min(255, Math.round(g * 1.04));
+              data[i + 2] = Math.max(40, Math.round(b * 0.92));
+            } else {
+              data[i] = 255;
+              data[i + 1] = 255;
+              data[i + 2] = 255;
+            }
+          }
+        }
+      }
+    }
+
+    wctx.putImageData(imgData, 0, 0);
+
+    if (!hasVisiblePixels) return work;
+
+    const padPx = 4;
+    const cx = Math.max(0, minX - padPx);
+    const cy = Math.max(0, minY - padPx);
+    const cw = Math.min(sw - cx, maxX - minX + 1 + padPx * 2);
+    const ch = Math.min(sh - cy, maxY - minY + 1 + padPx * 2);
+
+    const trimmed = document.createElement('canvas');
+    trimmed.width = Math.max(1, cw);
+    trimmed.height = Math.max(1, ch);
+    const tctx = trimmed.getContext('2d');
+    if (tctx) {
+      tctx.drawImage(work, cx, cy, cw, ch, 0, 0, cw, ch);
+      return trimmed;
+    }
+    return work;
+  } catch {
+    return work;
+  }
+}
+
+function drawTransparentBrandLogo(
+  ctx: CanvasRenderingContext2D,
+  logoImg: HTMLImageElement | null,
+  brandName: string,
+  displayFamily: string,
+  opts: {
+    x: number;
+    y: number;
+    maxH: number;
+    maxW: number;
+    alignRight: boolean;
+    onDarkBackground: boolean;
+  }
+): { width: number; height: number } {
+  const { x, y, maxH, maxW, alignRight, onDarkBackground } = opts;
+
+  ctx.save();
+  if (onDarkBackground) {
+    ctx.shadowColor = 'rgba(4, 12, 24, 0.58)';
+    ctx.shadowBlur = 16;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 3;
+  }
+
+  if (logoImg) {
+    const processed = prepareTransparentLogoCanvas(
+      logoImg,
+      onDarkBackground ? 'light_on_dark' : 'original'
+    );
+    const ratio = processed.width / Math.max(1, processed.height);
+    let drawH = maxH;
+    let drawW = drawH * ratio;
+    if (drawW > maxW) {
+      drawW = maxW;
+      drawH = drawW / Math.max(0.01, ratio);
+    }
+    const drawX = alignRight ? x - drawW : x;
+    ctx.drawImage(processed, drawX, y, drawW, drawH);
+    ctx.restore();
+    return { width: drawW, height: drawH };
+  }
+
+  ctx.fillStyle = onDarkBackground ? '#FFFFFF' : '#0D263E';
+  ctx.font = `800 34px ${displayFamily}`;
+  ctx.textAlign = alignRight ? 'right' : 'left';
+  ctx.textBaseline = 'top';
+  ctx.fillText(brandName, x, y + 6);
+  ctx.restore();
+  return { width: 220, height: 48 };
+}
+
+type SocialIconKind = 'facebook' | 'instagram' | 'tiktok' | 'whatsapp';
+
+function drawSocialGlyph(
+  ctx: CanvasRenderingContext2D,
+  kind: SocialIconKind,
+  cx: number,
+  cy: number,
+  size: number,
+  color: string
+) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.fillStyle = color;
+  ctx.strokeStyle = color;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  const s = size;
+
+  if (kind === 'facebook') {
+    // Crisp vector Facebook 'f'
+    ctx.beginPath();
+    ctx.moveTo(s * 0.14, s * 0.48);
+    ctx.lineTo(s * 0.14, s * 0.04);
+    ctx.lineTo(s * 0.34, s * 0.04);
+    ctx.lineTo(s * 0.38, -s * 0.14);
+    ctx.lineTo(s * 0.14, -s * 0.14);
+    ctx.lineTo(s * 0.14, -s * 0.24);
+    ctx.quadraticCurveTo(s * 0.14, -s * 0.34, s * 0.26, -s * 0.34);
+    ctx.lineTo(s * 0.38, -s * 0.34);
+    ctx.lineTo(s * 0.38, -s * 0.5);
+    ctx.lineTo(s * 0.2, -s * 0.5);
+    ctx.quadraticCurveTo(-s * 0.08, -s * 0.5, -s * 0.08, -s * 0.24);
+    ctx.lineTo(-s * 0.08, -s * 0.14);
+    ctx.lineTo(-s * 0.26, -s * 0.14);
+    ctx.lineTo(-s * 0.26, s * 0.04);
+    ctx.lineTo(-s * 0.08, s * 0.04);
+    ctx.lineTo(-s * 0.08, s * 0.48);
+    ctx.closePath();
+    ctx.fill();
+  } else if (kind === 'instagram') {
+    // Rounded camera body + central lens + top-right flash dot
+    const box = s * 0.86;
+    ctx.lineWidth = Math.max(1.8, s * 0.1);
+    drawRoundedRectPath(ctx, -box / 2, -box / 2, box, box, s * 0.24);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(0, 0, s * 0.2, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(s * 0.24, -s * 0.24, s * 0.055, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (kind === 'tiktok') {
+    // Crisp vector TikTok musical note
+    ctx.lineWidth = Math.max(2, s * 0.13);
+    ctx.beginPath();
+    ctx.moveTo(s * 0.08, -s * 0.42);
+    ctx.lineTo(s * 0.08, s * 0.22);
+    ctx.arc(-s * 0.11, s * 0.22, s * 0.19, 0, Math.PI * 1.55, false);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(s * 0.08, -s * 0.42);
+    ctx.quadraticCurveTo(s * 0.14, -s * 0.18, s * 0.38, -s * 0.15);
+    ctx.stroke();
+  } else if (kind === 'whatsapp') {
+    // Crisp WhatsApp chat ring + tail + handset curve
+    const r = s * 0.42;
+    ctx.lineWidth = Math.max(1.8, s * 0.095);
+    ctx.beginPath();
+    ctx.arc(0, -s * 0.02, r, Math.PI * 0.82, Math.PI * 2.52, false);
+    ctx.stroke();
+
+    // Speech bubble tail (bottom-left)
+    ctx.beginPath();
+    ctx.moveTo(-r * 0.84, r * 0.42);
+    ctx.lineTo(-r * 1.02, r * 0.92);
+    ctx.lineTo(-r * 0.42, r * 0.74);
+    ctx.stroke();
+
+    // Telephone handset silhouette inside
+    ctx.lineWidth = Math.max(2, s * 0.11);
+    ctx.beginPath();
+    ctx.arc(s * 0.04, -s * 0.04, s * 0.21, Math.PI * 0.42, Math.PI * 1.24, false);
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
+function drawSocialIconBadge(
+  ctx: CanvasRenderingContext2D,
+  kind: SocialIconKind,
+  cx: number,
+  cy: number,
+  radius: number,
+  accentColor: string,
+  iconColor = '#FFFFFF'
+) {
+  ctx.save();
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.09)';
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.strokeStyle = accentColor;
+  ctx.globalAlpha = 0.72;
+  ctx.lineWidth = 1.6;
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+
+  drawSocialGlyph(ctx, kind, cx, cy, radius * 1.08, iconColor);
+}
+
+function drawPosterFooter(
+  ctx: CanvasRenderingContext2D,
+  config: SocialPosterConfig,
+  opts: {
+    W: number;
+    H: number;
+    pad: number;
+    footerH: number;
+    isAr: boolean;
+    isSquare: boolean;
+    fontFamily: string;
+    bgFill: string;
+    topRuleColor: string;
+  }
+) {
+  const { W, H, pad, footerH, isAr, isSquare, fontFamily, bgFill, topRuleColor } =
+    opts;
+  const footerY = H - footerH;
+  const upperBandH = isSquare ? 88 : 100;
+  const dividerY = footerY + upperBandH;
+  const lowerBandCenterY = dividerY + (footerH - upperBandH) / 2;
+
+  ctx.save();
+  // Background + top accent rule
+  ctx.fillStyle = bgFill;
+  ctx.fillRect(0, footerY, W, footerH);
+  ctx.fillStyle = topRuleColor;
+  ctx.fillRect(0, footerY, W, 4);
+
+  // Subtle horizontal divider separating primary CTA/Phone from Social Media strip
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.14)';
+  ctx.fillRect(pad, dividerY, W - pad * 2, 1.5);
+
+  // 1. Primary CTA Button
+  const ctaText = config.ctaLabel || (isAr ? 'احجز الآن' : 'Réservez maintenant');
+  ctx.font = `800 ${isSquare ? 22 : 24}px ${fontFamily}`;
+  const ctaW = Math.min(440, Math.max(270, ctx.measureText(ctaText).width + 58));
+  const ctaH = isSquare ? 54 : 60;
+  const ctaX = isAr ? W - pad - ctaW : pad;
+  const ctaY = footerY + (upperBandH - ctaH) / 2 + 2;
+
+  ctx.fillStyle = config.accentColor;
+  drawRoundedRectPath(ctx, ctaX, ctaY, ctaW, ctaH, 13);
+  ctx.fill();
+
+  ctx.fillStyle = '#0B1E33';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.direction = isAr ? 'rtl' : 'ltr';
+  ctx.fillText(ctaText, ctaX + ctaW / 2, ctaY + ctaH / 2 + 1, ctaW - 24);
+
+  // 2. Direct WhatsApp / Phone contact on opposite side
+  const infoX = isAr ? pad : W - pad;
+  const phoneRowY = footerY + upperBandH / 2 + 2;
+  const phoneFontSize = isSquare ? 31 : 34;
+
+  ctx.direction = 'ltr';
+  ctx.font = `800 ${phoneFontSize}px "Plus Jakarta Sans", sans-serif`;
+  const phoneStr = config.phoneLabel.trim() || '98 140 514';
+  const phoneW = ctx.measureText(phoneStr).width;
+
+  const waR = isSquare ? 17 : 19;
+  const waGap = 14;
+  if (isAr) {
+    // Icon at left edge, phone number to its right
+    drawSocialIconBadge(
+      ctx,
+      'whatsapp',
+      infoX + waR,
+      phoneRowY,
+      waR,
+      '#25D366',
+      '#25D366'
+    );
+    ctx.fillStyle = '#FFFFFF';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(phoneStr, infoX + waR * 2 + waGap, phoneRowY + 1);
+  } else {
+    // Phone number aligned right, WhatsApp badge immediately to its left
+    ctx.fillStyle = '#FFFFFF';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(phoneStr, infoX, phoneRowY + 1);
+    drawSocialIconBadge(
+      ctx,
+      'whatsapp',
+      infoX - phoneW - waGap - waR,
+      phoneRowY,
+      waR,
+      '#25D366',
+      '#25D366'
+    );
+  }
+
+  // 3. Social Media Icons Footer Row (Facebook, Instagram, TikTok, WhatsApp + Handle + Website)
+  const socialIcons: SocialIconKind[] = [
+    'facebook',
+    'instagram',
+    'tiktok',
+    'whatsapp',
+  ];
+  const iconR = isSquare ? 16 : 18;
+  const iconGap = 12;
+  const step = iconR * 2 + iconGap;
+  const handleText = (config.socialHandle || '@easy2book.tn').trim();
+  const websiteText = (config.websiteLabel || 'www.easy2book.tn').trim();
+  const stripFontSize = isSquare ? 20 : 22;
+
+  if (isAr) {
+    // Right side (RTL reading start): Social icons + handle; Left side: website
+    let cursorX = W - pad - iconR;
+    socialIcons.forEach((kind) => {
+      drawSocialIconBadge(
+        ctx,
+        kind,
+        cursorX,
+        lowerBandCenterY,
+        iconR,
+        config.accentColor,
+        '#FFFFFF'
+      );
+      cursorX -= step;
+    });
+    if (handleText) {
+      ctx.direction = 'ltr';
+      ctx.fillStyle = 'rgba(248, 250, 252, 0.94)';
+      ctx.font = `700 ${stripFontSize}px "Plus Jakarta Sans", sans-serif`;
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(handleText, cursorX + iconR - 6, lowerBandCenterY + 1);
+    }
+
+    ctx.direction = 'ltr';
+    ctx.fillStyle = config.accentColor;
+    ctx.font = `700 ${stripFontSize}px "Plus Jakarta Sans", sans-serif`;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(websiteText, pad, lowerBandCenterY + 1);
+  } else {
+    // Left side (LTR): Social icons + handle; Right side: website
+    let cursorX = pad + iconR;
+    socialIcons.forEach((kind) => {
+      drawSocialIconBadge(
+        ctx,
+        kind,
+        cursorX,
+        lowerBandCenterY,
+        iconR,
+        config.accentColor,
+        '#FFFFFF'
+      );
+      cursorX += step;
+    });
+    if (handleText) {
+      ctx.direction = 'ltr';
+      ctx.fillStyle = 'rgba(248, 250, 252, 0.94)';
+      ctx.font = `700 ${stripFontSize}px "Plus Jakarta Sans", sans-serif`;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(handleText, cursorX - iconR + 8, lowerBandCenterY + 1);
+    }
+
+    ctx.direction = 'ltr';
+    ctx.fillStyle = config.accentColor;
+    ctx.font = `700 ${stripFontSize}px "Plus Jakarta Sans", sans-serif`;
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(websiteText, W - pad, lowerBandCenterY + 1);
+  }
+
+  ctx.restore();
+}
+
 export async function renderSocialPosterToCanvas(
   canvas: HTMLCanvasElement,
   config: SocialPosterConfig
@@ -729,14 +1251,22 @@ export async function renderSocialPosterToCanvas(
     ? 'Cairo, sans-serif'
     : '"Plus Jakarta Sans", sans-serif';
 
-  const [photoImg, logoImg] = await Promise.all([
+  const resolvedLogoSrc = config.logoSrc || DEFAULT_POSTER_LOGO_SRC;
+  const [photoImg, loadedLogo] = await Promise.all([
     loadImage(config.photoSrc),
-    loadImage('/assets/aistudio/logo_transparent_e9918557.png'),
+    loadImage(resolvedLogoSrc),
   ]);
+  const logoImg =
+    loadedLogo ??
+    (resolvedLogoSrc !== DEFAULT_POSTER_LOGO_SRC
+      ? await loadImage(DEFAULT_POSTER_LOGO_SRC)
+      : null);
 
   const pad = 64;
   const isStory = config.format === 'story';
   const isSquare = config.format === 'square';
+  const footerH = isSquare ? 154 : 174;
+  const footerY = H - footerH;
 
   ctx.clearRect(0, 0, W, H);
 
@@ -752,12 +1282,12 @@ export async function renderSocialPosterToCanvas(
       ctx.fillRect(0, 0, W, H);
     }
 
-    // 2. Measured cinematic contrast scrim (preserves vivid upper photo while ensuring AA+ contrast below)
+    // 2. Measured cinematic contrast scrim (protects transparent white+gold logo on top & editorial copy below)
     const scrim = ctx.createLinearGradient(0, 0, 0, H);
-    scrim.addColorStop(0, 'rgba(7, 17, 31, 0.56)');
-    scrim.addColorStop(0.24, 'rgba(7, 17, 31, 0.14)');
-    scrim.addColorStop(0.46, 'rgba(7, 17, 31, 0.42)');
-    scrim.addColorStop(0.72, 'rgba(7, 17, 31, 0.88)');
+    scrim.addColorStop(0, 'rgba(7, 17, 31, 0.68)');
+    scrim.addColorStop(0.2, 'rgba(7, 17, 31, 0.22)');
+    scrim.addColorStop(0.42, 'rgba(7, 17, 31, 0.36)');
+    scrim.addColorStop(0.68, 'rgba(7, 17, 31, 0.88)');
     scrim.addColorStop(1, 'rgba(7, 17, 31, 0.96)');
     ctx.fillStyle = scrim;
     ctx.fillRect(0, 0, W, H);
@@ -770,58 +1300,42 @@ export async function renderSocialPosterToCanvas(
     ctx.stroke();
     ctx.restore();
 
-    // 3. Top header row: Ivory Logo Plate + Real Country Flag(s)
-    const topY = isStory ? 84 : 56;
-    const plateW = 246;
-    const plateH = 74;
-    const plateX = isAr ? W - pad - plateW : pad;
-    ctx.save();
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.96)';
-    drawRoundedRectPath(ctx, plateX, topY, plateW, plateH, 16);
-    ctx.fill();
-    if (logoImg) {
-      const ratio = logoImg.naturalWidth / Math.max(1, logoImg.naturalHeight);
-      const lh = 50;
-      const lw = Math.min(plateW - 32, lh * ratio);
-      ctx.drawImage(
-        logoImg,
-        plateX + (plateW - lw) / 2,
-        topY + (plateH - lh) / 2,
-        lw,
-        lh
-      );
-    } else {
-      ctx.fillStyle = '#0D263E';
-      ctx.font = `800 28px ${displayFamily}`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(config.brandName, plateX + plateW / 2, topY + plateH / 2);
-    }
-    ctx.restore();
+    // 3. Top header row: Pure Transparent Brand Logo (zero white box) + Real Country Flag(s)
+    const topY = isStory ? 74 : 46;
+    const logoSize = drawTransparentBrandLogo(
+      ctx,
+      logoImg,
+      config.brandName,
+      displayFamily,
+      {
+        x: isAr ? W - pad : pad,
+        y: topY,
+        maxH: isStory ? 116 : isSquare ? 88 : 98,
+        maxW: 270,
+        alignRight: isAr,
+        onDarkBackground: true,
+      }
+    );
 
-    // Country flags on opposite corner
+    // Country flags aligned vertically with logo center
     if (config.flagCodes.length > 0) {
       const flagAnchorX = isAr ? pad : W - pad;
-      drawFlagStrip(ctx, config.flagCodes, flagAnchorX, topY + 20, !isAr, 54, 34);
+      const flagY = topY + Math.max(10, Math.round((logoSize.height - 34) / 2));
+      drawFlagStrip(ctx, config.flagCodes, flagAnchorX, flagY, !isAr, 54, 34);
     }
 
-    // 4. Optional Gold Price Callout Badge (only when enabled)
-    const footerH = isSquare ? 132 : 148;
-    const footerY = H - footerH;
-
-    // 5. Lower Editorial Content Block
-    const contentBottomY = footerY - (isSquare ? 34 : 46);
+    // 4. Lower Editorial Content Block
+    const contentBottomY = footerY - (isSquare ? 28 : 40);
     const activeHighlights = config.highlights
       .map((h) => h.trim())
       .filter(Boolean);
-    const hlRowH = isSquare ? 46 : 54;
+    const hlRowH = isSquare ? 42 : 52;
     const highlightsTotalH = activeHighlights.length * hlRowH;
 
-    // Measure subtitle & headline from bottom up so spacing is mathematically balanced
     const textMaxW = W - pad * 2;
-    const headlineSize = isSquare ? 54 : isStory ? 68 : 60;
-    const subtitleSize = isSquare ? 25 : isStory ? 31 : 28;
-    const eyebrowSize = isSquare ? 22 : isStory ? 26 : 24;
+    const headlineSize = isSquare ? 50 : isStory ? 66 : 58;
+    const subtitleSize = isSquare ? 24 : isStory ? 30 : 27;
+    const eyebrowSize = isSquare ? 21 : isStory ? 26 : 24;
 
     ctx.font = `800 ${headlineSize}px ${displayFamily}`;
     const headlineLines = wrapTextLines(ctx, config.headline, textMaxW, 3);
@@ -831,18 +1345,18 @@ export async function renderSocialPosterToCanvas(
     const subtitleLines = config.subtitle.trim()
       ? wrapTextLines(ctx, config.subtitle, textMaxW, 2)
       : [];
-    const subtitleLineH = Math.round(subtitleSize * 1.42);
+    const subtitleLineH = Math.round(subtitleSize * 1.4);
 
     const priceBlockH =
-      config.showPrice && config.priceLabel.trim() ? (isSquare ? 72 : 84) : 0;
+      config.showPrice && config.priceLabel.trim() ? (isSquare ? 68 : 80) : 0;
 
     const totalTextH =
       eyebrowSize +
-      20 +
+      18 +
       headlineLines.length * headlineLineH +
-      (subtitleLines.length ? 16 + subtitleLines.length * subtitleLineH : 0) +
-      (activeHighlights.length ? 28 + highlightsTotalH : 0) +
-      (priceBlockH ? 24 + priceBlockH : 0);
+      (subtitleLines.length ? 14 + subtitleLines.length * subtitleLineH : 0) +
+      (activeHighlights.length ? 24 + highlightsTotalH : 0) +
+      (priceBlockH ? 20 + priceBlockH : 0);
 
     let cursorY = contentBottomY - totalTextH;
     const alignX = isAr ? W - pad : pad;
@@ -857,7 +1371,7 @@ export async function renderSocialPosterToCanvas(
     ctx.fillRect(isAr ? alignX - 72 : alignX, cursorY - 14, 72, 4);
     ctx.font = `700 ${eyebrowSize}px ${fontFamily}`;
     ctx.fillText(config.eyebrow, alignX, cursorY);
-    cursorY += eyebrowSize + 20;
+    cursorY += eyebrowSize + 18;
 
     // Display Headline
     ctx.fillStyle = '#FFFFFF';
@@ -872,7 +1386,7 @@ export async function renderSocialPosterToCanvas(
 
     // Subtitle
     if (subtitleLines.length > 0) {
-      cursorY += 14;
+      cursorY += 12;
       ctx.fillStyle = 'rgba(241, 245, 249, 0.92)';
       ctx.font = `500 ${subtitleSize}px ${fontFamily}`;
       subtitleLines.forEach((line) => {
@@ -883,11 +1397,11 @@ export async function renderSocialPosterToCanvas(
 
     // 3 Crisp Highlight Rows
     if (activeHighlights.length > 0) {
-      cursorY += 26;
-      const hlFontSize = isSquare ? 24 : isStory ? 29 : 26;
+      cursorY += 22;
+      const hlFontSize = isSquare ? 23 : isStory ? 28 : 25;
       ctx.font = `600 ${hlFontSize}px ${fontFamily}`;
       activeHighlights.forEach((item) => {
-        const bulletR = 13;
+        const bulletR = 12;
         const bulletCx = isAr ? alignX - bulletR : alignX + bulletR;
         const bulletCy = cursorY + Math.round(hlFontSize * 0.65);
         drawCheckBullet(ctx, bulletCx, bulletCy, bulletR, config.accentColor, '#0B1E33');
@@ -901,12 +1415,12 @@ export async function renderSocialPosterToCanvas(
 
     // Optional Price Callout
     if (config.showPrice && config.priceLabel.trim()) {
-      cursorY += 20;
+      cursorY += 18;
       const pText = config.priceLabel.trim();
-      ctx.font = `800 ${isSquare ? 34 : 38}px ${displayFamily}`;
+      ctx.font = `800 ${isSquare ? 32 : 36}px ${displayFamily}`;
       const measured = ctx.measureText(pText).width;
-      const boxW = Math.min(textMaxW, measured + 76);
-      const boxH = isSquare ? 68 : 76;
+      const boxW = Math.min(textMaxW, measured + 72);
+      const boxH = isSquare ? 64 : 74;
       const boxX = isAr ? alignX - boxW : alignX;
 
       ctx.fillStyle = config.accentColor;
@@ -920,48 +1434,23 @@ export async function renderSocialPosterToCanvas(
     }
     ctx.restore();
 
-    // 6. Structured Bottom Contact Footer Bar
-    ctx.save();
-    ctx.fillStyle = 'rgba(11, 30, 51, 0.96)';
-    ctx.fillRect(0, footerY, W, footerH);
-    ctx.fillStyle = config.accentColor;
-    ctx.fillRect(0, footerY, W, 4);
-
-    // Left/Right Footer CTA & Contact info
-    const ctaText = config.ctaLabel || (isAr ? 'احجز الآن' : 'Réservez maintenant');
-    ctx.font = `800 24px ${fontFamily}`;
-    const ctaW = Math.min(430, Math.max(290, ctx.measureText(ctaText).width + 64));
-    const ctaH = 66;
-    const ctaX = isAr ? W - pad - ctaW : pad;
-    const ctaY = footerY + (footerH - ctaH) / 2;
-
-    ctx.fillStyle = config.accentColor;
-    drawRoundedRectPath(ctx, ctaX, ctaY, ctaW, ctaH, 14);
-    ctx.fill();
-
-    ctx.fillStyle = '#0B1E33';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.direction = isAr ? 'rtl' : 'ltr';
-    ctx.fillText(ctaText, ctaX + ctaW / 2, ctaY + ctaH / 2 + 1, ctaW - 28);
-
-    // Phone + Website on opposite side
-    const infoX = isAr ? pad : W - pad;
-    ctx.direction = 'ltr';
-    ctx.textAlign = isAr ? 'left' : 'right';
-    ctx.textBaseline = 'alphabetic';
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = `800 34px "Plus Jakarta Sans", sans-serif`;
-    ctx.fillText(`WhatsApp · ${config.phoneLabel}`, infoX, footerY + footerH / 2 - 4);
-    ctx.fillStyle = config.accentColor;
-    ctx.font = `600 22px "Plus Jakarta Sans", sans-serif`;
-    ctx.fillText(config.websiteLabel, infoX, footerY + footerH / 2 + 30);
-    ctx.restore();
+    // 5. Structured Bottom Contact + Social Media Icons Footer Bar
+    drawPosterFooter(ctx, config, {
+      W,
+      H,
+      pad,
+      footerH,
+      isAr,
+      isSquare,
+      fontFamily,
+      bgFill: 'rgba(11, 30, 51, 0.97)',
+      topRuleColor: config.accentColor,
+    });
     return;
   }
 
   if (config.style === 'magazine_split') {
-    const splitY = Math.round(H * (isStory ? 0.54 : isSquare ? 0.48 : 0.52));
+    const splitY = Math.round(H * (isStory ? 0.52 : isSquare ? 0.43 : 0.48));
 
     // Upper high-impact unobstructed photograph
     if (photoImg) {
@@ -971,42 +1460,38 @@ export async function renderSocialPosterToCanvas(
       ctx.fillRect(0, 0, W, splitY);
     }
 
-    // Subtle top gradient for logo clarity
-    const topGrad = ctx.createLinearGradient(0, 0, 0, 200);
-    topGrad.addColorStop(0, 'rgba(7, 17, 31, 0.52)');
+    // Subtle top scrim for transparent white+gold brand logo clarity
+    const topGrad = ctx.createLinearGradient(0, 0, 0, 220);
+    topGrad.addColorStop(0, 'rgba(7, 17, 31, 0.68)');
+    topGrad.addColorStop(0.65, 'rgba(7, 17, 31, 0.22)');
     topGrad.addColorStop(1, 'rgba(7, 17, 31, 0)');
     ctx.fillStyle = topGrad;
-    ctx.fillRect(0, 0, W, 200);
+    ctx.fillRect(0, 0, W, 220);
 
-    // Logo plate in top corner
-    const plateW = 236;
-    const plateH = 70;
-    const plateX = isAr ? W - pad - plateW : pad;
-    const topY = isStory ? 74 : 46;
-    ctx.save();
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.96)';
-    drawRoundedRectPath(ctx, plateX, topY, plateW, plateH, 16);
-    ctx.fill();
-    if (logoImg) {
-      const ratio = logoImg.naturalWidth / Math.max(1, logoImg.naturalHeight);
-      const lh = 46;
-      const lw = Math.min(plateW - 28, lh * ratio);
-      ctx.drawImage(
-        logoImg,
-        plateX + (plateW - lw) / 2,
-        topY + (plateH - lh) / 2,
-        lw,
-        lh
-      );
-    }
-    ctx.restore();
+    // Pure Transparent Brand Logo in top corner (zero white box)
+    const topY = isStory ? 66 : 38;
+    const logoSize = drawTransparentBrandLogo(
+      ctx,
+      logoImg,
+      config.brandName,
+      displayFamily,
+      {
+        x: isAr ? W - pad : pad,
+        y: topY,
+        maxH: isStory ? 112 : isSquare ? 82 : 92,
+        maxW: 260,
+        alignRight: isAr,
+        onDarkBackground: true,
+      }
+    );
 
     if (config.flagCodes.length > 0) {
+      const flagY = topY + Math.max(8, Math.round((logoSize.height - 34) / 2));
       drawFlagStrip(
         ctx,
         config.flagCodes,
         isAr ? pad : W - pad,
-        topY + 18,
+        flagY,
         !isAr,
         54,
         34
@@ -1025,7 +1510,7 @@ export async function renderSocialPosterToCanvas(
       ctx.save();
       ctx.font = `800 32px ${displayFamily}`;
       const pw = Math.min(W - pad * 2, ctx.measureText(pText).width + 64);
-      const ph = 66;
+      const ph = 64;
       const px = isAr ? pad : W - pad - pw;
       const py = splitY - ph / 2;
       ctx.fillStyle = config.accentColor;
@@ -1040,7 +1525,7 @@ export async function renderSocialPosterToCanvas(
 
     const alignX = isAr ? W - pad : pad;
     const textMaxW = W - pad * 2;
-    let cursorY = splitY + (isSquare ? 42 : 56);
+    let cursorY = splitY + (isSquare ? 34 : 46);
 
     ctx.save();
     ctx.direction = isAr ? 'rtl' : 'ltr';
@@ -1048,37 +1533,37 @@ export async function renderSocialPosterToCanvas(
     ctx.textBaseline = 'top';
 
     ctx.fillStyle = config.accentColor;
-    ctx.font = `700 ${isSquare ? 21 : 24}px ${fontFamily}`;
+    ctx.font = `700 ${isSquare ? 20 : 23}px ${fontFamily}`;
     ctx.fillText(config.eyebrow, alignX, cursorY, textMaxW);
-    cursorY += isSquare ? 38 : 44;
+    cursorY += isSquare ? 32 : 38;
 
-    const hlSize = isSquare ? 44 : isStory ? 60 : 50;
+    const hlSize = isSquare ? 40 : isStory ? 58 : 48;
     ctx.fillStyle = '#FFFFFF';
     ctx.font = `800 ${hlSize}px ${displayFamily}`;
     const hLines = wrapTextLines(ctx, config.headline, textMaxW, 2);
-    const hStep = Math.round(hlSize * (isAr ? 1.3 : 1.18));
+    const hStep = Math.round(hlSize * (isAr ? 1.28 : 1.16));
     hLines.forEach((line) => {
       ctx.fillText(line, alignX, cursorY);
       cursorY += hStep;
     });
 
     if (config.subtitle.trim()) {
-      cursorY += 10;
-      const subSize = isSquare ? 22 : isStory ? 28 : 25;
+      cursorY += 8;
+      const subSize = isSquare ? 21 : isStory ? 28 : 24;
       ctx.fillStyle = 'rgba(226, 232, 240, 0.88)';
       ctx.font = `500 ${subSize}px ${fontFamily}`;
       const sLines = wrapTextLines(ctx, config.subtitle, textMaxW, 2);
       sLines.forEach((line) => {
         ctx.fillText(line, alignX, cursorY);
-        cursorY += Math.round(subSize * 1.42);
+        cursorY += Math.round(subSize * 1.38);
       });
     }
 
     const activeHighlights = config.highlights.map((h) => h.trim()).filter(Boolean);
     if (activeHighlights.length > 0) {
-      cursorY += isSquare ? 18 : 26;
-      const itemSize = isSquare ? 22 : isStory ? 27 : 24;
-      const rowStep = isSquare ? 40 : isStory ? 54 : 46;
+      cursorY += isSquare ? 14 : 22;
+      const itemSize = isSquare ? 21 : isStory ? 27 : 23;
+      const rowStep = isSquare ? 36 : isStory ? 52 : 44;
       ctx.font = `600 ${itemSize}px ${fontFamily}`;
       activeHighlights.forEach((item) => {
         const bulletR = 11;
@@ -1093,41 +1578,18 @@ export async function renderSocialPosterToCanvas(
     }
     ctx.restore();
 
-    // Footer strip inside navy panel
-    const footerH = isSquare ? 104 : 122;
-    const footerY = H - footerH;
-    ctx.save();
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
-    ctx.fillRect(0, footerY, W, footerH);
-    ctx.fillStyle = 'rgba(231, 179, 76, 0.35)';
-    ctx.fillRect(pad, footerY, W - pad * 2, 1.5);
-
-    const ctaText = config.ctaLabel || (isAr ? 'احجز الآن' : 'Réservez maintenant');
-    ctx.font = `800 22px ${fontFamily}`;
-    const ctaW = Math.min(410, Math.max(260, ctx.measureText(ctaText).width + 54));
-    const ctaH = 58;
-    const ctaX = isAr ? W - pad - ctaW : pad;
-    const ctaY = footerY + (footerH - ctaH) / 2;
-    ctx.fillStyle = config.accentColor;
-    drawRoundedRectPath(ctx, ctaX, ctaY, ctaW, ctaH, 12);
-    ctx.fill();
-    ctx.fillStyle = '#0B1E33';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.direction = isAr ? 'rtl' : 'ltr';
-    ctx.fillText(ctaText, ctaX + ctaW / 2, ctaY + ctaH / 2 + 1, ctaW - 24);
-
-    const infoX = isAr ? pad : W - pad;
-    ctx.direction = 'ltr';
-    ctx.textAlign = isAr ? 'left' : 'right';
-    ctx.textBaseline = 'alphabetic';
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = `800 32px "Plus Jakarta Sans", sans-serif`;
-    ctx.fillText(`WhatsApp · ${config.phoneLabel}`, infoX, footerY + footerH / 2 - 2);
-    ctx.fillStyle = config.accentColor;
-    ctx.font = `600 20px "Plus Jakarta Sans", sans-serif`;
-    ctx.fillText(config.websiteLabel, infoX, footerY + footerH / 2 + 28);
-    ctx.restore();
+    // Structured Footer Strip with Social Icons
+    drawPosterFooter(ctx, config, {
+      W,
+      H,
+      pad,
+      footerH,
+      isAr,
+      isSquare,
+      fontFamily,
+      bgFill: '#081728',
+      topRuleColor: config.accentColor,
+    });
     return;
   }
 
@@ -1135,33 +1597,35 @@ export async function renderSocialPosterToCanvas(
   ctx.fillStyle = '#FAF8F3';
   ctx.fillRect(0, 0, W, H);
 
-  // Subtle gold architectural top bar
+  // Architectural navy top hairline bar
   ctx.fillStyle = '#0D263E';
   ctx.fillRect(0, 0, W, 10);
 
-  // Top Header Row on Ivory
-  const topBarY = isStory ? 64 : 40;
-  if (logoImg) {
-    const ratio = logoImg.naturalWidth / Math.max(1, logoImg.naturalHeight);
-    const lh = 56;
-    const lw = Math.min(240, lh * ratio);
-    const lx = isAr ? W - pad - lw : pad;
-    ctx.drawImage(logoImg, lx, topBarY, lw, lh);
-  } else {
-    ctx.fillStyle = '#0D263E';
-    ctx.font = `800 32px ${displayFamily}`;
-    ctx.textAlign = isAr ? 'right' : 'left';
-    ctx.textBaseline = 'top';
-    ctx.fillText(config.brandName, isAr ? W - pad : pad, topBarY + 8);
-  }
+  // Top Header Row on Ivory — Transparent original navy+gold logo
+  const topBarY = isStory ? 54 : 30;
+  const logoSize = drawTransparentBrandLogo(
+    ctx,
+    logoImg,
+    config.brandName,
+    displayFamily,
+    {
+      x: isAr ? W - pad : pad,
+      y: topBarY,
+      maxH: isStory ? 86 : isSquare ? 64 : 74,
+      maxW: 240,
+      alignRight: isAr,
+      onDarkBackground: false,
+    }
+  );
 
-  // Right/Left Eyebrow or flags in top bar
+  // Right/Left flags or social handle in top ivory bar
+  const topMidY = topBarY + Math.round(logoSize.height / 2);
   if (config.flagCodes.length > 0) {
     drawFlagStrip(
       ctx,
       config.flagCodes,
       isAr ? pad : W - pad,
-      topBarY + 12,
+      topMidY - 16,
       !isAr,
       50,
       32
@@ -1170,16 +1634,16 @@ export async function renderSocialPosterToCanvas(
     ctx.save();
     ctx.fillStyle = '#9A6E1B';
     ctx.font = `700 22px ${fontFamily}`;
-    ctx.direction = isAr ? 'rtl' : 'ltr';
+    ctx.direction = 'ltr';
     ctx.textAlign = isAr ? 'left' : 'right';
     ctx.textBaseline = 'middle';
-    ctx.fillText(config.websiteLabel, isAr ? pad : W - pad, topBarY + 28);
+    ctx.fillText(config.websiteLabel, isAr ? pad : W - pad, topMidY);
     ctx.restore();
   }
 
   // Framed Hero Photography Window
-  const photoTop = topBarY + 78;
-  const photoH = Math.round(H * (isStory ? 0.45 : isSquare ? 0.42 : 0.44));
+  const photoTop = topBarY + logoSize.height + (isSquare ? 16 : 22);
+  const photoH = Math.round(H * (isStory ? 0.43 : isSquare ? 0.37 : 0.41));
   const photoW = W - pad * 2;
   ctx.save();
   drawRoundedRectPath(ctx, pad, photoTop, photoW, photoH, 26);
@@ -1206,9 +1670,9 @@ export async function renderSocialPosterToCanvas(
     ctx.save();
     ctx.font = `800 32px ${displayFamily}`;
     const pw = Math.min(photoW - 40, ctx.measureText(pText).width + 64);
-    const ph = 66;
+    const ph = 64;
     const px = isAr ? pad + 24 : W - pad - 24 - pw;
-    const py = photoTop + photoH - ph - 22;
+    const py = photoTop + photoH - ph - 20;
     ctx.fillStyle = '#0D263E';
     drawRoundedRectPath(ctx, px, py, pw, ph, 14);
     ctx.fill();
@@ -1225,7 +1689,7 @@ export async function renderSocialPosterToCanvas(
   // Editorial Typography Section Below Photo
   const alignX = isAr ? W - pad : pad;
   const textMaxW = W - pad * 2;
-  let cursorY = photoTop + photoH + (isSquare ? 34 : 46);
+  let cursorY = photoTop + photoH + (isSquare ? 24 : 36);
 
   ctx.save();
   ctx.direction = isAr ? 'rtl' : 'ltr';
@@ -1233,39 +1697,39 @@ export async function renderSocialPosterToCanvas(
   ctx.textBaseline = 'top';
 
   ctx.fillStyle = '#B47B19';
-  ctx.font = `700 ${isSquare ? 20 : 23}px ${fontFamily}`;
+  ctx.font = `700 ${isSquare ? 19 : 22}px ${fontFamily}`;
   ctx.fillText(config.eyebrow, alignX, cursorY, textMaxW);
-  cursorY += isSquare ? 34 : 40;
+  cursorY += isSquare ? 30 : 36;
 
-  const hlSize = isSquare ? 42 : isStory ? 56 : 48;
+  const hlSize = isSquare ? 38 : isStory ? 54 : 46;
   ctx.fillStyle = '#0D263E';
   ctx.font = `800 ${hlSize}px ${displayFamily}`;
   const hLines = wrapTextLines(ctx, config.headline, textMaxW, 2);
   hLines.forEach((line) => {
     ctx.fillText(line, alignX, cursorY);
-    cursorY += Math.round(hlSize * (isAr ? 1.3 : 1.16));
+    cursorY += Math.round(hlSize * (isAr ? 1.28 : 1.15));
   });
 
   if (config.subtitle.trim()) {
-    cursorY += 8;
-    const subSize = isSquare ? 21 : isStory ? 27 : 24;
+    cursorY += 6;
+    const subSize = isSquare ? 20 : isStory ? 26 : 23;
     ctx.fillStyle = '#334155';
     ctx.font = `500 ${subSize}px ${fontFamily}`;
     const sLines = wrapTextLines(ctx, config.subtitle, textMaxW, 2);
     sLines.forEach((line) => {
       ctx.fillText(line, alignX, cursorY);
-      cursorY += Math.round(subSize * 1.4);
+      cursorY += Math.round(subSize * 1.36);
     });
   }
 
   const activeHighlights = config.highlights.map((h) => h.trim()).filter(Boolean);
   if (activeHighlights.length > 0) {
-    cursorY += isSquare ? 16 : 24;
-    const itemSize = isSquare ? 21 : isStory ? 26 : 23;
-    const rowStep = isSquare ? 38 : isStory ? 50 : 44;
+    cursorY += isSquare ? 12 : 20;
+    const itemSize = isSquare ? 20 : isStory ? 25 : 22;
+    const rowStep = isSquare ? 34 : isStory ? 48 : 42;
     ctx.font = `700 ${itemSize}px ${fontFamily}`;
     activeHighlights.forEach((item) => {
-      const bulletR = 11;
+      const bulletR = 10;
       const bx = isAr ? alignX - bulletR : alignX + bulletR;
       const by = cursorY + Math.round(itemSize * 0.65);
       drawCheckBullet(ctx, bx, by, bulletR, '#0D263E', config.accentColor);
@@ -1277,41 +1741,18 @@ export async function renderSocialPosterToCanvas(
   }
   ctx.restore();
 
-  // Solid Navy Bottom Footer Bar
-  const footerH = isSquare ? 104 : 124;
-  const footerY = H - footerH;
-  ctx.save();
-  ctx.fillStyle = '#0D263E';
-  ctx.fillRect(0, footerY, W, footerH);
-  ctx.fillStyle = config.accentColor;
-  ctx.fillRect(0, footerY, W, 4);
-
-  const ctaText = config.ctaLabel || (isAr ? 'احجز الآن' : 'Réservez maintenant');
-  ctx.font = `800 22px ${fontFamily}`;
-  const ctaW = Math.min(410, Math.max(260, ctx.measureText(ctaText).width + 54));
-  const ctaH = 58;
-  const ctaX = isAr ? W - pad - ctaW : pad;
-  const ctaY = footerY + (footerH - ctaH) / 2;
-  ctx.fillStyle = config.accentColor;
-  drawRoundedRectPath(ctx, ctaX, ctaY, ctaW, ctaH, 12);
-  ctx.fill();
-  ctx.fillStyle = '#0D263E';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.direction = isAr ? 'rtl' : 'ltr';
-  ctx.fillText(ctaText, ctaX + ctaW / 2, ctaY + ctaH / 2 + 1, ctaW - 24);
-
-  const infoX = isAr ? pad : W - pad;
-  ctx.direction = 'ltr';
-  ctx.textAlign = isAr ? 'left' : 'right';
-  ctx.textBaseline = 'alphabetic';
-  ctx.fillStyle = '#FFFFFF';
-  ctx.font = `800 32px "Plus Jakarta Sans", sans-serif`;
-  ctx.fillText(`WhatsApp · ${config.phoneLabel}`, infoX, footerY + footerH / 2 - 2);
-  ctx.fillStyle = config.accentColor;
-  ctx.font = `600 20px "Plus Jakarta Sans", sans-serif`;
-  ctx.fillText(config.websiteLabel, infoX, footerY + footerH / 2 + 28);
-  ctx.restore();
+  // Solid Navy Bottom Footer Bar with Social Media Icons
+  drawPosterFooter(ctx, config, {
+    W,
+    H,
+    pad,
+    footerH,
+    isAr,
+    isSquare,
+    fontFamily,
+    bgFill: '#0D263E',
+    topRuleColor: config.accentColor,
+  });
 }
 
 export function slugifyPosterName(raw: string): string {

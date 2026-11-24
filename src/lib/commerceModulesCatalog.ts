@@ -53,6 +53,22 @@ export const UNIVERSAL_COMMERCE_MODULES: CommerceModuleDefinition[] = [
     anchorId: 'module-hotels',
   },
   {
+    id: 'world_hotels',
+    labels: {
+      fr: 'Hôtels dans le Monde (TND)',
+      en: 'Worldwide Hotels (TND)',
+      ar: 'فنادق العالم بالدينار التونسي',
+    },
+    capabilities: {
+      fr: '+500 000 hôtels (Omra, Égypte, Canada, Turquie, Maroc, Dubaï, Malaisie, Zanzibar) payables 100% en TND avec Voucher Visa',
+      en: '+500,000 hotels worldwide paid 100% in TND without foreign currency card, instant confirmed Visa Voucher',
+      ar: '+500 ألف فندق في العالم (العمرة، مصر، كندا، تركيا، المغرب، دبي، ماليزيا وزنجبار) بالخلاص 100% بالدينار مع Voucher مؤكد',
+    },
+    blockType: 'module_world_hotels',
+    universeHint: 'voyages',
+    anchorId: 'module-hotels-monde',
+  },
+  {
     id: 'voyages',
     labels: {
       fr: 'Voyages organisés',

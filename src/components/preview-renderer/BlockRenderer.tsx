@@ -64,6 +64,7 @@ import { TestimonialsSection } from '../TestimonialsSection';
 import { WhatsAppIcon } from '../WhatsAppIcon';
 import { BrandLogoMark } from './SiteHeader';
 import { VisaEgyptModuleBlock } from './VisaEgyptModuleBlock';
+import { WorldHotelsModuleBlock } from './WorldHotelsModuleBlock';
 
 function decodeBase64ToUint8Array(base64: string): Uint8Array {
   const binary = window.atob(base64);
@@ -149,12 +150,16 @@ export function BlockRenderer({
 
   const reelPreset: ReelPresetId =
     block.content.reelPreset ||
-    (pageId.includes('billetterie') ||
-    pageId.includes('avion') ||
-    pageId.includes('bateau') ||
-    pageId.includes('ferries') ||
-    block.id.includes('-ff-')
-      ? 'flights_ferries'
+    (pageId.includes('hotels-monde') ||
+    pageId.includes('world-hotels') ||
+    block.id.includes('-wh-')
+      ? 'world_hotels_tnd'
+      : pageId.includes('billetterie') ||
+          pageId.includes('avion') ||
+          pageId.includes('bateau') ||
+          pageId.includes('ferries') ||
+          block.id.includes('-ff-')
+        ? 'flights_ferries'
       : pageId.includes('visa-egypte') || block.id.includes('-veg-')
         ? 'visa_egypt'
         : pageId.includes('visa-dubai') || block.id.includes('-vdxb-')
@@ -1692,6 +1697,28 @@ export function BlockRenderer({
         {sectionTag}
         <div className="mx-auto max-w-5xl px-6">
           <VisaEgyptModuleBlock
+            block={block}
+            pageId={pageId}
+            universe={universe}
+            language={language}
+            offerRef={offerRef}
+            attribution={attribution}
+            crmConfig={crmConfig}
+            brandIdentity={brandIdentity}
+            interactiveEdit={interactiveEdit}
+          />
+        </div>
+      </section>
+    );
+  }
+
+  // Dedicated Worldwide Hotels (100% TND & Visa Voucher) Interactive Module
+  if (block.type === 'module_world_hotels') {
+    return (
+      <section {...wrapperProps} id={block.anchorId || 'module-hotels-monde'}>
+        {sectionTag}
+        <div className="mx-auto max-w-5xl px-6">
+          <WorldHotelsModuleBlock
             block={block}
             pageId={pageId}
             universe={universe}

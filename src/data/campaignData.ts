@@ -24,6 +24,11 @@ import evisaPassportGlobeImg from '../assets/images/evisa_green_passport_globe_1
 import evisaWorldMapImg from '../assets/images/evisa_world_map_routes_1795179879338.jpg';
 import evisaDestinationsCollageImg from '../assets/images/evisa_destinations_collage_1795179879370.jpg';
 import evisaMobileCompanionImg from '../assets/images/evisa_mobile_companion_1795179881635.jpg';
+import marrakechRiadImg from '../assets/images/marrakech_luxury_riad_1794678796686.jpg';
+import worldHotelsZanzibarImg from '../assets/images/world_hotels_zanzibar_beach_1795298620655.jpg';
+import worldHotelsCanadaImg from '../assets/images/world_hotels_canada_niagara_1795298620744.jpg';
+import worldHotelsCafeImg from '../assets/images/world_hotels_cafe_booking_1795298623176.jpg';
+import worldHotelsMalaysiaImg from '../assets/images/world_hotels_malaysia_kuala_1795298689542.jpg';
 import type { CountryFlagCode } from '../lib/realCountryFlags';
 
 export interface ReelScene {
@@ -77,7 +82,10 @@ export type ReelPresetId =
   | 'egypt_excursions'
   | 'turkey_excursions'
   | 'excursions_general'
-  | 'flights_ferries';
+  | 'flights_ferries'
+  | 'world_hotels_tnd'
+  | 'world_hotels_packages'
+  | 'world_hotels_cafe';
 
 export const TOTAL_REEL_DURATION_SEC = 48;
 
@@ -1631,9 +1639,417 @@ export const FLIGHTS_FERRIES_SHOOTING_TIPS = [
   },
 ];
 
+export const WORLD_HOTELS_TND_SCRIPT =
+  'تحب تسافر للعالم الكل من تونس، أما ما عندكش كارت دوفيز؟ سواء ناوي على عمرة للسعودية، رحلة لمصر، سياحة في تركيا والمغرب، ولا حتى حجز لكندا... على Easy2Book.tn تحجز طيارتك وأوتيلك في أكثر من خمسمية ألف فندق في العالم، وتخلص مية بالمية بالدينار التونسي من دارك! تتحصل على Voucher رسمي ومؤكد في الحين، وحتى كان تحضر في دوسي فيزا كندا ولا أوروبا، وثائقك الكل حاضرة ومضمونة! ادخل توا على easy2book.tn ولا كلمنا على ثمانية وتسعين، مية وأربعين، خمس مية وأربعطاش... سفرتك تبدأ من هنا!';
+
+export const WORLD_HOTELS_PACKAGES_SCRIPT =
+  'وين تحب تسافر الشهر الجاي؟ اختر باقتك وخلي الباقي على Easy2Book! الباقة الأولى، السفر السريع بلاش فيزا: تحب تسافر غدوة بلاش قلق فيزا؟ عندك تركيا، المغرب، ماليزيا، وزنجبار... احجز أوتيلك وطيارتك في خمس دقائق بالدينار! الباقة الثانية، شمس الشتاء والعمرة: تحب رحلة روحانية ولا شمس في عز الشتاء؟ برامج العمرة في السعودية، مصر — القاهرة وشرم الشيخ — ودبي بانتظارك بأحسن الأسوام! الباقة الثالثة، الوجهات الكبرى وملفات الفيزا: وإذا ماشي لكندا ولا لأوروبا، نوفرولك حجز الطيران والأوتيل المؤكد بالدينار التونسي باش تدعم دوسي الفيزا متاعك بكل ثقة! كل هذا في بلاصة وحدة: www.easy2book.tn، وللاستفسار اتصل بينا على ثمانية وتسعين، مية وأربعين، خمس مية وأربعطاش!';
+
+export const WORLD_HOTELS_CAFE_SCRIPT =
+  'والله حاير، الدوسي متاع فيزا كندا يطلب حجز أوتيل مؤكد، وأنا ما عنديش كارت دوفيز، وما نحبش نضيع الـ Allocation متاعي قبل ما نخرج! يا راجل علاش معقدها؟ أنا الأسبوع الفايت حجزت لأمي عمرة ولخويا أوتيل في مصر، والكلو من Easy2Book.tn بالدينار التونسي! تختار أي دولة في العالم — كندا، السعودية، مصر، تركيا ولا دبي — تخلص بالتونسي، وتاخو الـ Voucher متاعك في الحين بلاش ما تمس منحتك السياحية! هات الرقم نكلمهم توا! Easy2Book.tn، أسهل طريقة للسفر، اتصل على ثمانية وتسعين، مية وأربعين، خمس مية وأربعطاش!';
+
+export const WORLD_HOTELS_TND_REEL_SCENES: ReelScene[] = [
+  {
+    id: 'wht-scene-1',
+    indexLabel: '01',
+    arabicTitle: '0:00 - 0:04 · الهوك: ما عندكش كارت دوفيز؟',
+    subtitleSummary: 'جواز السفر التونسي الأخضر أمام شاشة «Paiement refusé»',
+    startSec: 0,
+    endSec: 4,
+    primaryImage: evisaPassportGlobeImg,
+    imageAlt: 'جواز السفر التونسي الأخضر أمام شاشة رفض الدفع بالعملة الأجنبية',
+    overlayHeadline: 'ما عندكش كارت دوفيز؟ 🛑',
+    overlayLines: [
+      'تحب تسافر للعالم الكل من تونس؟',
+      'الخلاص بالدينار التونسي (TND) 🇹🇳',
+    ],
+    cameraMoveLabel: '0:00–0:04 · هوك سريع · جواز السفر التونسي الأخضر',
+    overlayDir: 'rtl',
+    overlayPosition: 'center',
+    flagCodes: ['TN'],
+    promptText:
+      '0:00-0:04 شخص يمسك جواز سفره التونسي الأخضر أمام شاشة حاسوب تظهر فيها رسالة «Paiement refusé».',
+  },
+  {
+    id: 'wht-scene-2',
+    indexLabel: '02',
+    arabicTitle: '0:04 - 0:12 · مونتاج الوجهات الكبرى',
+    subtitleSummary: 'الحرم المكي، الأهرامات، برج خليفة، إسطنبول، وشلالات نياغارا / برج CN (كندا)',
+    startSec: 4,
+    endSec: 12,
+    primaryImage: makkahSunriseImg,
+    secondaryImage: worldHotelsCanadaImg,
+    matchCutOffsetSec: 4,
+    imageAlt: 'لقطة جوية للحرم المكي والمملكة العربية السعودية',
+    secondaryImageAlt: 'برج CN تورونتو وشلالات نياغارا في كندا',
+    overlayHeadline: 'عمرة • مصر • تركيا • كندا 🌍',
+    overlayLines: [
+      'السعودية • مصر • المغرب • دبي • كندا',
+      'الخلاص بالدينار التونسي 🇹🇳',
+    ],
+    cameraMoveLabel: '0:04–0:12 · مونتاج سريع 8 وجهات دولية',
+    overlayDir: 'rtl',
+    flagCodes: ['SA', 'EG', 'TR', 'MA', 'AE', 'CA'],
+    promptText:
+      '0:04-0:12 لقطات سريعة ومتتالية: الحرم المكي، الأهرامات، برج خليفة، إسطنبول، وبرج CN وشلالات نياغارا في كندا.',
+  },
+  {
+    id: 'wht-scene-3',
+    indexLabel: '03',
+    arabicTitle: '0:12 - 0:24 · +500,000 فندق بالدينار (TND)',
+    subtitleSummary: 'واجهة Easy2Book.tn: اختيار الفندق، الأسعار بالدينار التونسي وإتمام الدفع من دارك',
+    startSec: 12,
+    endSec: 24,
+    primaryImage: worldHotelsMalaysiaImg,
+    secondaryImage: dubaiSkylineImg,
+    matchCutOffsetSec: 6,
+    imageAlt: 'فندق 5 نجوم كوالالمبور ماليزيا — حجز عبر Easy2Book.tn بالدينار التونسي',
+    secondaryImageAlt: 'أفق دبي الفاخر وفنادق العالم بالدينار التونسي',
+    overlayHeadline: '+500,000 أوتيل بالدينار (TND) 🇹🇳',
+    overlayLines: [
+      'احجز طيارتك وأوتيلك في العالم الكل من دارك',
+      'الخلاص 100% بالدينار التونسي · بدون كارت دوفيز',
+    ],
+    cameraMoveLabel: '0:12–0:24 · واجهة Easy2Book.tn · الأسعار بالدينار',
+    overlayDir: 'rtl',
+    flagCodes: ['TN', 'MY', 'TZ', 'AE'],
+    promptText:
+      '0:12-0:24 تسجيل شاشة لموقع easy2book.tn: اختيار الفندق، ظهور الأسعار بالدينار التونسي (TND)، وإتمام الدفع.',
+  },
+  {
+    id: 'wht-scene-4',
+    indexLabel: '04',
+    arabicTitle: '0:24 - 0:30 · Voucher رسمي ومؤكد لملفات الفيزا',
+    subtitleSummary: 'وصل حجز مؤكد (Voucher) + ختم «مؤكد / Confirmé» لفيزا كندا وأوروبا',
+    startSec: 24,
+    endSec: 30,
+    primaryImage: worldHotelsCanadaImg,
+    secondaryImage: evisaMobileCompanionImg,
+    matchCutOffsetSec: 3,
+    imageAlt: 'برج CN تورونتو وشلالات نياغارا — Voucher فندق مؤكد لملف فيزا كندا وأوروبا',
+    secondaryImageAlt: 'تأكيد فوري لوصل الحجز Voucher على الهاتف',
+    overlayHeadline: 'حجوزات مؤكدة لملفات الفيزا ✅',
+    overlayLines: [
+      'Voucher رسمي ومؤكد في الحين',
+      'ملفات فيزا كندا وأوروبا حاضرة ومضمونة',
+    ],
+    cameraMoveLabel: '0:24–0:30 · ختم «مؤكد / Confirmé» · ملفات الفيزا',
+    overlayDir: 'rtl',
+    flagCodes: ['CA', 'TN'],
+    promptText:
+      '0:24-0:30 ظهور وصل حجز مؤكد (Voucher) مع ختم «مؤكد / Confirmé» لدعم ملفات فيزا كندا وأوروبا.',
+  },
+  {
+    id: 'wht-scene-5',
+    indexLabel: '05',
+    arabicTitle: '0:30 - 0:35 · شعار Easy2Book.tn والاتصال',
+    subtitleSummary: 'شعار Easy2Book.tn (أزرق، أبيض، أصفر) مع الموقع ورقم الهاتف 98 140 514',
+    startSec: 30,
+    endSec: 35,
+    primaryImage: studioBackdropImg,
+    imageAlt: 'شعار Easy2Book.tn ورقم الهاتف 98 140 514',
+    overlayHeadline: 'سفرتك تبدأ من هنا! ✈️',
+    overlayLines: [
+      'عمرة • مصر • كندا • تركيا • دبي · بالدينار التونسي',
+      '📞 98 140 514',
+      '🌐 www.easy2book.tn',
+    ],
+    cameraMoveLabel: '0:30–0:35 · Lockup Easy2Book.tn · CTA',
+    isStudioLockup: true,
+    overlayDir: 'rtl',
+    flagCodes: ['TN', 'SA', 'EG', 'CA', 'TR'],
+    promptText:
+      '0:30-0:35 شعار Easy2Book.tn بألوانه (أزرق، أبيض، أصفر) مع الموقع www.easy2book.tn والهاتف 98 140 514.',
+  },
+];
+
+export const WORLD_HOTELS_PACKAGES_REEL_SCENES: ReelScene[] = [
+  {
+    id: 'whp-scene-1',
+    indexLabel: '01',
+    arabicTitle: '0:00 - 0:05 · الهوك: 3 باقات حسب جوّك',
+    subtitleSummary: 'وين تحب تسافر الشهر الجاي؟ اختر باقتك وخلي الباقي على Easy2Book',
+    startSec: 0,
+    endSec: 5,
+    primaryImage: flightsRelaxedSuitcaseImg,
+    imageAlt: 'مسافر بحقيبة سفر جاهز للانطلاق — 3 باقات سفر من Easy2Book',
+    overlayHeadline: '3 باقات حسب جوّك ✈️',
+    overlayLines: [
+      'وين تحب تسافر الشهر الجاي؟',
+      'الخلاص بالدينار التونسي 🇹🇳',
+    ],
+    cameraMoveLabel: '0:00–0:05 · مقدمة الدليل السياحي',
+    overlayDir: 'rtl',
+    overlayPosition: 'center',
+    flagCodes: ['TN'],
+    promptText:
+      '0:00-0:05 المتحدث أمام الكاميرا وهو يحمل حقيبة سفر: وين تحب تسافر الشهر الجاي؟ اختر باقتك!',
+  },
+  {
+    id: 'whp-scene-2',
+    indexLabel: '02',
+    arabicTitle: '0:05 - 0:14 · الباقة 1: السفر السريع بلاش فيزا',
+    subtitleSummary: 'تركيا، المغرب، ماليزيا وزنجبار — احجز أوتيلك وطيارتك في 5 دقائق بالدينار',
+    startSec: 5,
+    endSec: 14,
+    primaryImage: turkeyIstanbulReelImg,
+    secondaryImage: worldHotelsZanzibarImg,
+    matchCutOffsetSec: 4.5,
+    imageAlt: 'إسطنبول والبسفور ومراكش — وجهات بدون فيزا',
+    secondaryImageAlt: 'زنجبار وماليزيا — شواطئ فيروزية ومنتجعات 5 نجوم',
+    overlayHeadline: 'الباقة 1 · السفر السريع بلاش فيزا',
+    overlayLines: [
+      'تركيا • المغرب • ماليزيا • زنجبار',
+      'احجز أوتيلك وطيارتك في 5 دقائق بالدينار (TND)',
+    ],
+    cameraMoveLabel: '0:05–0:14 · إسطنبول • مراكش • ماليزيا • زنجبار',
+    overlayDir: 'rtl',
+    flagCodes: ['TR', 'MA', 'MY', 'TZ'],
+    promptText:
+      '0:05-0:14 لقطات سريعة لإسطنبول، مراكش، كوالالمبور (ماليزيا) وشواطئ زنجبار الفيروزية.',
+  },
+  {
+    id: 'whp-scene-3',
+    indexLabel: '03',
+    arabicTitle: '0:14 - 0:24 · الباقة 2: شمس الشتاء والعمرة',
+    subtitleSummary: 'برامج العمرة في السعودية، مصر (القاهرة وشرم الشيخ) ودبي بأحسن الأسوام',
+    startSec: 14,
+    endSec: 24,
+    primaryImage: makkahSunriseImg,
+    secondaryImage: egyptPyramidsReelImg,
+    matchCutOffsetSec: 5,
+    imageAlt: 'الحرم المكي في السعودية — برامج العمرة',
+    secondaryImageAlt: 'الأهرامات وشرم الشيخ ودبي — شمس الشتاء',
+    overlayHeadline: 'الباقة 2 · شمس الشتاء والعمرة 🕌☀️',
+    overlayLines: [
+      'السعودية (العمرة) • مصر (القاهرة وشرم الشيخ) • دبي',
+      'فنادق قريبة من الحرم ومنتجعات 5★ بالدينار التونسي',
+    ],
+    cameraMoveLabel: '0:14–0:24 · مكة المكرمة • شرم الشيخ • دبي',
+    overlayDir: 'rtl',
+    flagCodes: ['SA', 'EG', 'AE'],
+    promptText:
+      '0:14-0:24 لقطات جوية للحرم المكي ثم شواطئ شرم الشيخ والأهرامات وأفق دبي الذهبي.',
+  },
+  {
+    id: 'whp-scene-4',
+    indexLabel: '04',
+    arabicTitle: '0:24 - 0:33 · الباقة 3: كندا وأوروبا وملفات الفيزا',
+    subtitleSummary: 'حجز طيران وأوتيل مؤكد بالدينار التونسي لدعم دوسي فيزا كندا وأوروبا',
+    startSec: 24,
+    endSec: 33,
+    primaryImage: worldHotelsCanadaImg,
+    secondaryImage: visaEuropeImg,
+    matchCutOffsetSec: 5,
+    imageAlt: 'برج CN تورونتو وشلالات نياغارا ومونتريال — ملف فيزا كندا',
+    secondaryImageAlt: 'باريس وأوروبا — حجوزات فندقية مؤكدة لملف الفيزا',
+    overlayHeadline: 'الباقة 3 · كندا وأوروبا وملفات الفيزا',
+    overlayLines: [
+      'طيران + أوتيل مؤكد بالدينار التونسي (TND)',
+      'ادعم دوسي الفيزا متاعك بـ Voucher رسمي بكل ثقة ✅',
+    ],
+    cameraMoveLabel: '0:24–0:33 · كندا (CN Tower/مونتريال) + الجواز الأخضر',
+    overlayDir: 'rtl',
+    flagCodes: ['CA', 'TN'],
+    promptText:
+      '0:24-0:33 لقطات مونتريال وبرج CN وشلالات نياغارا مع جواز السفر التونسي الأخضر ووثائق الحجز.',
+  },
+  {
+    id: 'whp-scene-5',
+    indexLabel: '05',
+    arabicTitle: '0:33 - 0:40 · الخاتمة / CTA',
+    subtitleSummary: 'كل هذا في بلاصة وحدة: www.easy2book.tn | 98 140 514',
+    startSec: 33,
+    endSec: 40,
+    primaryImage: studioBackdropImg,
+    imageAlt: 'شعار Easy2Book ورقم الهاتف 98 140 514',
+    overlayHeadline: 'كل هذا في بلاصة وحدة 🌍',
+    overlayLines: [
+      'عمرة • مصر • كندا • تركيا • دبي · بالدينار التونسي',
+      '📞 98 140 514',
+      '🌐 www.easy2book.tn',
+    ],
+    cameraMoveLabel: '0:33–0:40 · Lockup Easy2Book.tn',
+    isStudioLockup: true,
+    overlayDir: 'rtl',
+    flagCodes: ['TN', 'SA', 'EG', 'CA', 'TR'],
+    promptText:
+      '0:33-0:40 شعار Easy2Book والموقع www.easy2book.tn ورقم الهاتف 98 140 514.',
+  },
+];
+
+export const WORLD_HOTELS_CAFE_REEL_SCENES: ReelScene[] = [
+  {
+    id: 'whc-scene-1',
+    indexLabel: '01',
+    arabicTitle: '0:00 - 0:10 · المشهد 1: حيرة فيزا كندا والـ Allocation',
+    subtitleSummary: 'صديقان في مقهى: دوسي فيزا كندا يطلب حجز أوتيل مؤكد بدون كارت دوفيز وبلاش ضياع المنحة',
+    startSec: 0,
+    endSec: 10,
+    primaryImage: worldHotelsCafeImg,
+    imageAlt: 'صديقان في مقهى بتونس مع جواز السفر الأخضر والهاتف',
+    overlayHeadline: 'خايف تضيع الـ Allocation؟ ☕',
+    overlayLines: [
+      'دوسي فيزا كندا يطلب حجز أوتيل مؤكد...',
+      'وما عندكش كارت دوفيز؟ اسمع الحل!',
+    ],
+    cameraMoveLabel: '0:00–0:10 · سكتش المقهى · الصديق 1',
+    overlayDir: 'rtl',
+    flagCodes: ['TN', 'CA'],
+    promptText:
+      '0:00-0:10 صديقان في مقهى بتونس يتحدثان عن دوسي فيزا كندا ورفض المساس بالمنحة السياحية Allocation.',
+  },
+  {
+    id: 'whc-scene-2',
+    indexLabel: '02',
+    arabicTitle: '0:10 - 0:22 · المشهد 2: عمرة لمكة وأوتيل في مصر بالدينار!',
+    subtitleSummary: 'الصديق 2 يُريه هاتفه: حجزت لأمي عمرة ولخويا أوتيل في مصر من Easy2Book.tn بالدينار التونسي',
+    startSec: 10,
+    endSec: 22,
+    primaryImage: makkahSunriseImg,
+    secondaryImage: egyptPyramidsReelImg,
+    matchCutOffsetSec: 6,
+    imageAlt: 'الحرم المكي — حجز العمرة بالدينار التونسي عبر Easy2Book.tn',
+    secondaryImageAlt: 'الأهرامات وشرم الشيخ — حجز فندق في مصر بالدينار التونسي',
+    overlayHeadline: 'عمرة + أوتيل في مصر بالدينار! 🇹🇳',
+    overlayLines: [
+      '«الأسبوع الفايت حجزت لأمي عمرة ولخويا أوتيل في مصر»',
+      'الكلو من Easy2Book.tn بالدينار التونسي!',
+    ],
+    cameraMoveLabel: '0:10–0:22 · إثبات اجتماعي · عمرة + مصر',
+    overlayDir: 'rtl',
+    flagCodes: ['SA', 'EG', 'TN'],
+    promptText:
+      '0:10-0:22 الصديق 2 يضحك ويُريه هاتفه مع حجوزات عمرة وفندق في مصر تمت بالدينار التونسي.',
+  },
+  {
+    id: 'whc-scene-3',
+    indexLabel: '03',
+    arabicTitle: '0:22 - 0:35 · المشهد 3: Voucher فوري لكل دول العالم بالـ TND',
+    subtitleSummary: 'فنادق مونتريال، مكة، شرم الشيخ، تركيا ودبي بـ TND + Voucher فوري بدون مساس بالمنحة السياحية',
+    startSec: 22,
+    endSec: 35,
+    primaryImage: worldHotelsCanadaImg,
+    secondaryImage: marrakechRiadImg,
+    matchCutOffsetSec: 6.5,
+    imageAlt: 'فنادق كندا والسعودية ومصر وتركيا ودبي بالدينار التونسي',
+    secondaryImageAlt: 'فنادق فاخرة في العالم مع Voucher فوري',
+    overlayHeadline: 'عمرة • مصر • كندا • تركيا • دبي',
+    overlayLines: [
+      'تخلص بالتونسي وتاخو الـ Voucher في الحين ✅',
+      'بلاش ما تمس منحتك السياحية (Allocation) 🇹🇳',
+    ],
+    cameraMoveLabel: '0:22–0:35 · واجهة الموقع · الأسعار بالدينار + Voucher',
+    overlayDir: 'rtl',
+    flagCodes: ['CA', 'SA', 'EG', 'TR', 'AE'],
+    promptText:
+      '0:22-0:35 لقطات سريعة لواجهة الموقع تعرض فنادق في مونتريال ومكة وشرم الشيخ بالـ TND مع Voucher مؤكد.',
+  },
+  {
+    id: 'whc-scene-4',
+    indexLabel: '04',
+    arabicTitle: '0:35 - 0:45 · المشهد 4: هات الرقم نكلمهم توا!',
+    subtitleSummary: 'العودة للمقهى + شعار Easy2Book.tn — أسهل طريقة للسفر | 98 140 514',
+    startSec: 35,
+    endSec: 45,
+    primaryImage: studioBackdropImg,
+    imageAlt: 'Easy2Book.tn — أسهل طريقة للسفر 98 140 514',
+    overlayHeadline: 'Easy2Book.tn — أسهل طريقة للسفر ✈️🏨',
+    overlayLines: [
+      '«هات الرقم نكلمهم توا!» · الخلاص بالدينار التونسي',
+      '📞 98 140 514',
+      '🌐 www.easy2book.tn',
+    ],
+    cameraMoveLabel: '0:35–0:45 · عودة للمقهى + Lockup Easy2Book.tn',
+    isStudioLockup: true,
+    overlayDir: 'rtl',
+    flagCodes: ['TN', 'CA', 'SA', 'EG'],
+    promptText:
+      '0:35-0:45 العودة للمقهى: هات الرقم نكلمهم توا! ثم شعار Easy2Book.tn والهاتف 98 140 514.',
+  },
+];
+
+export const WORLD_HOTELS_TND_STORYBOARD_ROWS: EgyptStoryboardRow[] = [
+  {
+    id: 'wht-sb-1',
+    timeRange: '0:00 – 0:04',
+    startSec: 0,
+    visualAr: 'جواز السفر التونسي الأخضر أمام شاشة «Paiement refusé»',
+    visualFr: 'Passeport tunisien vert devant écran « Paiement refusé »',
+    onScreenText: 'ما عندكش كارت دوفيز؟ 🛑',
+    voiceoverExcerpt: 'تحب تسافر للعالم الكل من تونس، أما ما عندكش كارت دوفيز؟',
+  },
+  {
+    id: 'wht-sb-2',
+    timeRange: '0:04 – 0:12',
+    startSec: 4,
+    visualAr: 'لقطات سريعة: الحرم المكي، الأهرامات، برج خليفة، إسطنبول، وشلالات نياغارا / برج CN (كندا)',
+    visualFr: 'Montage rapide : Haram Makkah, Pyramides, Burj Khalifa, Istanbul, Niagara / CN Tower',
+    onScreenText: 'عمرة • مصر • تركيا • كندا 🌍',
+    voiceoverExcerpt: 'سواء ناوي على عمرة للسعودية، رحلة لمصر، سياحة في تركيا والمغرب، ولا حتى حجز لكندا...',
+  },
+  {
+    id: 'wht-sb-3',
+    timeRange: '0:12 – 0:24',
+    startSec: 12,
+    visualAr: 'تسجيل شاشة Easy2Book.tn: اختيار الفندق، الأسعار بـ TND وإتمام الدفع',
+    visualFr: 'Démo Easy2Book.tn : choix hôtel (+500 000), prix en TND & paiement',
+    onScreenText: '+500,000 أوتيل بالدينار (TND) 🇹🇳',
+    voiceoverExcerpt: 'على Easy2Book.tn تحجز طيارتك وأوتيلك في أكثر من 500 ألف فندق وتخلص 100% بالدينار التونسي!',
+  },
+  {
+    id: 'wht-sb-4',
+    timeRange: '0:24 – 0:30',
+    startSec: 24,
+    visualAr: 'وصل حجز مؤكد (Voucher) + ختم «مؤكد / Confirmé» لملف فيزا كندا وأوروبا',
+    visualFr: 'Voucher officiel confirmé + tampon « Confirmé » (dossiers Visa Canada & Europe)',
+    onScreenText: 'حجوزات مؤكدة لملفات الفيزا ✅',
+    voiceoverExcerpt: 'تتحصل على Voucher رسمي ومؤكد في الحين، وحتى لملف فيزا كندا ولا أوروبا وثائقك مضمونة!',
+  },
+  {
+    id: 'wht-sb-5',
+    timeRange: '0:30 – 0:35',
+    startSec: 30,
+    visualAr: 'شعار Easy2Book.tn بألوانه (أزرق، أبيض، أصفر) + الهاتف',
+    visualFr: 'Logo Easy2Book.tn (bleu, blanc, jaune) + www.easy2book.tn & 98 140 514',
+    onScreenText: 'www.easy2book.tn · 📞 98 140 514',
+    voiceoverExcerpt: 'ادخل توا على easy2book.tn ولا كلمنا على 98 140 514... سفرتك تبدأ من هنا!',
+  },
+];
+
+export const WORLD_HOTELS_PRODUCTION_NOTES = [
+  {
+    id: 'wh-note-sa-eg',
+    titleAr: 'لقطات السعودية ومصر (الدفء والروحانية)',
+    titleFr: 'Plans Arabie Saoudite & Égypte',
+    detailAr:
+      'ركز على لقطات جوية للحرم المكي، ولقطات مشمسة لشواطئ شرم الشيخ أو الأهرامات لإعطاء إحساس بالدفء والروحانية.',
+    detailFr:
+      'Privilégiez des plans aériens du Haram à La Mecque et des plans lumineux des plages de Charm el-Cheikh ou des Pyramides.',
+  },
+  {
+    id: 'wh-note-canada',
+    titleAr: 'لقطات كندا + جواز السفر التونسي الأخضر',
+    titleFr: 'Plans Canada & Passeport Tunisien Vert',
+    detailAr:
+      'أظهر معالم واضحة مثل برج CN في تورونتو أو شلالات نياغارا أو شوارع مونتريال مع جواز السفر التونسي الأخضر لإيصال الفكرة فوراً.',
+    detailFr:
+      'Montrez des repères immédiats (Tour CN Toronto, Chutes du Niagara ou Montréal) associés au passeport tunisien vert.',
+  },
+  {
+    id: 'wh-note-motion',
+    titleAr: 'النصوص المتحركة (Motion Text · أصفر وأبيض على أزرق)',
+    titleFr: 'Motion Text (Jaune & Blanc sur Marine)',
+    detailAr:
+      'اجعل الكلمات المفتاحية بخط عريض وواضح بالأصفر والأبيض على خلفية زرقاء: «عمرة • مصر • كندا • تركيا • دبي» وتحتها «الخلاص بالدينار التونسي 🇹🇳».',
+    detailFr:
+      'Affichez en gras jaune et blanc sur fond bleu marine : « عمرة • مصر • كندا • تركيا • دبي » suivi de « الخلاص بالدينار التونسي 🇹🇳 ».',
+  },
+];
+
 export interface ReelPresetCatalogEntry {
   id: ReelPresetId;
-  category: 'visa' | 'excursions' | 'omra' | 'billetterie';
+  category: 'hotels_monde' | 'visa' | 'excursions' | 'omra' | 'billetterie';
   titleFr: string;
   titleAr: string;
   badgeFr: string;
@@ -1643,6 +2059,39 @@ export interface ReelPresetCatalogEntry {
 }
 
 export const REEL_PRESET_CATALOG: ReelPresetCatalogEntry[] = [
+  {
+    id: 'world_hotels_tnd',
+    category: 'hotels_monde',
+    titleFr: 'Hôtels Monde · Scénario 1 : « العالم الكل بالدينار التونسي » (35s)',
+    titleAr: 'السيناريو 1 : العالم الكل بالدينار التونسي (+500 ألف فندق · 35 ثانية)',
+    badgeFr: 'Hôtels Monde · Scénario 1 (35s)',
+    summaryFr:
+      'Dynamique 35s : Paiement refusé → Omra, Égypte, Turquie, Maroc, Dubaï, Canada → +500 000 hôtels 100% en TND → Voucher officiel confirmé dossiers Visa → 98 140 514.',
+    defaultVoiceId: 'Layla',
+    linkedPageId: 'page-hotels-monde-tnd-easy2book',
+  },
+  {
+    id: 'world_hotels_packages',
+    category: 'hotels_monde',
+    titleFr: 'Hôtels Monde · Scénario 2 : « 3 باقات حسب جوّك » (40s)',
+    titleAr: 'السيناريو 2 : 3 باقات حسب جوّك (دليل سياحي · 40 ثانية)',
+    badgeFr: 'Hôtels Monde · Scénario 2 (40s)',
+    summaryFr:
+      'Guide 40s en 3 gammes : (1) Sans visa : Turquie, Maroc, Malaisie, Zanzibar · (2) Omra & Soleil : Arabie Saoudite, Égypte, Dubaï · (3) Canada/Europe + Voucher Visa en TND.',
+    defaultVoiceId: 'Omar',
+    linkedPageId: 'page-hotels-monde-tnd-easy2book',
+  },
+  {
+    id: 'world_hotels_cafe',
+    category: 'hotels_monde',
+    titleFr: 'Hôtels Monde · Scénario 3 : « حوار المقهى المحدّث » (45s)',
+    titleAr: 'السيناريو 3 : حوار المقهى المحدّث (سكتش تفاعلي · 45 ثانية)',
+    badgeFr: 'Hôtels Monde · Scénario 3 (45s)',
+    summaryFr:
+      'Sketch café 45s : lève les freins (Visa Canada, carte devise, allocation touristique) avec preuve sociale Omra + Égypte + Voucher immédiat en TND.',
+    defaultVoiceId: 'Omar',
+    linkedPageId: 'page-hotels-monde-tnd-easy2book',
+  },
   {
     id: 'flights_ferries',
     category: 'billetterie',
@@ -1979,6 +2428,45 @@ export function getReelConfig(preset: ReelPresetId = 'omra'): {
       outputBaseName: 'Easy2Book-Avion-Bateau-30s',
     };
   }
+  if (preset === 'world_hotels_tnd') {
+    return {
+      preset: 'world_hotels_tnd',
+      scenes: WORLD_HOTELS_TND_REEL_SCENES,
+      script: WORLD_HOTELS_TND_SCRIPT,
+      totalDurationSec: 35,
+      defaultVoiceId: 'Layla',
+      endBadgeText: 'عمرة • مصر • كندا • تركيا • دبي · الخلاص بالدينار التونسي 🇹🇳',
+      secondarySceneLabelA: '+500,000 فندق في العالم 100% بالدينار التونسي (TND)',
+      secondarySceneLabelB: 'Voucher رسمي ومؤكد لملفات فيزا كندا وأوروبا',
+      outputBaseName: 'Easy2Book-Hotels-Monde-TND-Scenario1-35s',
+    };
+  }
+  if (preset === 'world_hotels_packages') {
+    return {
+      preset: 'world_hotels_packages',
+      scenes: WORLD_HOTELS_PACKAGES_REEL_SCENES,
+      script: WORLD_HOTELS_PACKAGES_SCRIPT,
+      totalDurationSec: 40,
+      defaultVoiceId: 'Omar',
+      endBadgeText: '3 باقات حسب جوّك · الخلاص بالدينار التونسي 🇹🇳',
+      secondarySceneLabelA: 'بلاش فيزا: تركيا • المغرب • ماليزيا • زنجبار',
+      secondarySceneLabelB: 'العمرة • مصر • دبي • كندا وأوروبا (Voucher مؤكد)',
+      outputBaseName: 'Easy2Book-Hotels-Monde-3-Baqat-Scenario2-40s',
+    };
+  }
+  if (preset === 'world_hotels_cafe') {
+    return {
+      preset: 'world_hotels_cafe',
+      scenes: WORLD_HOTELS_CAFE_REEL_SCENES,
+      script: WORLD_HOTELS_CAFE_SCRIPT,
+      totalDurationSec: 45,
+      defaultVoiceId: 'Omar',
+      endBadgeText: 'Easy2Book.tn — أسهل طريقة للسفر ✈️🏨 · 98 140 514',
+      secondarySceneLabelA: 'بدون كارت دوفيز وبلاش ما تمس منحتك السياحية (Allocation)',
+      secondarySceneLabelB: 'عمرة • مصر • كندا • تركيا • دبي · Voucher فوري بالدينار',
+      outputBaseName: 'Easy2Book-Hotels-Monde-Cafe-Scenario3-45s',
+    };
+  }
   return {
     preset: 'omra',
     scenes: REEL_SCENES,
@@ -2052,6 +2540,88 @@ export const SOCIAL_CAPTION_BLOCKS = [
 ];
 
 export function getSubtitleCues(preset: ReelPresetId = 'omra'): SubtitleCue[] {
+  if (preset === 'world_hotels_tnd') {
+    return [
+      {
+        startSec: 0,
+        endSec: 4,
+        text: 'تحب تسافر للعالم الكل من تونس، أما ما عندكش كارت دوفيز؟ 🛑',
+      },
+      {
+        startSec: 4,
+        endSec: 12,
+        text: 'سواء ناوي على عمرة للسعودية، رحلة لمصر، سياحة في تركيا والمغرب، ولا حتى حجز لكندا... 🌍',
+      },
+      {
+        startSec: 12,
+        endSec: 24,
+        text: 'على Easy2Book.tn تحجز طيارتك وأوتيلك في أكثر من 500 ألف فندق في العالم، وتخلص 100% بالدينار التونسي من دارك! 🇹🇳',
+      },
+      {
+        startSec: 24,
+        endSec: 30,
+        text: 'تتحصل على Voucher رسمي ومؤكد في الحين، وحتى لملف فيزا كندا ولا أوروبا وثائقك الكل حاضرة ومضمونة! ✅',
+      },
+      {
+        startSec: 30,
+        endSec: 35,
+        text: 'ادخل توا على www.easy2book.tn ولا كلمنا على 98 140 514... سفرتك تبدأ من هنا!',
+      },
+    ];
+  }
+  if (preset === 'world_hotels_packages') {
+    return [
+      {
+        startSec: 0,
+        endSec: 5,
+        text: 'وين تحب تسافر الشهر الجاي؟ اختر باقتك وخلي الباقي على Easy2Book! ✈️',
+      },
+      {
+        startSec: 5,
+        endSec: 14,
+        text: 'الباقة 1 (بلاش فيزا): تركيا، المغرب، ماليزيا، وزنجبار... احجز أوتيلك وطيارتك في 5 دقائق بالدينار! 🇹🇳',
+      },
+      {
+        startSec: 14,
+        endSec: 24,
+        text: 'الباقة 2 (شمس الشتاء والعمرة): العمرة في السعودية، مصر (القاهرة وشرم الشيخ)، ودبي بأحسن الأسوام!',
+      },
+      {
+        startSec: 24,
+        endSec: 33,
+        text: 'الباقة 3 (كندا وأوروبا): حجز طيران وأوتيل مؤكد بالدينار التونسي لدعم دوسي الفيزا متاعك بكل ثقة! ✅',
+      },
+      {
+        startSec: 33,
+        endSec: 40,
+        text: 'كل هذا في بلاصة وحدة: www.easy2book.tn | وللاستفسار اتصل على 98 140 514!',
+      },
+    ];
+  }
+  if (preset === 'world_hotels_cafe') {
+    return [
+      {
+        startSec: 0,
+        endSec: 10,
+        text: 'الصديق 1: دوسي فيزا كندا يطلب حجز أوتيل مؤكد، وما عنديش كارت دوفيز وما نحبش نضيع الـ Allocation متاعي!',
+      },
+      {
+        startSec: 10,
+        endSec: 22,
+        text: 'الصديق 2: يا راجل الأسبوع الفايت حجزت لأمي عمرة ولخويا أوتيل في مصر والكلو من Easy2Book.tn بالدينار التونسي!',
+      },
+      {
+        startSec: 22,
+        endSec: 35,
+        text: 'تختار أي دولة (كندا، السعودية، مصر، تركيا ولا دبي)، تخلص بالتونسي، وتاخو الـ Voucher في الحين بلاش ما تمس منحتك السياحية! 🇹🇳',
+      },
+      {
+        startSec: 35,
+        endSec: 45,
+        text: 'الصديق 1: هات الرقم نكلمهم توا! Easy2Book.tn — أسهل طريقة للسفر ✈️🏨 | 📞 98 140 514',
+      },
+    ];
+  }
   if (preset === 'visa_egypt') {
     return [
       {
@@ -2686,6 +3256,80 @@ export function getSocialCaptionBlocks(preset: ReelPresetId = 'omra') {
         id: 'cap-exg-3',
         scene: 'المشهد 04',
         lines: ['📞 احجز الآن عبر الهاتف أو الواتساب: 98 140 514', '🌐 www.easy2book.tn'],
+      },
+    ];
+  }
+  if (preset === 'world_hotels_tnd') {
+    return [
+      {
+        id: 'cap-wht-1',
+        scene: '0:00 – 0:12 · الهوك والوجهات',
+        lines: [
+          '🛑 ما عندكش كارت دوفيز؟ عمرة • مصر • كندا • تركيا • المغرب • دبي 🌍',
+          'الخلاص 100% بالدينار التونسي (TND) 🇹🇳',
+        ],
+      },
+      {
+        id: 'cap-wht-2',
+        scene: '0:12 – 0:30 · +500,000 فندق و Voucher الفيزا',
+        lines: [
+          '🏨 أكثر من 500,000 فندق في العالم + تذاكر الطيران من دارك بالدينار التونسي',
+          '✅ Voucher رسمي ومؤكد فوري · مقبول لدعم ملفات فيزا كندا وأوروبا',
+        ],
+      },
+      {
+        id: 'cap-wht-3',
+        scene: '0:30 – 0:35 · الاتصال والحجز',
+        lines: [
+          '🔗 www.easy2book.tn | 📞 98 140 514',
+          '#Easy2Book #فنادق_العالم #الدينار_التونسي #عمرة #فيزا_كندا #مصر #تركيا #دبي',
+        ],
+      },
+    ];
+  }
+  if (preset === 'world_hotels_packages') {
+    return [
+      {
+        id: 'cap-whp-1',
+        scene: 'الباقة 1 · السفر السريع بلاش فيزا',
+        lines: [
+          '✈️ تركيا • المغرب • ماليزيا • زنجبار — احجز فندقك وطيارتك في 5 دقائق بالدينار التونسي',
+        ],
+      },
+      {
+        id: 'cap-whp-2',
+        scene: 'الباقة 2 و 3 · العمرة، شمس الشتاء وملفات الفيزا',
+        lines: [
+          '🕌☀️ برامج العمرة في السعودية • مصر (القاهرة وشرم الشيخ) • دبي',
+          '🇨🇦🇪🇺 كندا وأوروبا : حجز طيران وفندق مؤكد بالدينار التونسي لدعم ملف الفيزا بكل ثقة ✅',
+        ],
+      },
+      {
+        id: 'cap-whp-3',
+        scene: 'الحجز والاستفسار',
+        lines: [
+          '🌐 www.easy2book.tn | 📞 98 140 514 — الخلاص بالدينار التونسي 🇹🇳',
+        ],
+      },
+    ];
+  }
+  if (preset === 'world_hotels_cafe') {
+    return [
+      {
+        id: 'cap-whc-1',
+        scene: 'المشهد 01 و 02 · حوار المقهى',
+        lines: [
+          '☕ خايف تضيع الـ Allocation السياحية متاعك ولا ما عندكش كارت دوفيز لدوسي فيزا كندا؟',
+          '✅ عمرة للسعودية، فندق في مصر، مونتريال، تركيا ولا دبي — الكلو من Easy2Book.tn بالدينار التونسي!',
+        ],
+      },
+      {
+        id: 'cap-whc-2',
+        scene: 'المشهد 03 و 04 · Voucher فوري بدون مساس بالمنحة',
+        lines: [
+          '🏨 تخلص بالتونسي وتاخو الـ Voucher المؤكد متاعك في الحين بلاش ما تمس منحتك السياحية 🇹🇳',
+          'Easy2Book.tn — أسهل طريقة للسفر ✈️🏨 | 📞 98 140 514',
+        ],
       },
     ];
   }

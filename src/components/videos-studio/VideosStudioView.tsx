@@ -33,6 +33,8 @@ import {
   VISA_EVISA_RETENTION_TIPS,
   VISA_EVISA_STORYBOARD_ROWS,
   VOICE_OPTIONS,
+  WORLD_HOTELS_PRODUCTION_NOTES,
+  WORLD_HOTELS_TND_STORYBOARD_ROWS,
   type ReelPresetId,
 } from '../../data/campaignData';
 import {
@@ -61,7 +63,13 @@ interface VideosStudioViewProps {
   onAddMediaAsset: (asset: MediaAsset) => void;
 }
 
-type CategoryFilter = 'all' | 'billetterie' | 'visa' | 'excursions' | 'omra';
+type CategoryFilter =
+  | 'all'
+  | 'hotels_monde'
+  | 'billetterie'
+  | 'visa'
+  | 'excursions'
+  | 'omra';
 
 function decodeBase64ToUint8Array(base64: string): Uint8Array {
   const binary = window.atob(base64);
@@ -89,7 +97,7 @@ export function VideosStudioView({
   const isAr = language === 'ar';
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all');
   const [selectedPreset, setSelectedPreset] =
-    useState<ReelPresetId>('visa_services');
+    useState<ReelPresetId>('world_hotels_tnd');
 
   const reelConfig = useMemo(
     () => getReelConfig(selectedPreset),
@@ -364,6 +372,9 @@ export function VideosStudioView({
   };
 
   const getPosterKeyForPreset = (preset: ReelPresetId): string => {
+    if (preset === 'world_hotels_tnd') return 'world_hotels_canada_niagara';
+    if (preset === 'world_hotels_packages') return 'world_hotels_zanzibar_beach';
+    if (preset === 'world_hotels_cafe') return 'world_hotels_cafe_booking';
     if (preset === 'flights_ferries') return 'flights_mediterranean_ship';
     if (preset === 'visa_egypt' || preset === 'egypt_excursions') {
       return 'egypt_pyramids_reel';
@@ -402,7 +413,8 @@ export function VideosStudioView({
         presetMeta.category === 'visa'
           ? 'visa'
           : presetMeta.category === 'excursions' ||
-              presetMeta.category === 'billetterie'
+              presetMeta.category === 'billetterie' ||
+              presetMeta.category === 'hotels_monde'
             ? 'voyages'
             : 'omra',
       src: inlinePath,
@@ -452,6 +464,10 @@ export function VideosStudioView({
             {(
               [
                 { id: 'all', label: `Tout (${REEL_PRESET_CATALOG.length})` },
+                {
+                  id: 'hotels_monde',
+                  label: `Hôtels Monde (${REEL_PRESET_CATALOG.filter((p) => p.category === 'hotels_monde').length})`,
+                },
                 {
                   id: 'billetterie',
                   label: `Avion & Bateau (${REEL_PRESET_CATALOG.filter((p) => p.category === 'billetterie').length})`,
@@ -859,6 +875,162 @@ export function VideosStudioView({
               />
             </div>
           </div>
+
+          {(selectedPreset === 'world_hotels_tnd' ||
+            selectedPreset === 'world_hotels_packages' ||
+            selectedPreset === 'world_hotels_cafe') && (
+            <div className="rounded-2xl border border-[#C8922A]/35 bg-[#FFFDF7] p-5 space-y-4 shadow-2xs">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <p className="text-[11px] font-bold text-[#C8922A]">
+                    CAMPAGNE EASY2BOOK.TN · +500 000 HÔTELS EN DINAR TUNISIEN (TND)
+                  </p>
+                  <h3 className="text-sm font-extrabold text-[#102D45]">
+                    3 Scénarios Vidéo (Arabie Saoudite/Omra, Égypte, Canada, Turquie, Maroc, Dubaï, Malaisie, Zanzibar)
+                  </h3>
+                </div>
+                <span className="font-mono-tabular text-[11px] font-bold text-[#1C4967]">
+                  100% TND · 98 140 514
+                </span>
+              </div>
+
+              {/* Quick 3-Scenario Switcher */}
+              <div className="grid gap-2 sm:grid-cols-3">
+                {(
+                  [
+                    {
+                      id: 'world_hotels_tnd',
+                      tag: 'Scénario 1 · 35 s',
+                      ar: 'العالم الكل بالدينار التونسي',
+                      fr: 'Dynamique & rapide · Voucher Visa',
+                    },
+                    {
+                      id: 'world_hotels_packages',
+                      tag: 'Scénario 2 · 40 s',
+                      ar: '3 باقات حسب جوّك',
+                      fr: 'Sans Visa · Omra/Soleil · Canada/EU',
+                    },
+                    {
+                      id: 'world_hotels_cafe',
+                      tag: 'Scénario 3 · 45 s',
+                      ar: 'حوار المقهى المحدّث',
+                      fr: 'Sketch objections · Allocation & Canada',
+                    },
+                  ] as const
+                ).map((sc) => {
+                  const active = selectedPreset === sc.id;
+                  return (
+                    <button
+                      key={sc.id}
+                      type="button"
+                      onClick={() => handleSelectPreset(sc.id)}
+                      className={`rounded-xl border p-3 text-start transition-colors ${
+                        active
+                          ? 'border-[#102D45] bg-[#102D45] text-white'
+                          : 'border-[#102D45]/12 bg-white text-[#102D45] hover:border-[#C8922A]'
+                      }`}
+                    >
+                      <p
+                        className={`text-[10px] font-extrabold uppercase tracking-wider ${
+                          active ? 'text-[#E7B34C]' : 'text-[#C8922A]'
+                        }`}
+                      >
+                        {sc.tag}
+                      </p>
+                      <p dir="rtl" className="mt-1 font-arabic text-xs font-extrabold">
+                        {sc.ar}
+                      </p>
+                      <p
+                        className={`mt-0.5 text-[11px] ${
+                          active ? 'text-slate-200' : 'text-slate-600'
+                        }`}
+                      >
+                        {sc.fr}
+                      </p>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {selectedPreset === 'world_hotels_tnd' && (
+                <div className="overflow-x-auto rounded-xl border border-[#102D45]/10 bg-white">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="border-b border-[#102D45]/10 bg-[#FAF9F6] text-[11px] font-bold text-[#1C4967]">
+                        <th className="px-3 py-2.5 whitespace-nowrap">Temps</th>
+                        <th className="px-3 py-2.5">Visuel (المشهد)</th>
+                        <th className="px-3 py-2.5">Voix Off Tunisienne</th>
+                        <th className="px-3 py-2.5 whitespace-nowrap">Texte à l’écran</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#102D45]/8">
+                      {WORLD_HOTELS_TND_STORYBOARD_ROWS.map((row) => (
+                        <tr
+                          key={row.id}
+                          onClick={() => {
+                            const target =
+                              (row.startSec /
+                                Math.max(1, reelConfig.totalDurationSec)) *
+                              totalDuration;
+                            setCurrentTime(target);
+                            if (audioRef.current)
+                              audioRef.current.currentTime = target;
+                          }}
+                          className="cursor-pointer hover:bg-[#FFF9EB] transition-colors"
+                        >
+                          <td className="px-3 py-2.5 font-mono-tabular font-extrabold text-[#C8922A] whitespace-nowrap">
+                            {row.timeRange}
+                          </td>
+                          <td className="px-3 py-2.5 font-semibold text-[#102D45]">
+                            <p>{row.visualFr}</p>
+                            <p dir="rtl" className="font-arabic text-[11px] text-[#1C4967]">
+                              {row.visualAr}
+                            </p>
+                          </td>
+                          <td dir="rtl" className="px-3 py-2.5 font-arabic text-[11px] font-semibold text-slate-700">
+                            {row.voiceoverExcerpt}
+                          </td>
+                          <td dir="rtl" className="px-3 py-2.5 font-arabic font-extrabold text-[#102D45] whitespace-nowrap">
+                            {row.onScreenText}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* Production Notes (Saudi/Egypt, Canada + Green Passport, Motion Text) */}
+              <div className="rounded-xl bg-[#102D45] p-4 text-white space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-xs font-extrabold text-[#F6D365]">
+                    💡 ملاحظات للإنتاج والتصوير · Notes de Production (Easy2Book.tn)
+                  </p>
+                  <span dir="rtl" className="font-arabic text-[11px] font-extrabold text-white">
+                    عمرة • مصر • كندا • تركيا • دبي — الخلاص بالدينار التونسي 🇹🇳
+                  </span>
+                </div>
+                <div className="grid gap-2.5 sm:grid-cols-3">
+                  {WORLD_HOTELS_PRODUCTION_NOTES.map((note) => (
+                    <div
+                      key={note.id}
+                      className="rounded-lg border border-white/15 bg-white/8 p-3 space-y-1.5"
+                    >
+                      <p dir="rtl" className="font-arabic text-xs font-extrabold text-[#F6D365]">
+                        {note.titleAr}
+                      </p>
+                      <p dir="rtl" className="font-arabic text-[11px] leading-relaxed text-slate-100">
+                        {note.detailAr}
+                      </p>
+                      <p className="text-[10px] leading-relaxed text-slate-300 border-t border-white/10 pt-1.5">
+                        {note.detailFr}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
           {selectedPreset === 'flights_ferries' && (
             <div className="rounded-2xl border border-[#C8922A]/30 bg-[#FFFDF7] p-5 space-y-3 shadow-2xs">

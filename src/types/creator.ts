@@ -23,6 +23,7 @@ export type CommerceModuleId =
   | 'omra'
   | 'voyages'
   | 'hotels'
+  | 'world_hotels'
   | 'visa'
   | 'flights'
   | 'ferries'
@@ -107,6 +108,7 @@ export type BlockType =
   | 'module_visa_egypt'
   // Universal Travel Commerce Modules
   | 'module_hotels_search'
+  | 'module_world_hotels'
   | 'module_flights'
   | 'module_ferries'
   | 'module_transfers'
@@ -266,7 +268,10 @@ export interface PageBlock {
       | 'egypt_excursions'
       | 'turkey_excursions'
       | 'excursions_general'
-      | 'flights_ferries';
+      | 'flights_ferries'
+      | 'world_hotels_tnd'
+      | 'world_hotels_packages'
+      | 'world_hotels_cafe';
     customReelScript?: string;
     primaryCtaLabel?: string;
     primaryCtaTarget?: string;

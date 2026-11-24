@@ -46,6 +46,10 @@ import posterVisaLuxuryAirport from '../assets/images/poster_visa_luxury_airport
 import posterVisaSchengenEurope from '../assets/images/poster_visa_schengen_europe_1795295069496.jpg';
 import posterHotelTunisiaResort from '../assets/images/poster_hotel_tunisia_resort_1795295068351.jpg';
 import posterHotelSuiteLuxury from '../assets/images/poster_hotel_suite_luxury_1795295066762.jpg';
+import worldHotelsZanzibarBeach from '../assets/images/world_hotels_zanzibar_beach_1795298620655.jpg';
+import worldHotelsCanadaNiagara from '../assets/images/world_hotels_canada_niagara_1795298620744.jpg';
+import worldHotelsCafeBooking from '../assets/images/world_hotels_cafe_booking_1795298623176.jpg';
+import worldHotelsMalaysiaKuala from '../assets/images/world_hotels_malaysia_kuala_1795298689542.jpg';
 
 export type HeroImageKey =
   | 'makkah_haram'
@@ -95,7 +99,11 @@ export type HeroImageKey =
   | 'poster_visa_luxury_airport'
   | 'poster_visa_schengen_europe'
   | 'poster_hotel_tunisia_resort'
-  | 'poster_hotel_suite_luxury';
+  | 'poster_hotel_suite_luxury'
+  | 'world_hotels_zanzibar_beach'
+  | 'world_hotels_canada_niagara'
+  | 'world_hotels_cafe_booking'
+  | 'world_hotels_malaysia_kuala';
 
 export const HERO_MEDIA_MAP: Record<
   HeroImageKey,
@@ -292,6 +300,22 @@ export const HERO_MEDIA_MAP: Record<
   poster_hotel_suite_luxury: {
     src: posterHotelSuiteLuxury,
     label: 'Affiche Suite Hôtel 5★ — Chambre panoramique vue mer & terrasse privée',
+  },
+  world_hotels_zanzibar_beach: {
+    src: worldHotelsZanzibarBeach,
+    label: 'Hôtels Monde 9:16 — Zanzibar Plage Turquoise & Resort Luxe',
+  },
+  world_hotels_canada_niagara: {
+    src: worldHotelsCanadaNiagara,
+    label: 'Hôtels Monde 9:16 — Canada · CN Tower Toronto & Chutes du Niagara',
+  },
+  world_hotels_cafe_booking: {
+    src: worldHotelsCafeBooking,
+    label: 'Hôtels Monde 9:16 — Dialogue Café Tunis · Passeport Vert & Réservation TND',
+  },
+  world_hotels_malaysia_kuala: {
+    src: worldHotelsMalaysiaKuala,
+    label: 'Hôtels Monde 9:16 — Malaisie · Tours Petronas & Piscine 5★',
   },
 };
 

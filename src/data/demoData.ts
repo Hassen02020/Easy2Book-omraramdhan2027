@@ -3148,6 +3148,100 @@ const FLIGHTS_FERRIES_BLOCKS: PageBlock[] = [
   ),
 ];
 
+const WORLD_HOTELS_TND_BLOCKS: PageBlock[] = [
+  blockBase(
+    'blk-wh-hero-vid',
+    'hero_video',
+    'voyages',
+    'فنادق العالم 100% بالدينار التونسي · Easy2Book.tn',
+    {
+      eyebrow: 'EASY2BOOK.TN · +500,000 فندق في العالم بالدينار (TND)',
+      title: 'احجز فندقك وطيارتك في العالم الكل 100% بالدينار التونسي — بدون كارت دوفيز',
+      description:
+        'السعودية والعمرة، مصر، كندا، تركيا، المغرب، دبي، ماليزيا وزنجبار. خلاص مضمون بالدينار التونسي دون المساس بالمنحة السياحية مع Voucher رسمي مؤكد لدعم ملفات فيزا كندا وأوروبا.',
+      imageKey: 'world_hotels_canada_niagara',
+      reelPreset: 'world_hotels_tnd',
+      primaryCtaLabel: 'احجز فندقك بالدينار التونسي 👇',
+      primaryCtaTarget: '#module-hotels-monde',
+      secondaryCtaLabel: '98 140 514',
+    },
+    { backgroundColor: '#FAF9F6', paddingY: 'spacious' }
+  ),
+  {
+    ...blockBase(
+      'blk-wh-module',
+      'module_world_hotels',
+      'voyages',
+      'Module Hôtels dans le Monde (+500 000 Hôtels · 100% TND & Voucher Visa)',
+      {
+        eyebrow: 'HÔTELS MONDE · 100% DINAR TUNISIEN (TND) · SANS CARTE DEVISE',
+        title: '+500 000 Hôtels dans le Monde payables en Dinar Tunisien (TND)',
+        description:
+          'Choisissez votre pack (Sans Visa · Soleil d’Hiver & Omra · Canada & Europe), vos dates et recevez votre Voucher confirmé instantanément sans toucher à votre allocation touristique.',
+      },
+      { backgroundColor: '#FFFFFF', paddingY: 'spacious' }
+    ),
+    anchorId: 'module-hotels-monde',
+  },
+  blockBase(
+    'blk-wh-benefits',
+    'benefits',
+    'common',
+    'لماذا الحجز عبر Easy2Book.tn؟ · Avantages 100% TND',
+    {
+      eyebrow: 'الخلاص بالدينار التونسي 🇹🇳 · VOUCHER OFFICIEL CONFIRMÉ',
+      title: '3 أسباب تجعل Easy2Book.tn خيارك الأول لفنادق العالم',
+      description:
+        'سواء مسافر بدون فيزا، في رحلة عمرة أو شمس الشتاء، أو تحضر في ملف فيزا كندا وأوروبا.',
+      items: [
+        {
+          id: 'wh-ben-1',
+          badge: '100% TND',
+          title: 'خلاص بالدينار التونسي بدون كارت دوفيز',
+          subtitle: 'لا رفض دفع ولا تعقيد بنكي — تحجز من دارك وتخلّص بالدينار التونسي وتخلي منحتك السياحية كاملة لمصاريفك.',
+        },
+        {
+          id: 'wh-ben-2',
+          badge: 'Voucher Visa ✅',
+          title: 'وصل حجز رسمي ومؤكد لملفات فيزا كندا وأوروبا',
+          subtitle: 'Voucher فندق + طيران مؤكد ومقبول لدى القنصليات ومراكز TLS/VFS وملفات كندا.',
+        },
+        {
+          id: 'wh-ben-3',
+          badge: '3 باقات ذكية',
+          title: 'تركيا، المغرب، ماليزيا، زنجبار، العمرة، مصر، دبي وكندا',
+          subtitle: 'أكثر من 500,000 فندق حول العالم بأسعار تنافسية ومرافقة مباشرة على 98 140 514.',
+        },
+      ],
+    },
+    { backgroundColor: '#F5F7FA' }
+  ),
+  blockBase(
+    'blk-wh-whatsapp',
+    'whatsapp_button',
+    'common',
+    'واتساب فنادق العالم · 98 140 514',
+    {
+      eyebrow: 'WHATSAPP DIRECT · 98 140 514',
+      title: 'تواصل معنا فوراً لحجز فندقك بالدينار التونسي',
+      description: 'فريق Easy2Book.tn يؤكد لك الفندق والطيران والـ Voucher الرسمي في الحين.',
+      primaryCtaLabel: 'احجز عبر واتساب · 98 140 514',
+    }
+  ),
+  blockBase(
+    'blk-wh-form',
+    'lead_form',
+    'common',
+    'طلب حجز فندق في العالم بالدينار التونسي',
+    {
+      eyebrow: 'WWW.EASY2BOOK.TN · 98 140 514',
+      title: 'أرسل تفاصيل سفرك واستلم عرضك بالدينار التونسي',
+      description:
+        'حدد الوجهة (السعودية/العمرة، مصر، كندا، تركيا، المغرب، دبي، ماليزيا، زنجبار...)، التواريخ وهل تحتاج Voucher لملف فيزا.',
+    }
+  ),
+];
+
 export const DEMO_TEMPLATES: PageTemplate[] = [
   // === UNIVERS 1 : OMRA (4 modèles) ===
   {
@@ -5243,6 +5337,103 @@ export const DEMO_PAGES: Page[] = [
     },
     form: makeForm('fr', 'billetterie-avion-bateau'),
     blocks: FLIGHTS_FERRIES_BLOCKS,
+  }),
+
+  buildDemoPage({
+    id: 'page-hotels-monde-tnd-easy2book',
+    title: 'Easy2Book — Hôtels dans le Monde (+500 000 Hôtels · 100% TND & Voucher Visa)',
+    universe: 'voyages',
+    folderGroup: 'Hôtels Monde (100% TND)',
+    creationMode: 'modules',
+    brandIdentity: {
+      ...createDefaultBrandIdentity({
+        brandName: 'Easy2Book',
+        tagline: 'العالم الكل بالدينار التونسي · +500 000 Hôtels',
+        logoSrc: '/assets/aistudio/logo_transparent_e9918557.png',
+        visualStyle: 'premium',
+      }),
+    },
+    header: {
+      enabled: true,
+      variant: 'premium',
+      sticky: true,
+      showLogo: true,
+      showBrandName: true,
+      navLinks: [
+        { id: 'nav-wh-1', label: 'فيديو 35s', target: '#blk-wh-hero-vid' },
+        { id: 'nav-wh-2', label: 'حجز فنادق العالم', target: '#module-hotels-monde' },
+        { id: 'nav-wh-3', label: 'المزايا TND', target: '#blk-wh-benefits' },
+        { id: 'nav-wh-4', label: 'تواصل معنا', target: '#form-block' },
+      ],
+      ctaLabel: 'احجز بالدينار · 98 140 514',
+      ctaTarget: '#module-hotels-monde',
+      showWhatsapp: true,
+      whatsappNumber: '98 140 514',
+      whatsappLabel: 'WhatsApp 98 140 514',
+    },
+    footer: {
+      enabled: true,
+      showLogo: true,
+      companyDescription:
+        'Easy2Book.tn — أكثر من 500,000 فندق حول العالم (السعودية/العمرة، مصر، كندا، تركيا، المغرب، دبي، ماليزيا، زنجبار) بالخلاص 100% بالدينار التونسي بدون كارت دوفيز ومع Voucher مؤكد لملفات الفيزا.',
+      navLinks: [
+        { id: 'ft-wh-1', label: 'فنادق العالم TND', target: '#module-hotels-monde' },
+        { id: 'ft-wh-2', label: 'Voucher فيزا كندا وأوروبا', target: '#blk-wh-benefits' },
+        { id: 'ft-wh-3', label: 'طلب عرض فوري', target: '#form-block' },
+      ],
+      phone: '98 140 514',
+      whatsapp: '98 140 514',
+      email: 'contact@easy2book.tn',
+      address: 'تونس · www.easy2book.tn · الخلاص 100% بالدينار التونسي',
+      socialLinks: {},
+      legalLinks: {},
+      copyrightText: '© 2026 Easy2Book.tn · +500 000 Hôtels en TND · 98 140 514',
+    },
+    commerceModules: ['world_hotels', 'flights'],
+    templateId: 'tpl-hotels-monde-tnd',
+    language: 'ar',
+    isDemoData: true,
+    createdAt: '2026-11-21T12:00:00Z',
+    updatedAt: '2026-11-21T12:00:00Z',
+    publication: {
+      status: 'published',
+      publishedAt: '2026-11-21T12:00:00Z',
+      publishedBy: 'Équipe Studio Easy2Book',
+    },
+    offerRef: {
+      externalOfferId: 'CAT-WORLD-HOTELS-TND-2026',
+      externalSourceName: 'Centrale Hôtels Monde Easy2Book.tn (100% TND)',
+      universe: 'voyages',
+      offerCode: 'E2B-WH-TND-500K',
+      displayLabel: '+500 000 Hôtels dans le Monde · 100% Dinar Tunisien (TND) & Voucher Visa',
+      cachedSummary: {
+        startingPriceLabel: '100% بالدينار التونسي (TND) بدون كارت دوفيز',
+        datesOrValidity: 'تأكيد فوري · Voucher رسمي لملفات فيزا كندا وأوروبا',
+        availabilityLabel: 'السعودية/العمرة، مصر، كندا، تركيا، المغرب، دبي، ماليزيا، زنجبار',
+        conditionsSummary: 'دون المساس بالمنحة السياحية · www.easy2book.tn · 98 140 514',
+      },
+      syncMode: 'external_reference',
+    },
+    seo: {
+      slug: 'hotels-monde-tnd-easy2book',
+      metaTitle: 'Easy2Book.tn — حجز أكثر من 500,000 فندق في العالم 100% بالدينار التونسي (TND)',
+      metaDescription:
+        'احجز فندقك وطيارتك في السعودية/العمرة، مصر، كندا، تركيا، المغرب، دبي، ماليزيا وزنجبار 100% بالدينار التونسي بدون كارت دوفيز، مع Voucher رسمي ومؤكد لملفات فيزا كندا وأوروبا.',
+      ogTitle: 'العالم الكل بالدينار التونسي — +500,000 فندق على Easy2Book.tn · 98 140 514',
+      ogDescription:
+        '3 باقات ذكية (بدون فيزا · شمس الشتاء والعمرة · كندا وأوروبا) مع خلاص 100% بالدينار التونسي وVoucher مؤكد للفيزا.',
+      canonicalPath: '/p/hotels-monde-tnd-easy2book',
+      noIndex: false,
+    },
+    attribution: {
+      acquisitionSource: 'Campagne Reels/TikTok Hôtels Monde TND Easy2Book',
+      utmSource: 'easy2book',
+      utmMedium: 'reels_tiktok',
+      utmCampaign: 'hotels_monde_tnd_2026',
+      utmContent: 'scenarios_35s_40s_45s',
+    },
+    form: makeForm('ar', 'hotels-monde-tnd'),
+    blocks: WORLD_HOTELS_TND_BLOCKS,
   }),
 ];
 

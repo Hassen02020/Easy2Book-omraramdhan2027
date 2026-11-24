@@ -14,6 +14,7 @@ import { formatFileSize } from '../../lib/reelVideoExporter';
 import {
   buildDefaultPosterConfig,
   CURATED_POSTER_PHOTOS,
+  DEFAULT_POSTER_LOGO_SRC,
   exportSocialPosterPng,
   renderSocialPosterToCanvas,
   SOCIAL_POSTER_FORMATS,
@@ -244,6 +245,19 @@ export function SocialPosterControl({
     reader.readAsDataURL(file);
   };
 
+  const handleUploadCustomLogo = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        const src = reader.result;
+        setConfig((prev) => ({ ...prev, logoSrc: src }));
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleSwitchPosterLanguage = (nextLang: CreatorLanguage) => {
     const rebuilt = buildDefaultPosterConfig({
       ...seed,
@@ -254,6 +268,9 @@ export function SocialPosterControl({
       format: prev.format,
       style: prev.style,
       photoSrc: prev.photoSrc,
+      logoSrc: prev.logoSrc,
+      socialHandle: prev.socialHandle,
+      websiteLabel: prev.websiteLabel,
       showPrice: prev.showPrice,
     }));
   };
@@ -504,18 +521,47 @@ export function SocialPosterControl({
                   <div className="space-y-2.5 border-t border-[#102D45]/10 pt-4">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <p className="text-xs font-extrabold text-[#102D45]">
-                        3. Photo professionnelle (Visas & Hôtels)
+                        3. Photo professionnelle & Logo transparent
                       </p>
-                      <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-[#102D45]/15 bg-[#F5F7FA] px-2.5 py-1 text-[11px] font-bold text-[#102D45] hover:border-[#C8922A]">
-                        <Upload className="h-3 w-3 text-[#C8922A]" />
-                        <span>Importer photo</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleUploadCustomPhoto}
-                          className="hidden"
-                        />
-                      </label>
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-[#102D45]/15 bg-[#F5F7FA] px-2.5 py-1 text-[11px] font-bold text-[#102D45] hover:border-[#C8922A]">
+                          <Upload className="h-3 w-3 text-[#C8922A]" />
+                          <span>Importer photo</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleUploadCustomPhoto}
+                            className="hidden"
+                          />
+                        </label>
+                        <label
+                          title="Logo transparent PNG (fond blanc retiré automatiquement)"
+                          className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-[#C8922A]/45 bg-[#FFFDF7] px-2.5 py-1 text-[11px] font-bold text-[#102D45] hover:border-[#C8922A]"
+                        >
+                          <Upload className="h-3 w-3 text-[#C8922A]" />
+                          <span>Logo PNG</span>
+                          <input
+                            type="file"
+                            accept="image/png,image/webp,image/svg+xml,image/*"
+                            onChange={handleUploadCustomLogo}
+                            className="hidden"
+                          />
+                        </label>
+                        {config.logoSrc !== DEFAULT_POSTER_LOGO_SRC && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setConfig((prev) => ({
+                                ...prev,
+                                logoSrc: DEFAULT_POSTER_LOGO_SRC,
+                              }))
+                            }
+                            className="rounded-lg border border-[#102D45]/15 bg-white px-2 py-1 text-[11px] font-semibold text-slate-600 hover:text-[#102D45]"
+                          >
+                            Logo Easy2Book
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     {/* Photo Category Tabs */}
@@ -751,6 +797,45 @@ export function SocialPosterControl({
                                 phoneLabel: e.target.value,
                               }))
                             }
+                            className="w-full rounded-lg border border-[#102D45]/15 bg-[#F5F7FA] px-3 py-1.5 font-mono text-xs font-bold text-[#102D45] focus:border-[#1C4967] focus:bg-white focus:outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2.5">
+                        <div>
+                          <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                            Compte réseaux sociaux (FB · IG · TikTok · WA)
+                          </label>
+                          <input
+                            type="text"
+                            dir="ltr"
+                            value={config.socialHandle}
+                            onChange={(e) =>
+                              setConfig((prev) => ({
+                                ...prev,
+                                socialHandle: e.target.value,
+                              }))
+                            }
+                            placeholder="@easy2book.tn"
+                            className="w-full rounded-lg border border-[#102D45]/15 bg-[#F5F7FA] px-3 py-1.5 font-mono text-xs font-bold text-[#102D45] focus:border-[#1C4967] focus:bg-white focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                            Site web (Footer)
+                          </label>
+                          <input
+                            type="text"
+                            dir="ltr"
+                            value={config.websiteLabel}
+                            onChange={(e) =>
+                              setConfig((prev) => ({
+                                ...prev,
+                                websiteLabel: e.target.value,
+                              }))
+                            }
+                            placeholder="www.easy2book.tn"
                             className="w-full rounded-lg border border-[#102D45]/15 bg-[#F5F7FA] px-3 py-1.5 font-mono text-xs font-bold text-[#102D45] focus:border-[#1C4967] focus:bg-white focus:outline-none"
                           />
                         </div>
