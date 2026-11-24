@@ -25,6 +25,12 @@ import {
   getReelConfig,
   getSocialCaptionBlocks,
   getSubtitleCues,
+  OMRA_SUR_MESURE_AD_TIPS,
+  OMRA_SUR_MESURE_BODY_SCRIPT,
+  OMRA_SUR_MESURE_HOOKS,
+  OMRA_SUR_MESURE_STORYBOARD_ROWS,
+  OMRA_SUR_MESURE_VEO_PROMPTS,
+  OMRA_SUR_MESURE_VEO_SETTINGS,
   REEL_PRESET_CATALOG,
   VISA_EVISA_HOOK_ANGLES,
   VISA_EVISA_LEGAL_DISCLAIMER_AR,
@@ -97,7 +103,7 @@ export function VideosStudioView({
   const isAr = language === 'ar';
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all');
   const [selectedPreset, setSelectedPreset] =
-    useState<ReelPresetId>('world_hotels_tnd');
+    useState<ReelPresetId>('omra_sur_mesure');
 
   const reelConfig = useMemo(
     () => getReelConfig(selectedPreset),
@@ -149,6 +155,12 @@ export function VideosStudioView({
   const [selectedEvisaHookId, setSelectedEvisaHookId] = useState<string | null>(
     null
   );
+  const [selectedOmraCustomHookId, setSelectedOmraCustomHookId] = useState<
+    'hook1' | 'hook2' | 'hook3'
+  >('hook1');
+  const [copiedVeoPromptId, setCopiedVeoPromptId] = useState<string | null>(
+    null
+  );
   const [attachTargetPageId, setAttachTargetPageId] = useState<string>(
     presetMeta.linkedPageId
   );
@@ -184,6 +196,25 @@ export function VideosStudioView({
   };
 
   const effectiveScenes = useMemo(() => {
+    if (selectedPreset === 'omra_sur_mesure') {
+      const chosenHook = OMRA_SUR_MESURE_HOOKS.find(
+        (h) => h.id === selectedOmraCustomHookId
+      );
+      if (!chosenHook) return reelConfig.scenes;
+      return reelConfig.scenes.map((scene, idx) =>
+        idx === 0
+          ? {
+              ...scene,
+              overlayHeadline: chosenHook.screenHeadline,
+              overlayLines: [
+                chosenHook.screenSubline,
+                'مكة المكرمة 📍 • المدينة المنورة 📍',
+              ],
+              overlayPosition: 'center' as const,
+            }
+          : scene
+      );
+    }
     if (selectedPreset !== 'visa_evisa' || !selectedEvisaHookId) {
       return reelConfig.scenes;
     }
@@ -201,7 +232,12 @@ export function VideosStudioView({
           }
         : scene
     );
-  }, [reelConfig.scenes, selectedEvisaHookId, selectedPreset]);
+  }, [
+    reelConfig.scenes,
+    selectedEvisaHookId,
+    selectedOmraCustomHookId,
+    selectedPreset,
+  ]);
 
   useEffect(() => {
     if (!isPlaying || audioActive) return;
@@ -372,6 +408,7 @@ export function VideosStudioView({
   };
 
   const getPosterKeyForPreset = (preset: ReelPresetId): string => {
+    if (preset === 'omra_sur_mesure') return 'omra_vip_haram';
     if (preset === 'world_hotels_tnd') return 'world_hotels_canada_niagara';
     if (preset === 'world_hotels_packages') return 'world_hotels_zanzibar_beach';
     if (preset === 'world_hotels_cafe') return 'world_hotels_cafe_booking';
@@ -875,6 +912,251 @@ export function VideosStudioView({
               />
             </div>
           </div>
+
+          {selectedPreset === 'omra_sur_mesure' && (
+            <div className="rounded-2xl border border-[#C8922A]/35 bg-[#FFFDF7] p-5 space-y-5 shadow-2xs">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <p className="text-[11px] font-bold text-[#C8922A]">
+                    OMRA SUR-MESURE · مكة 📍 · المدينة المنورة 📍 · 25–30s (9:16)
+                  </p>
+                  <h3 className="text-sm font-extrabold text-[#102D45]">
+                    عمرتك على كيفك! — 3 Hooks Darja, Découpage 30s & 4 Prompts Veo / AI Studio
+                  </h3>
+                </div>
+                <span className="font-mono-tabular text-[11px] font-bold text-[#1C4967]">
+                  30 s · 100% TND · 98 140 514
+                </span>
+              </div>
+
+              {/* 3 Interactive Tunisian Darja Hooks */}
+              <div className="space-y-2.5">
+                <p className="text-xs font-extrabold text-[#102D45]">
+                  3 Hooks (0:00 – 0:04) — cliquez pour appliquer sur l’aperçu 9:16 et le script voix off
+                </p>
+                <div className="grid gap-2.5 sm:grid-cols-3">
+                  {OMRA_SUR_MESURE_HOOKS.map((hook) => {
+                    const active = selectedOmraCustomHookId === hook.id;
+                    return (
+                      <button
+                        key={hook.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedOmraCustomHookId(hook.id);
+                          setCustomScripts((prev) => ({
+                            ...prev,
+                            omra_sur_mesure: `${hook.voiceoverAr} ${OMRA_SUR_MESURE_BODY_SCRIPT}`,
+                          }));
+                          setCurrentTime(0);
+                          if (audioRef.current) audioRef.current.currentTime = 0;
+                        }}
+                        className={`rounded-xl border p-3.5 text-start transition-colors space-y-1.5 ${
+                          active
+                            ? 'border-[#102D45] bg-[#102D45] text-white'
+                            : 'border-[#102D45]/12 bg-white text-[#102D45] hover:border-[#C8922A]'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-2 text-[10px] font-bold">
+                          <span className={active ? 'text-[#F6D365]' : 'text-[#C8922A]'}>
+                            HOOK {hook.numberLabel}
+                          </span>
+                          {active && (
+                            <span className="text-[#F6D365]">Actif 0–4 s</span>
+                          )}
+                        </div>
+                        <p
+                          dir="rtl"
+                          className={`font-arabic text-[11px] font-bold ${
+                            active ? 'text-[#F6D365]' : 'text-[#1C4967]'
+                          }`}
+                        >
+                          {hook.tagAr}
+                        </p>
+                        <p
+                          dir="rtl"
+                          className={`font-arabic text-xs leading-relaxed font-semibold ${
+                            active ? 'text-white' : 'text-[#102D45]'
+                          }`}
+                        >
+                          « {hook.voiceoverAr} »
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 5-Row Click-to-Seek Storyboard Table */}
+              <div className="overflow-x-auto rounded-xl border border-[#102D45]/10 bg-white">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b border-[#102D45]/10 bg-[#FAF9F6] text-[11px] font-bold text-[#1C4967]">
+                      <th className="px-3 py-2.5 whitespace-nowrap">التوقيت</th>
+                      <th className="px-3 py-2.5">المشهد البصري (Visual / AI)</th>
+                      <th className="px-3 py-2.5">النص على الشاشة (Motion Text)</th>
+                      <th className="px-3 py-2.5">التعليق الصوتي (دارجة تونسية)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#102D45]/8">
+                    {OMRA_SUR_MESURE_STORYBOARD_ROWS.map((row) => (
+                      <tr
+                        key={row.id}
+                        onClick={() => {
+                          const target =
+                            (row.startSec /
+                              Math.max(1, reelConfig.totalDurationSec)) *
+                            totalDuration;
+                          setCurrentTime(target);
+                          if (audioRef.current)
+                            audioRef.current.currentTime = target;
+                        }}
+                        className="cursor-pointer hover:bg-[#FFF9EB] transition-colors"
+                      >
+                        <td className="px-3 py-2.5 font-mono-tabular font-extrabold text-[#C8922A] whitespace-nowrap">
+                          {row.timeRange}
+                        </td>
+                        <td className="px-3 py-2.5">
+                          <p dir="rtl" className="font-arabic text-[11px] font-bold text-[#102D45]">
+                            {row.visualAr}
+                          </p>
+                          <p className="mt-0.5 text-[10px] text-slate-500">
+                            {row.visualFr}
+                          </p>
+                        </td>
+                        <td
+                          dir="rtl"
+                          className="px-3 py-2.5 font-arabic text-[11px] font-extrabold text-[#102D45]"
+                        >
+                          {row.onScreenText}
+                        </td>
+                        <td
+                          dir="rtl"
+                          className="px-3 py-2.5 font-arabic text-[11px] font-semibold text-slate-700"
+                        >
+                          {row.voiceoverExcerpt}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* 4 Copy-Ready Cinematic 9:16 AI Video Prompts (Google AI Studio / Veo) */}
+              <div className="space-y-2.5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h4 className="text-xs font-extrabold text-[#102D45]">
+                    4 Prompts Cinématiques 9:16 prêts à copier (Google AI Studio / Veo)
+                  </h4>
+                  <span className="text-[11px] font-semibold text-slate-500">
+                    Format vertical 9:16 · 4K · Sans texte incrusté
+                  </span>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {OMRA_SUR_MESURE_VEO_PROMPTS.map((item) => {
+                    const copied = copiedVeoPromptId === item.id;
+                    return (
+                      <div
+                        key={item.id}
+                        className="flex flex-col justify-between rounded-xl border border-[#102D45]/12 bg-white p-3.5 space-y-2.5"
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-mono-tabular text-[10px] font-extrabold text-[#C8922A]">
+                              {item.timeRange}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                void navigator.clipboard
+                                  ?.writeText(item.promptEn)
+                                  .then(() => {
+                                    setCopiedVeoPromptId(item.id);
+                                    window.setTimeout(
+                                      () => setCopiedVeoPromptId(null),
+                                      1800
+                                    );
+                                  });
+                              }}
+                              className="inline-flex items-center gap-1 rounded-lg border border-[#102D45]/15 bg-[#F5F7FA] px-2.5 py-1 text-[10px] font-bold text-[#102D45] hover:border-[#C8922A]"
+                            >
+                              {copied ? (
+                                <>
+                                  <Check className="h-3 w-3 text-emerald-600" />
+                                  <span>Copié</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="h-3 w-3" />
+                                  <span>Copier Prompt Veo</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+                          <p className="text-xs font-extrabold text-[#102D45]">
+                            {item.sceneLabelFr}
+                          </p>
+                          <p dir="rtl" className="font-arabic text-[11px] font-semibold text-[#1C4967]">
+                            {item.sceneLabelAr}
+                          </p>
+                        </div>
+                        <p
+                          dir="ltr"
+                          className="rounded-lg bg-[#F8FAFC] border border-[#102D45]/8 p-2.5 font-mono text-[10.5px] leading-relaxed text-slate-700"
+                        >
+                          {item.promptEn}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Ad Success Tips (FB / IG / TikTok) + Veo / CapCut Settings */}
+              <div className="grid gap-3 lg:grid-cols-2">
+                <div className="rounded-xl bg-[#102D45] p-4 text-white space-y-2.5">
+                  <p dir="rtl" className="font-arabic text-xs font-extrabold text-[#F6D365]">
+                    نصائح سريعة لنجاح الإعلان (Facebook / Instagram / TikTok)
+                  </p>
+                  <div className="space-y-2">
+                    {OMRA_SUR_MESURE_AD_TIPS.map((tip) => (
+                      <div
+                        key={tip.id}
+                        className="rounded-lg border border-white/15 bg-white/8 p-3 space-y-1"
+                      >
+                        <p dir="rtl" className="font-arabic text-xs font-extrabold text-[#F6D365]">
+                          {tip.titleAr}
+                        </p>
+                        <p dir="rtl" className="font-arabic text-[11px] leading-relaxed text-slate-100">
+                          {tip.detailAr}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-[#102D45]/12 bg-white p-4 space-y-2.5">
+                  <p className="text-xs font-extrabold text-[#102D45]">
+                    Conseils de réglage Google AI Studio / Veo & Montage CapCut / Premiere
+                  </p>
+                  <div className="space-y-2">
+                    {OMRA_SUR_MESURE_VEO_SETTINGS.map((st) => (
+                      <div
+                        key={st.id}
+                        className="rounded-lg border border-[#102D45]/10 bg-[#F8FAFC] p-3 space-y-1"
+                      >
+                        <p className="text-xs font-extrabold text-[#102D45]">
+                          {st.titleFr}
+                        </p>
+                        <p className="text-[11px] leading-relaxed text-slate-600">
+                          {st.detailFr}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {(selectedPreset === 'world_hotels_tnd' ||
             selectedPreset === 'world_hotels_packages' ||

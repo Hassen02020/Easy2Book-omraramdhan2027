@@ -65,6 +65,7 @@ import { WhatsAppIcon } from '../WhatsAppIcon';
 import { BrandLogoMark } from './SiteHeader';
 import { VisaEgyptModuleBlock } from './VisaEgyptModuleBlock';
 import { WorldHotelsModuleBlock } from './WorldHotelsModuleBlock';
+import { OmraSurMesureModuleBlock } from './OmraSurMesureModuleBlock';
 
 function decodeBase64ToUint8Array(base64: string): Uint8Array {
   const binary = window.atob(base64);
@@ -150,10 +151,12 @@ export function BlockRenderer({
 
   const reelPreset: ReelPresetId =
     block.content.reelPreset ||
-    (pageId.includes('hotels-monde') ||
-    pageId.includes('world-hotels') ||
-    block.id.includes('-wh-')
-      ? 'world_hotels_tnd'
+    (pageId.includes('omra-sur-mesure') || block.id.includes('-osm-')
+      ? 'omra_sur_mesure'
+      : pageId.includes('hotels-monde') ||
+          pageId.includes('world-hotels') ||
+          block.id.includes('-wh-')
+        ? 'world_hotels_tnd'
       : pageId.includes('billetterie') ||
           pageId.includes('avion') ||
           pageId.includes('bateau') ||
@@ -1730,6 +1733,25 @@ export function BlockRenderer({
             interactiveEdit={interactiveEdit}
           />
         </div>
+      </section>
+    );
+  }
+
+  // Dedicated Omra Sur-Mesure (3 Steps · 100% TND) Interactive Configurator
+  if (block.type === 'omra_sur_mesure_builder') {
+    return (
+      <section {...wrapperProps} id={block.anchorId || 'omra-sur-mesure-builder'}>
+        {sectionTag}
+        <OmraSurMesureModuleBlock
+          block={block}
+          pageId={pageId}
+          universe={universe}
+          language={language}
+          offerRef={offerRef}
+          attribution={attribution}
+          crmConfig={crmConfig}
+          interactiveEdit={interactiveEdit}
+        />
       </section>
     );
   }

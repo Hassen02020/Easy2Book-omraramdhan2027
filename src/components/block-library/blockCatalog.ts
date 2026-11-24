@@ -178,6 +178,20 @@ export const BLOCK_CATALOG: BlockCatalogEntry[] = [
 
   // === BLOCS OMRA ===
   {
+    type: 'omra_sur_mesure_builder',
+    category: 'omra',
+    labels: {
+      fr: 'Module Omra Sur-Mesure (3 Étapes · 100% TND)',
+      en: 'Custom Umrah Builder (3 Steps · 100% TND)',
+      ar: 'وحدة عمرتك على كيفك (3 خطوات · بالدينار التونسي)',
+    },
+    description: {
+      fr: 'Configurateur interactif en 3 étapes : (1) Programme de vol libre, (2) Chambre à La Mecque en TND, (3) Séjour à Médine selon disponibilité + Devis WhatsApp direct.',
+      en: 'Interactive 3-step custom Umrah builder: flights, Makkah hotel in TND, Madinah stay + instant WhatsApp quote.',
+      ar: 'وحدة تفاعلية لتفصيل العمرة في 3 خطوات: الطيران بالتاريخ المناسب، فنادق مكة بالدينار التونسي، وفنادق المدينة حسب المتاح مع إرسال فوري للواتساب.',
+    },
+  },
+  {
     type: 'omra_departure_overview',
     category: 'omra',
     labels: { fr: 'Présentation du départ', en: 'Departure Overview', ar: 'تقديم رحلة العمرة' },
@@ -1140,6 +1154,21 @@ export function createDefaultBlock(
       description: isAr
         ? 'أدخل بياناتك وسيتواصل معك مستشار مخصص.'
         : 'Formulaire connecté à l’adaptateur d’intégration CRM.',
+    },
+    omra_sur_mesure_builder: {
+      eyebrow: isAr
+        ? 'عمرتك على كيفك · 3 خطوات · الخلاص بالدينار التونسي'
+        : isEn
+          ? 'Custom Umrah · 3 Steps · Paid in TND'
+          : 'Omra Sur-Mesure · 3 Étapes · 100% TND',
+      title: isAr
+        ? 'فصّل برنامج عمرتك على قياسك — بدون برامج مفروضة'
+        : isEn
+          ? 'Build Your Own Umrah Program in 3 Simple Steps'
+          : 'Composez votre Omra sur mesure en 3 étapes simples',
+      description: isAr
+        ? 'اختار برنامج الطيران، غرفتك في فنادق مكة بالدينار التونسي، وإقامتك في المدينة المنورة حسب المتاح.'
+        : 'Choisissez librement votre vol, votre chambre à La Mecque en Dinar Tunisien et votre hôtel à Médine.',
     },
     footer: {
       eyebrow: 'Easy2Book',

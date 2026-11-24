@@ -145,6 +145,12 @@ function inferDefaultReelPresetForPage(page: Page): ReelPresetId {
     if (page.id.includes('egypt')) return 'egypt_excursions';
     return 'excursions_general';
   }
+  if (
+    page.id.includes('omra-sur-mesure') ||
+    page.blocks.some((b) => b.type === 'omra_sur_mesure_builder')
+  ) {
+    return 'omra_sur_mesure';
+  }
   return 'omra';
 }
 

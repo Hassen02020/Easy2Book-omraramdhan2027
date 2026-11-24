@@ -81,6 +81,7 @@ export type BlockType =
   | 'omra_dates'
   | 'omra_conditions'
   | 'omra_practical_info'
+  | 'omra_sur_mesure_builder'
   // Voyages blocks
   | 'voyage_destination'
   | 'voyage_itinerary'
@@ -271,7 +272,8 @@ export interface PageBlock {
       | 'flights_ferries'
       | 'world_hotels_tnd'
       | 'world_hotels_packages'
-      | 'world_hotels_cafe';
+      | 'world_hotels_cafe'
+      | 'omra_sur_mesure';
     customReelScript?: string;
     primaryCtaLabel?: string;
     primaryCtaTarget?: string;

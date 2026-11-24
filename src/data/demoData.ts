@@ -3242,6 +3242,98 @@ const WORLD_HOTELS_TND_BLOCKS: PageBlock[] = [
   ),
 ];
 
+const OMRA_SUR_MESURE_BLOCKS: PageBlock[] = [
+  blockBase(
+    'blk-osm-hero-vid',
+    'hero_video',
+    'omra',
+    'عمرتك على كيفك! 🕋✨ · فيديو 30 ثانية (9:16)',
+    {
+      eyebrow: 'مكة المكرمة 📍 • المدينة المنورة 📍 · بلا برامج مفروضة',
+      title: 'يزّي ما يفرضوا عليك وقتاش تمشي ووين تسكن... اليوم مع Easy2Book، عمرتك تفصّلها على كيفك!',
+      description:
+        'في 3 خطوات برك من تليفونك: اختار برنامج الطيران إلي يناسب ظروفك، احجز غرفتك في فنادق مكة مسبقاً بالدينار التونسي، واختار إقامتك في المدينة المنورة حسب المتاح.',
+      imageKey: 'omra_vip_haram',
+      reelPreset: 'omra_sur_mesure',
+      primaryCtaLabel: 'فصّل عمرتك في 3 خطوات 👇',
+      primaryCtaTarget: '#omra-sur-mesure-builder',
+      secondaryCtaLabel: '98 140 514',
+    },
+    { backgroundColor: '#FAF9F6', paddingY: 'spacious' }
+  ),
+  {
+    ...blockBase(
+      'blk-osm-builder',
+      'omra_sur_mesure_builder',
+      'omra',
+      'وحدة عمرتك على كيفك (3 خطوات · الطيران + مكة + المدينة بالدينار التونسي)',
+      {
+        eyebrow: 'عمرتك على كيفك · 3 خطوات · الخلاص بالدينار التونسي',
+        title: 'فصّل برنامج عمرتك على قياسك في 3 خطوات — بدون برامج مفروضة',
+        description:
+          'اختار تواريخ طيرانك، غرفتك في فنادق مكة المكرمة بالدينار التونسي، وإقامتك في المدينة المنورة، واستلم عرض السعر فوراً عبر واتساب.',
+      },
+      { backgroundColor: '#FFFFFF', paddingY: 'spacious' }
+    ),
+    anchorId: 'omra-sur-mesure-builder',
+  },
+  blockBase(
+    'blk-osm-benefits',
+    'benefits',
+    'omra',
+    'لماذا تفصّل عمرتك مع Easy2Book؟',
+    {
+      eyebrow: 'حجز مسبق ومضمون · الخلاص بالدينار التونسي 🇹🇳',
+      title: 'مرونة كاملة من تليفونك… وطمأنينة تامة في الحرمين',
+      description: 'كل شيء حاضر ومضمون قبل السفر — ما بقالك كان تتوكل على ربي.',
+      items: [
+        {
+          id: 'osm-b1',
+          badge: 'الخطوة 1 · الطيران',
+          title: 'اختار برنامج طيرانك بالتاريخ والوقت إلي يساعدك',
+          subtitle: 'انطلاقاً من تونس، المنستير، جربة أو صفاقس وفق التزاماتك المهنية والعائلية.',
+        },
+        {
+          id: 'osm-b2',
+          badge: 'الخطوة 2 · مكة المكرمة',
+          title: 'غرفتك في فنادق مكة بحجز مسبق بالدينار التونسي',
+          subtitle: 'اختر فندقك قبل السفر (إطلالة الحرم أو فئة 4★/5★) مع خلاص 100% بالدينار التونسي.',
+        },
+        {
+          id: 'osm-b3',
+          badge: 'الخطوة 3 · المدينة المنورة',
+          title: 'إقامتك في المدينة حسب المتاح وبكل مرونة',
+          subtitle: 'فنادق مختارة قرب المسجد النبوي الشريف مع إمكانية إضافة التأشيرة والتنقلات.',
+        },
+      ],
+    },
+    { backgroundColor: '#F5F7FA' }
+  ),
+  blockBase(
+    'blk-osm-whatsapp',
+    'whatsapp_button',
+    'common',
+    'توكل على ربي · واتساب مباشر للـ Devis',
+    {
+      eyebrow: 'توكل على ربي! 🤲 · 98 140 514',
+      title: 'ابعثلنا التواريخ وعدد الأفراد على واتساب واستلم الـ Devis فوراً',
+      description: 'فريق العمرة في Easy2Book يجهّزلك عرض سعر كامل بالدينار التونسي في دقائق.',
+      primaryCtaLabel: 'تواصل عبر واتساب · 98 140 514',
+    }
+  ),
+  blockBase(
+    'blk-osm-form',
+    'lead_form',
+    'common',
+    'طلب عرض سعر عمرتك على كيفك',
+    {
+      eyebrow: 'WWW.EASY2BOOK.TN · 98 140 514',
+      title: 'ابدأ رحلتك — أرسل تفاصيل عمرتك الآن',
+      description: 'أدخل التواريخ المطلوبة، عدد الأفراد ومستوى الفنادق المفضل في مكة والمدينة.',
+    }
+  ),
+];
+
 export const DEMO_TEMPLATES: PageTemplate[] = [
   // === UNIVERS 1 : OMRA (4 modèles) ===
   {
@@ -5434,6 +5526,103 @@ export const DEMO_PAGES: Page[] = [
     },
     form: makeForm('ar', 'hotels-monde-tnd'),
     blocks: WORLD_HOTELS_TND_BLOCKS,
+  }),
+
+  buildDemoPage({
+    id: 'page-omra-sur-mesure-easy2book',
+    title: 'Easy2Book — عمرتك على كيفك (Omra Sur-Mesure 3 Étapes · 100% TND)',
+    universe: 'omra',
+    folderGroup: 'Omra Sur-Mesure (TND)',
+    creationMode: 'modules',
+    brandIdentity: {
+      ...createDefaultBrandIdentity({
+        brandName: 'Easy2Book',
+        tagline: 'عمرتك على كيفك · بلا برامج مفروضة · بالدينار التونسي',
+        logoSrc: '/assets/aistudio/logo_transparent_e9918557.png',
+        visualStyle: 'premium',
+      }),
+    },
+    header: {
+      enabled: true,
+      variant: 'premium',
+      sticky: true,
+      showLogo: true,
+      showBrandName: true,
+      navLinks: [
+        { id: 'nav-osm-1', label: 'فيديو 30s', target: '#blk-osm-hero-vid' },
+        { id: 'nav-osm-2', label: 'فصّل عمرتك', target: '#omra-sur-mesure-builder' },
+        { id: 'nav-osm-3', label: 'الخطوات الـ 3', target: '#blk-osm-benefits' },
+        { id: 'nav-osm-4', label: 'عرض السعر', target: '#form-block' },
+      ],
+      ctaLabel: 'توكل على ربي · 98 140 514',
+      ctaTarget: '#omra-sur-mesure-builder',
+      showWhatsapp: true,
+      whatsappNumber: '98 140 514',
+      whatsappLabel: 'WhatsApp 98 140 514',
+    },
+    footer: {
+      enabled: true,
+      showLogo: true,
+      companyDescription:
+        'Easy2Book.tn — عمرتك على كيفك في 3 خطوات بدون برامج مفروضة: اختار طيرانك، غرفتك في فنادق مكة المكرمة بالدينار التونسي، وإقامتك في المدينة المنورة حسب المتاح.',
+      navLinks: [
+        { id: 'ft-osm-1', label: 'عمرتك على كيفك', target: '#omra-sur-mesure-builder' },
+        { id: 'ft-osm-2', label: 'فيديو الريلز 9:16', target: '#blk-osm-hero-vid' },
+        { id: 'ft-osm-3', label: 'واتساب 98 140 514', target: '#form-block' },
+      ],
+      phone: '98 140 514',
+      whatsapp: '98 140 514',
+      email: 'contact@easy2book.tn',
+      address: 'تونس · www.easy2book.tn · الخلاص بالدينار التونسي',
+      socialLinks: {},
+      legalLinks: {},
+      copyrightText: '© 2026 Easy2Book.tn · عمرتك على كيفك · 98 140 514',
+    },
+    commerceModules: ['omra', 'flights'],
+    templateId: 'tpl-omra-sur-mesure',
+    language: 'ar',
+    isDemoData: true,
+    createdAt: '2026-11-24T10:00:00Z',
+    updatedAt: '2026-11-24T10:00:00Z',
+    publication: {
+      status: 'published',
+      publishedAt: '2026-11-24T10:00:00Z',
+      publishedBy: 'Équipe Studio Easy2Book',
+    },
+    offerRef: {
+      externalOfferId: 'CAT-OMRA-SUR-MESURE-2026',
+      externalSourceName: 'Easy2Book Omra Sur-Mesure (100% TND)',
+      universe: 'omra',
+      offerCode: 'OMRA-CUSTOM-3STEPS',
+      displayLabel: 'عمرتك على كيفك — طيران + فنادق مكة + المدينة بالدينار التونسي',
+      cachedSummary: {
+        startingPriceLabel: 'حجز مسبق ومضمون بالدينار التونسي (TND)',
+        datesOrValidity: 'تواريخ حرة طوال السنة بدون برامج مفروضة',
+        availabilityLabel: 'فنادق مكة المكرمة والمدينة المنورة حسب اختيارك',
+        conditionsSummary: 'توكل على ربي · 98 140 514 · www.easy2book.tn',
+      },
+      syncMode: 'external_reference',
+    },
+    seo: {
+      slug: 'omra-sur-mesure-easy2book',
+      metaTitle: 'Easy2Book — عمرتك على كيفك في 3 خطوات بالدينار التونسي',
+      metaDescription:
+        'فصّل برنامج عمرتك على كيفك بدون برامج مفروضة: اختار برنامج الطيران، غرفتك في فنادق مكة بالدينار التونسي، وإقامتك في المدينة المنورة حسب المتاح. كلمنا على 98 140 514.',
+      ogTitle: 'عمرتك على كيفك! 🕋✨ — Easy2Book.tn · 98 140 514',
+      ogDescription:
+        '3 خطوات من تليفونك: طيرانك، فنادق مكة بالدينار التونسي، وفنادق المدينة المنورة بكل مرونة.',
+      canonicalPath: '/p/omra-sur-mesure-easy2book',
+      noIndex: false,
+    },
+    attribution: {
+      acquisitionSource: 'Campagne FB/IG/TikTok Omra Sur-Mesure Easy2Book',
+      utmSource: 'easy2book',
+      utmMedium: 'reels_tiktok',
+      utmCampaign: 'omra_sur_mesure_2026',
+      utmContent: '3_hooks_30s_veo',
+    },
+    form: makeForm('ar', 'omra-sur-mesure'),
+    blocks: OMRA_SUR_MESURE_BLOCKS,
   }),
 ];
 

@@ -347,6 +347,36 @@ export function buildDefaultPosterConfig(input: PosterSeedInput): SocialPosterCo
 
   // Smart presets for Visas & Hotels so posters look instantly commercial and magnetic
   if (
+    slugLower.includes('omra-sur-mesure') ||
+    slugLower.includes('عمرتك على كيفك') ||
+    slugLower.includes('عمرتك') && slugLower.includes('كيفك')
+  ) {
+    photoSrc = input.photoKey
+      ? getHeroImageSrc(input.photoKey)
+      : HERO_MEDIA_MAP.omra_vip_haram.src;
+    eyebrow = isAr
+      ? 'عمرتك على كيفك · مكة والمدينة · بالدينار التونسي'
+      : 'Omra Sur-Mesure · La Mecque & Médine · 100% TND';
+    headline = isAr
+      ? 'عمرتك على كيفك في 3 خطوات — بلا برامج مفروضة'
+      : 'Votre Omra sur mesure en 3 étapes en TND';
+    subtitle = isAr
+      ? 'اختار برنامج طيرانك، غرفتك في مكة بالدينار التونسي، وإقامتك في المدينة بكل مرونة.'
+      : 'Vol libre, hôtel à La Mecque pré-réservé en Dinar Tunisien et séjour flexible à Médine.';
+    highlights = isAr
+      ? [
+          '1. اختار برنامج طيرانك بالنهار والوقت إلي يساعدك',
+          '2. اختار غرفتك في فنادق مكة بحجز مسبق بالدينار التونسي',
+          '3. اختار إقامتك في فنادق المدينة حسب المتاح · توكل على ربي',
+        ]
+      : [
+          '1. Choisissez votre vol & dates selon votre emploi du temps',
+          '2. Réservez votre hôtel à La Mecque à l’avance en TND',
+          '3. Choisissez votre séjour à Médine en toute souplesse',
+        ];
+    flagCodes = ['TN', 'SA'];
+    showPrice = false;
+  } else if (
     slugLower.includes('hotels-monde') ||
     slugLower.includes('world-hotels') ||
     slugLower.includes('فنادق العالم') ||
